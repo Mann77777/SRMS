@@ -35,7 +35,7 @@
         <h4>SRMS</h4>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="#">Service Request</a>
+            <a class="nav-link" href="{{ route('service-request') }}">Service Request</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Request Status</a>

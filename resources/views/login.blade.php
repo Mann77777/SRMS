@@ -92,7 +92,7 @@
 
         <!-- Google Login Link -->
         <div class="text-center">
-            <a href="{{ route('login') }}" class="google-login">
+            <a href="{{ route('login.google') }}" class="google-login">
                 <h4>Login with Google</h4>
             </a>
         </div>

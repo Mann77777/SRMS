@@ -3,18 +3,35 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 
-Route::get('auth/google', [GoogleController::class, 'loginWithGoogle']) ->name('login');
+Route::get('auth/google', [GoogleController::class, 'loginWithGoogle']) ->name('login.google');
 Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle']) ->name('callback');
 
 Route::get('/home', [ProfileController::class, 'show'])->name('home'); // Use ProfileController to show the profile
 Route::post('/home/update', [ProfileController::class, 'update'])->name('profile.update'); // Use ProfileController to update the profile
 
+// Login Form Route
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+
+// Handle Login Form Submission
+Route::post('/login', [AuthController::class, 'login'])->name('login.custom');
+
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
+
+Route::get('/service-request', function () {
+    return view('service-request');
+})->name('service-request');
+
+Route::get('/service-history', function () {
+    return view('service-history');
+})->name('service-history');
 
 Route::post('/logout', function () {
     Auth::logout();

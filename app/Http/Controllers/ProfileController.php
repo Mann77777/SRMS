@@ -29,6 +29,6 @@ class ProfileController extends Controller
         $user->phone = $request->phone;
         $user->save();
 
-        return redirect()->route('dashboard'); // Redirect to the dashboard page
+        return redirect()->route('dashboard.blade.php'); // Redirect to the dashboard page
     }
 }

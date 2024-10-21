@@ -18,7 +18,8 @@ class GoogleController extends Controller
     public function callbackFromGoogle()
     {
         try {
-            $user = Socialite::driver('google')->user();
+            $user = Socialite::driver('google')->stateless()->user();
+
             $is_user = User::where('email', $user->getEmail())->first();
 
             if (!$is_user) {
@@ -27,6 +28,7 @@ class GoogleController extends Controller
                         'google_id' => $user->getId()
                     ],
                     [
+                        'username' => $user->getName(),
                         'name' => $user->getName(),
                         'email' => $user->getEmail(),
                         'password' => Hash::make($user->getName() . '@' . $user->getId()),

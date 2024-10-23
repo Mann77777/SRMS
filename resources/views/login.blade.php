@@ -3,55 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>SRMS Login</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .login-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        .separator {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-        }
-        .separator::before, .separator::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background-color: #ced4da;
-            align-self: center;
-        }
-        .separator::before {
-            margin-right: .5em;
-        }
-        .separator::after {
-            margin-left: .5em;
-        }
-        .google-login {
-            color: #4285F4;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .google-login:hover {
-            text-decoration: underline;
-        }
-        .register-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet" />
+
+    <link href="{{ asset('css/login.css') }}" rel="stylesheet">
+
 </head>
 <body>
     <div class="container login-container">
-        <h2 class="text-center">Login</h2>
+        <img src="{{ asset('images/tuplogo.png') }}" class="tuplogo" alt="TUP Logo" >
+        <h3 class="text-center">Sign In</h3>
 
         @if(session('error'))
             <div class="alert alert-danger">
@@ -63,11 +25,11 @@
             @csrf
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
             </div>
             <div class="form-group">
                 <label for="role">Select Role</label>
@@ -77,13 +39,9 @@
                     <option value="technician">Technician</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Login</button>
+            <button type="submit" class="login-btn btn-primary btn-block">Sign In</button>
         </form>
 
-        <!-- Register Link -->
-        <div class="register-link">
-            <a href="{{ route('register') }}" class="btn btn-secondary btn-block">Register</a>
-        </div>
 
         <!-- OR separator -->
         <div class="separator">
@@ -91,13 +49,16 @@
         </div>
 
         <!-- Google Login Link -->
-        <div class="text-center">
-            <a href="{{ route('login.google') }}" class="google-login">
-                <h4>Login with Google</h4>
-            </a>
+        <div class="text-center mt-3">
+            <a href="{{ route('login.google') }}" class="btn btn-outline-google">
+            <img src="{{ asset('images/google.png') }}" alt="Google Logo" class="google-icon">Login with Google</a>
         </div>
 
-        
+        <!-- Register Link -->
+        <div class="register-link">
+             Don't have an account? 
+            <a href="{{ route('register') }}" class="btn bold-text">Sign up</a>
+        </div>
     </div>
 </body>
 </html>

@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+*{
+    font-family: "Montserrat", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background-color: #f8f9fa;
+    height: 130vh;
+}   
+.login-container{
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+.tuplogo{
+    width: 150px; 
+    height: auto;
+    display: block; 
+    margin: 0 auto 20px;
+}
+
+.form-control{
+    padding: 10px 11px;
+    height: auto; /* Optional: set height to auto to avoid excessive height */
+}
+
+.form-control::placeholder{
+    font-size: 14px;
+    color: #686868; 
+    opacity: 1; /* Optional: set opacity to ensure visibility */
+}
+
+.login-btn{
+    font-weight: 550;
+    padding: 10px 11px;
+    border-radius: 10px;
+    border: none;
+    background-color: #C4203C;
+    
+}
+.login-btn:hover{
+    background-color: #ac1b33
+}
+.separator{
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+.separator::before, .separator::after{
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: #ced4da;
+    align-self: center;
+}
+.separator::before{
+    margin-right: .5em;
+}
+.separator::after{
+    margin-left: .5em;
+}
+
+.btn-outline-google{
+    width: 100%;
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 10px;
+    padding: 10px 11px;
+    color: rgb(0, 0, 0);
+    background-color: transparent; 
+    transition: background-color 0.3s, color 0.3s; 
+}
+
+.google-icon{
+    width: 25px; 
+    height: 25px; 
+    margin-right: 8px; /* Space between the icon and text */
+    vertical-align: middle; 
+}
+
+.register-link{
+    text-align: center;
+    margin-top: 15px;
+}
+.register-link a{
+    margin-left: -15px;
+}
+
+.bold-text{
+    font-weight: bold; 
+}

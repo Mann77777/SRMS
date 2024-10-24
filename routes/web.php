@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AboutUsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -25,9 +26,22 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.custom');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
 
+Route::get('/aboutus', [AboutUsController::class, 'index'])->name('aboutus');
+
+
+Route::get('/services', function () {
+    return view('services');
+})->name('services');
+
+Route::get('/myprofile', function () {
+    return view('myprofile');
+})->name('profile'); 
+
 Route::get('/service-request', function () {
     return view('service-request');
 })->name('service-request');
+
+
 
 Route::get('/service-history', function () {
     return view('service-history');

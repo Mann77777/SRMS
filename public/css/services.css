@@ -92,83 +92,16 @@ body{
     display: block;
 }
 
-/* HERO STYLE */
-.hero {
-    background-color: #f5f5f5; 
-    padding: 5%;
-    padding-top: 10%;
-}
-.hero h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    text-align: left;
-    margin-left: 10%;
-}
-.hero p {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    text-align: left;
-    margin-left: 10%;
-
-}
-.hero .hours {
-    font-size: 2rem;
-    font-weight: 700;
-    font-style: italic;
-    margin-bottom: 30px;
-    color: #333;
-    text-align: left;
-    margin-left: 10%;
-
-}
-.hero button {
-    padding: 10px 20px;
-    font-size: 1.2rem;
-    font-weight: 550;
-    background-color: #C4203C;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    text-align: left;
-    margin-left: 10%;
-    text-transform: uppercase;
-}
-.hero button:hover {
-    background-color: #f12245;
-}
-
-
-
-/* ABOUT US TEASER */ 
-.lead{
-    width: 65%;
-    text-align: left;
-    margin-left: 10%;
-}
-.learnmore-btn{
-    padding: 10px 20px;
-
-    background-color: #C4203C;
-    border: none;
-    border-radius: 50px;
-    font-weight: 550;
-    text-align: left;
-    margin-left: 10%;
-}
-.learnmore-btn:hover{
-    background-color: #f12245;
-}
-
-/*SERVICES TEASER*/
+/* SERVICES STYLE */
 .services-overview {
     background-color: #f9f9f9; 
     padding: 5% 0;
+    margin-top: 10%; 
 }
 
 .section-title {
     font-size: 2.5rem; 
-    margin-bottom: 40px; 
+    margin-bottom: 5%; 
 }
 
 .row {
@@ -211,18 +144,25 @@ body{
     color: #666; /* Slightly lighter text color */
     flex-grow: 1; 
 }
-
-.learnmore-btn2{
+.requestbtn{
+    display: block; /* Make it a block-level element */
+    margin: 0 auto; /* Center horizontally */
     padding: 10px 20px;
+    font-size: 1.2rem;
+    font-weight: 550;
     background-color: #C4203C;
+    color: white;
     border: none;
     border-radius: 50px;
-    font-weight: 550;
+    cursor: pointer;
+    align-items: center;
+    text-transform: uppercase;
 }
-.learnmore-btn2:hover{
+.requestbtn:hover{
     background-color: #f12245;
 
 }
+
 
 /* FOOTER STYLE */
 .footer {

@@ -3,69 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Service Request</title>
+    <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            display: flex;
-            height: 100vh;
-            background-color: #f8f9fa;
-        }
-        .sidebar {
-            min-width: 200px;
-            background-color: #343a40;
-            color: white;
-        }
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-        }
-        .sidebar a:hover {
-            background-color: #495057;
-            color: white;
-        }
-        .content {
-            flex: 1;
-            padding: 20px;
-        }
-        .form-section {
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="{{ asset('css/servicerequest.css') }}" rel="stylesheet">
+    <title>Service Request Form</title>
 </head>
 <body>
-    <div class="sidebar p-3">
-        <h4>SRMS</h4>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ route('service-request') }}">Service Request</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Request Status</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Service History</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Notification</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Message</a>
-            </li>
-            <li class="nav-item">
-                 <a class="nav-link" href="{{ route('home') }}">Profile</a>
-            </li>
-            <li class="nav-item">
-                <form id="logout-form" action="logout.php" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-link nav-link" style="color: white;">Logout</button>
-                </form>
-            </li>
-        </ul>
-    </div>
-
+    <h2>SRMS Request Form</h2>
+    <p>SERVICES</p>
+    <p>Select Services</p>
     <div class="content">
-        <h2>New Service Request</h2>
-
         <form action="submit-service-request.php" method="POST">
             <!-- MS Office 365 Section -->
             <div class="form-section">
@@ -76,27 +24,76 @@
                 <input type="text" name="ms_other" placeholder="Others (Please specify)" class="form-control">
             </div>
 
-            <!-- Attendance Record Section -->
             <div class="form-section">
                 <h4>Attendance Record</h4>
-                <label><input type="checkbox" name="attendance[]" value="time_in_out"> Time In/Out</label>
-                <label><input type="checkbox" name="attendance[]" value="daily_record"> Daily Record/Fine</label>
-                <label><input type="checkbox" name="attendance[]" value="biometric"> Biometric Record</label>
+                <input type="text" name="attendance_date" placeholder="For the month/s of" class="form-control">
+                <label><input type="checkbox" name="attendance_option[]" value="dtr"> Daily Record Time</label>
+                <label><input type="checkbox" name="attendance_option[]" value="biometric_record">Biometric Record</label>
             </div>
 
             <!-- Biometrics Enrollment and Employee ID Section -->
             <div class="form-section">
                 <h4>Biometrics Enrollment and Employee ID Card</h4>
-                <input type="text" name="first_name" placeholder="First Name" class="form-control">
-                <input type="text" name="last_name" placeholder="Last Name" class="form-control">
-                <input type="text" name="college" placeholder="College" class="form-control">
-                <input type="text" name="department" placeholder="Department" class="form-control">
-                <input type="text" name="position" placeholder="Position" class="form-control">
-                <input type="date" name="dob" placeholder="Date of Birth" class="form-control">
-                <input type="text" name="phone" placeholder="Phone Number" class="form-control">
-                <input type="text" name="address" placeholder="Address" class="form-control">
-                <input type="text" name="blood_type" placeholder="Blood Type" class="form-control">
-                <input type="text" name="emergency_contact" placeholder="Emergency Contact" class="form-control">
+                
+                <!-- First Name -->
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="First Name" class="form-control">
+                </div>
+                
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" placeholder="Last Name" class="form-control">
+                </div>
+                
+                <!-- College -->
+                <div class="form-group">
+                    <label for="college">College</label>
+                    <input type="text" id="college" name="college" placeholder="College" class="form-control">
+                </div>
+                
+                <!-- Department -->
+                <div class="form-group">
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="department" placeholder="Department" class="form-control">
+                </div>
+                
+                <!-- Position -->
+                <div class="form-group">
+                    <label for="position">Position</label>
+                    <input type="text" id="position" name="position" placeholder="Position" class="form-control">
+                </div>
+                
+                <!-- Date of Birth -->
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" placeholder="Date of Birth" class="form-control">
+                </div>
+                
+                <!-- Phone Number -->
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="number" id="phone" name="phone" placeholder="Phone Number" class="form-control">
+                </div>
+                
+                <!-- Address -->
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" name="address" placeholder="Address" class="form-control">
+                </div>
+                
+                <!-- Blood Type -->
+                <div class="form-group">
+                    <label for="blood_type">Blood Type</label>
+                    <input type="text" id="blood_type" name="blood_type" placeholder="Blood Type" class="form-control">
+                </div>
+                
+                <!-- Emergency Contact -->
+                <div class="form-group">
+                    <label for="emergency_contact">Emergency Contact</label>
+                    <input type="text" id="emergency_contact" name="emergency_contact" placeholder="Emergency Contact" class="form-control">
+                </div>
             </div>
 
             <!-- TUP Web ERS Section -->
@@ -107,24 +104,92 @@
                 <input type="text" name="tup_web_other" placeholder="Others (Please specify)" class="form-control">
             </div>
 
-            <!-- Internet and Telephone Management Section -->
+            
+            <!-- Internet and Telephone Section -->
             <div class="form-section">
                 <h4>Internet and Telephone Management</h4>
-                <label><input type="checkbox" name="internet_telephone[]" value="new_internet"> New Internet Connection</label>
-                <label><input type="checkbox" name="internet_telephone[]" value="new_telephone"> New Telephone Connection</label>
-                <input type="text" name="internet_telephone_other" placeholder="Repairs/Maintenance" class="form-control">
+                <input type="text" name="location" placeholder="Location" class="form-control">
+
+                <label><input type="checkbox" name="internet_telephone[]" value="new_internet">New Internet Connection</label>
+                <label><input type="checkbox" name="internet_telephone[]" value="new_telephone">New Telephone Connection</label>
+                <label><input type="checkbox" name="internet_telephone[]" value="repair_maintenance">Internet/Telephone Repair and Maintenance</label>
+                <input type="text" name="internet_telephone" placeholder="(Please specify)" class="form-control">
             </div>
 
-            <!-- Additional Sections like ICT, Software, Data Handling -->
-
-            <!-- Terms and Conditions Section -->
+            <!-- ICT Equipment Management Section -->
             <div class="form-section">
-                <input type="checkbox" name="terms" required> I agree to the terms and conditions
+                <h4>ICT Equipment Management</h4>
+                <label><input type="checkbox" name="ict_equip[]" value="comp_repair_maintenance">Computer Repair and Maintenance</label>
+                <label><input type="checkbox" name="ict_equip[]" value="printer_repair_maintenance">Printer Repair and Maintenance</label>
+                <label><input type="checkbox" name="ict_equip[]" value="reset_password">Request to use LED Screen</label>
+                <!-- <input type="text" name="ict_equip[]" value="Activity Date"> -->
+                <input type="text" name="ict_equip_date" placeholder="Activity Date" class="form-control">
+                <input type="text" name="ict_equip_other" placeholder="Others (Please specify)" class="form-control">
+
+            </div>
+
+            <!-- Software and Website Management Section -->
+            <div class="form-section">
+                <h4>Software and Website Management</h4>
+                <label><input type="checkbox" name="ict_equip[]" value="comp_repair_maintenance">Install Application</label>
+                <label><input type="checkbox" name="ict_equip[]" value="printer_repair_maintenance">Information System</label>
+                <label><input type="checkbox" id="postPublicationCheckbox" name="ict_equip[]" value="reset_password">Post Publication</label>
+            
+            </div>
+            
+
+        <div id="postPublicationDetails" class="publication-form"  style="display: none;">
+            <!-- Additional fields -->
+            <div class="form-group">
+                <label for="author">Author</label>
+                <input type="text" id="author" name="author" placeholder="Author" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="editor">Editor</label>
+                <input type="text" id="editor" name="editor" placeholder="Editor" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="publication_date">Date of Publication</label>
+                <input type="date" id="publication_date" name="publication_date" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="end_publication">End of Publication</label>
+                <input type="date" id="end_publication" name="end_publication" class="form-control">
+            </div>
+        </div>
+
+            <!--Data Documents and Reports Section -->
+            <div class="form-section">
+                <h4>Data, Documents and Reports</h4>
+                <input type="text" name="data_docs_report" placeholder="(Please specify)" class="form-control">
+            </div>
+        </div>
+
+
+                
+            <!-- Terms and Conditions Section -->
+            <div class="terms-section">
+                <input type="checkbox" name="terms" required> I agree to the Terms and Conditions
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary">Submit Request</button>
+             <div class="button-container">
+                <button type="submit" class="submitbtn btn-primary">Submit Request</button>
+             </div>
         </form>
     </div>
+
+    <script>
+        document.getElementById('postPublicationCheckbox').addEventListener('change', function() {
+            const detailsSection = document.getElementById('postPublicationDetails');
+            detailsSection.style.display = this.checked ? 'block' : 'none';
+        });
+    </script>
+
+
+
 </body>
 </html>

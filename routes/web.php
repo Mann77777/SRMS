@@ -26,20 +26,25 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.custom');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
 
-Route::get('/aboutus', [AboutUsController::class, 'index'])->name('aboutus');
+Route::get('/aboutus', [AboutUsController::class, 'index'])->name('users.aboutus');
 
 
 Route::get('/services', function () {
-    return view('services');
-})->name('services');
+    return view('users.services');
+})->name('users.services');
 
 Route::get('/myprofile', function () {
-    return view('myprofile');
-})->name('profile'); 
+    return view('users.myprofile');
+})->name('users.profile'); 
 
 Route::get('/service-request', function () {
-    return view('service-request');
-})->name('service-request');
+    return view('users.service-request');
+})->name('users.service-request');
+
+Route::get('/request-status', function () {
+    return view('users.request-status');
+})->name('users.request-status');
+
 
 
 
@@ -49,12 +54,12 @@ Route::get('/service-history', function () {
 
 Route::post('/logout', function () {
     Auth::logout();
-    return redirect('/'); // Redirect to welcome page or wherever you want
+    return redirect('/login'); // Redirect to welcome page or wherever you want
 })->name('logout');
 
 Route::get('/dashboard', function() {
-    return view('dashboard'); // Show the dashboard view
-})->name('dashboard'); // Name for the dashboard route
+    return view('users.dashboard'); // Show the dashboard view
+})->name('users.dashboard'); // Name for the dashboard route
 
 //Route::get('home', function(){
 //    return view('home');

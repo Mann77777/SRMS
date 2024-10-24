@@ -6,21 +6,21 @@
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="{{ asset('css/services.css') }}" rel="stylesheet">
-    <title>Services</title>
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    <title>Home</title>
 </head>
 <body>
     
     <!-- NAVBAR -->
-    <nav class="navbar fixed-top">
-        <div class="container d-flex justify-content-between align-items-center">
+    <nav class="navbar navbar-expand-md fixed-top">
+        <div class="container">
             <div class="navbar-logo">
-                <a href="/dashboard">
+                <a href="">
                     <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
                 </a>
             </div>
         
-            <ul class="navbar-menu d-none d-md-flex" id="navbar-menu">
+            <ul class="navbar-menu d-md-flex" id="navbar-menu">
                 <li><a href="{{ url('/dashboard') }}">Home</a></li>
                 <li><a href="{{ url('/aboutus') }}">About Us</a></li>
                 <li><a href="{{ url('/services') }}">Services</a></li>
@@ -40,6 +40,37 @@
             </ul>
         </div>
     </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <h1>Welcome back!</h1>
+        <p>OPEN MONDAY to FRIDAY</p>
+        <p class="hours">8:00 AM - 5:00 PM</p>
+
+
+        <div class="button-container">
+            <button onclick="window.location.href='/service-request'" class="request-service">Request Service</button>
+            <button onclick="window.location.href='/request-status'" class="request-status">Request Status</button>
+        </div>
+
+    </section>
+
+
+    <!-- ABOUT US TEASER -->
+    <section class="about-us bg-white py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-8">
+                    <p class="lead">
+                        The Service Request Management System helps the University IT Center handle and track IT support requests more efficiently, making it easier for staff and students to receive timely assistance.
+                    </p>
+                    <button class="learnmore-btn btn-primary btn-lg mt-3" onclick="window.location.href='/aboutus'">Learn More</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES TEASER -->
     <section class="services-overview">
         <h2 class="section-title text-center">Our Services</h2>
         <div class="container"> 
@@ -51,77 +82,27 @@
                         <p>We assist with creating accounts, resetting passwords, and updating data to help you collaborate effectively.</p>
                     </div>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>ATTENDANCE RECORD</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 2" class="service-image">
-                        <p>Our services include daily time tracking and biometric systems to ensure accurate attendance.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>BIOMETRIC ENROLLMENT</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 3" class="service-image">
-                        <p>We facilitate biometrics enrollment and the creation of employee ID cards.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>TUP WEB ERS, ERS, AND TUP PORTAL</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 4" class="service-image">
-                        <p> We simplify access to educational resources by helping with password resets and data updates, ensuring your information is always current</p>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>INTERNET AND TELEPHONE MANAGEMENT</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 5" class="service-image">
-                        <p>We provide new internet and telephone connections and offer reliable repair and maintenance services to keep you connected.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>ICT EQUIPMENT MANAGEMENT</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 6" class="service-image">
-                        <p> Our team specializes in computer and printer repairs, along with support for LED screens, ensuring your technology runs smoothly.</p>
-                    </div>
-                </div>
-
                 <div class="col-md-4">
                     <div class="service-card">
                         <h3>SOFTWARE AND WEBSITE MANAGEMENT</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 7" class="service-image">
+                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 2" class="service-image">
                         <p>We help install applications and keep your website updated with fresh content to engage users effectively.</p>
                     </div>
-                </div>  
-
-                  <div class="col-md-4">
+                </div>
+                <div class="col-md-4">
                     <div class="service-card">
-                        <h3>DATA, DOCUMENTS AND REPORTS</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 7" class="service-image">
+                        <h3>DATA, DOCUMENTS AND REPORT</h3>
+                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 3" class="service-image">
                         <p>We organize and secure your data and documents, giving you easy access to accurate reports that meet your operational needs.</p>
                     </div>
-                </div>  
-
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>SOFTWARE AND WEBSITE MANAGEMENT</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 7" class="service-image">
-                        <p>We help install applications and keep your website updated with fresh content to engage users effectively.</p>
-                    </div>
-                </div>  
-
-                        
+                </div>
+                
             </div>
         </div>
-        <button onclick="window.location.href='/service-request'" class="requestbtn">Request Service</button>
-</section>
-
+        <div class="text-center mt-3">
+            <button class="learnmore-btn2 btn-primary btn-lg" onclick="window.location.href='/services'">Learn More</button>
+        </div>
+    </section>
 
 
     <!-- FOOTER -->
@@ -191,6 +172,7 @@
             </div>
         </div>
     </footer>
-  
+
+
 </body>
 </html>

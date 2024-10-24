@@ -9,6 +9,6 @@ class AboutUsController extends Controller
 {
     public function index()
     {
-        return view('aboutus'); // Assuming you have a view file named 'about.blade.php'
+        return view('users.aboutus'); // Assuming you have a view file named 'about.blade.php'
     }
 }

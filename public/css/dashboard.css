@@ -121,11 +121,18 @@ body{
     margin-left: 10%;
 
 }
+.button-container {
+    display: flex; 
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px; 
+}
+
 .hero button {
+    width: auto; 
     padding: 10px 20px;
     font-size: 1.2rem;
     font-weight: 550;
-    background-color: #C4203C;
     color: white;
     border: none;
     border-radius: 50px;
@@ -134,10 +141,22 @@ body{
     margin-left: 10%;
     text-transform: uppercase;
 }
-.hero button:hover {
-    background-color: #f12245;
+.request-service {
+    background-color: #C4203C; 
+    color: white;
+}
+.request-service:hover {
+    background-color: #f12245; 
 }
 
+.request-status {
+    background-color: #007BFF; 
+    color: white;
+}
+
+.requrst-status:hover {
+    background-color: #0056b3; 
+}
 
 
 /* ABOUT US TEASER */ 

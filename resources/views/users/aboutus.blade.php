@@ -12,7 +12,7 @@
 <body>
     
     <!-- NAVBAR -->
-    <nav class="navbar fixed-top">
+    <nav class="navbar navbar-expand-md fixed-top">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="navbar-logo">
                 <a href="/dashboard">
@@ -20,7 +20,7 @@
                 </a>
             </div>
         
-            <ul class="navbar-menu d-none d-md-flex" id="navbar-menu">
+            <ul class="navbar-menu d-md-flex" id="navbar-menu">
                 <li><a href="{{ url('/dashboard') }}">Home</a></li>
                 <li><a href="{{ url('/aboutus') }}">About Us</a></li>
                 <li><a href="{{ url('/services') }}">Services</a></li>

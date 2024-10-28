@@ -7,10 +7,15 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
 
 Route::get('/', function () {
+<<<<<<< HEAD
     return view('login');
+=======
+    return view('users.login');
+>>>>>>> 97a56561e1c496df3fec18c734e528f7668690f8
 });
 
 
+// USERS ROUTE
 Route::get('auth/google', [GoogleController::class, 'loginWithGoogle']) ->name('login.google');
 Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle']) ->name('callback');
 
@@ -44,9 +49,6 @@ Route::get('/service-request', function () {
 Route::get('/request-status', function () {
     return view('users.request-status');
 })->name('users.request-status');
-
-
-
 
 Route::get('/service-history', function () {
     return view('service-history');

@@ -60,7 +60,7 @@
 
         <div class="login-link mt-3">
             Already have an account? 
-            <a href="{{ route('login') }}" class="btn bold-text">Sign In</a>
+            <a href="{{ route('login') }}" class="bold-text">Sign In</a>
         </div>
     </div>
 </body>

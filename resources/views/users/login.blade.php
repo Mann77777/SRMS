@@ -47,8 +47,13 @@
 
         <!-- Register Link -->
         <div class="register-link">
+<<<<<<< HEAD
             Don't have an account? 
             <a href="{{ route('register') }}" class="btn bold-text">Sign up</a>
+=======
+             Don't have an account? 
+            <a href="{{ route('register') }}" class=" bold-text">Sign Up</a>
+>>>>>>> 97a56561e1c496df3fec18c734e528f7668690f8
         </div>
     </div>
 </body>

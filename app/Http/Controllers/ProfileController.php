@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
@@ -15,6 +16,7 @@ class ProfileController extends Controller
         return view('home', compact('user')); // Return the home view with user data
     }
 
+    // Method to update user details
     public function update(Request $request)
     {
         $request->validate([
@@ -29,6 +31,43 @@ class ProfileController extends Controller
         $user->phone = $request->phone;
         $user->save();
 
-        return redirect()->route('dashboard.blade.php'); // Redirect to the dashboard page
+        return redirect()->route('dashboard'); // Redirect to the dashboard page
+    }
+
+    // Method to upload profile image
+    public function uploadProfileImage(Request $request)
+    {
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        // Delete existing profile image if it exists
+        if ($user->profile_image) {
+            Storage::delete('public/' . $user->profile_image);
+        }
+
+        // Store new profile image
+        $path = $request->file('profile_image')->store('profile_images', 'public');
+        $user->profile_image = $path;
+        $user->save();
+
+        return redirect()->back()->with('success', 'Profile image updated successfully.');
+    }
+
+    // Method to remove profile image
+    public function removeProfileImage()
+    {
+        $user = Auth::user();
+
+        // Delete profile image if it exists
+        if ($user->profile_image) {
+            Storage::delete('public/' . $user->profile_image);
+            $user->profile_image = null;
+            $user->save();
+        }
+
+        return redirect()->back()->with('success', 'Profile image removed successfully.');
     }
 }

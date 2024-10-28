@@ -5,13 +5,10 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
+use App\Http\Controllers\ServiceRequestController;
 
 Route::get('/', function () {
-<<<<<<< HEAD
     return view('login');
-=======
-    return view('users.login');
->>>>>>> 97a56561e1c496df3fec18c734e528f7668690f8
 });
 
 
@@ -19,8 +16,16 @@ Route::get('/', function () {
 Route::get('auth/google', [GoogleController::class, 'loginWithGoogle']) ->name('login.google');
 Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle']) ->name('callback');
 
-Route::get('/home', [ProfileController::class, 'show'])->name('home'); // Use ProfileController to show the profile
-Route::post('/home/update', [ProfileController::class, 'update'])->name('profile.update'); // Use ProfileController to update the profile
+//Route::get('/home', [ProfileController::class, 'show'])->name('home'); // Use ProfileController to show the profile
+//Route::post('/home/update', [ProfileController::class, 'update'])->name('profile.update'); // Use ProfileController to update the profile
+Route::middleware(['auth'])->group(function () {
+    Route::get('/myprofile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/myprofile/upTodate', [ProfileController::class, 'upTodate'])->name('profile.upTodate');
+    Route::post('/myprofile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
+    Route::post('/myprofile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
+});
+
+Route::post('/service-request-submit', [ServiceRequestController::class, 'submit'])->name('service.request.submit');
 
 // Login Form Route
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -42,13 +47,9 @@ Route::get('/myprofile', function () {
     return view('users.myprofile');
 })->name('users.profile'); 
 
-Route::get('/service-request', function () {
-    return view('users.service-request');
-})->name('users.service-request');
-
-Route::get('/request-status', function () {
-    return view('users.request-status');
-})->name('users.request-status');
+Route::get('/faculty-service', function () {
+    return view('users.faculty-service');
+})->name('faculty-service');
 
 Route::get('/service-history', function () {
     return view('service-history');
@@ -62,6 +63,9 @@ Route::post('/logout', function () {
 Route::get('/dashboard', function() {
     return view('users.dashboard'); // Show the dashboard view
 })->name('users.dashboard'); // Name for the dashboard route
+
+
+
 
 //Route::get('home', function(){
 //    return view('home');

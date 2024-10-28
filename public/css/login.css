@@ -89,7 +89,8 @@ body{
     margin-top: 15px;
 }
 .register-link a{
-    margin-left: -15px;
+    color: #212121;
+    text-decoration: none;
 }
 
 .bold-text{

@@ -55,7 +55,8 @@ body{
     margin-top: 15px;
 }
 .login-link a{
-    margin-left: -15px;
+    color: #212121;
+    text-decoration: none;
 }
 
 .bold-text{

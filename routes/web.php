@@ -7,7 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('login');
 });
 
 
@@ -54,7 +54,7 @@ Route::get('/service-history', function () {
 
 Route::post('/logout', function () {
     Auth::logout();
-    return redirect('/login'); // Redirect to welcome page or wherever you want
+    return redirect('login'); // Redirect to welcome page or wherever you want
 })->name('logout');
 
 Route::get('/dashboard', function() {

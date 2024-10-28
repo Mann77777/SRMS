@@ -19,18 +19,10 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('username', 'password');
-        $role = $request->input('role'); // Get the selected role
 
         // Attempt to log the user in
         if (Auth::attempt($credentials)) {
-            // Optionally, check if the user has the correct role
-            $user = Auth::user();
-            if ($user->role == $role) {
-                return redirect()->intended('dashboard'); // Redirect to dashboard or another intended page
-            } else {
-                Auth::logout(); // Logout if role doesn't match
-                return back()->with('error', 'Invalid role selected.');
-            }
+            return redirect()->intended('dashboard'); // Redirect to dashboard or another intended page
         }
 
         return back()->with('error', 'Invalid username or password.');
@@ -44,27 +36,26 @@ class AuthController extends Controller
 
     // Handle the registration process
     public function register(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'username' => 'required|string|max:255|unique:users,username',
-        'email' => 'required|string|email|max:255|unique:users,email',
-        'password' => 'required|string|min:8|confirmed',
-        'role' => 'required|string|in:user,admin,technician',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string|in:Student,Faculty & Staff,Admin,Technician',
+        ]);
 
-    $user = User::create([
-        'name' => $request->name,
-        'username' => $request->username,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'role' => $request->role,
-    ]);
+        $user = User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+        ]);
 
-    Auth::login($user);
-    return redirect()->intended('dashboard')->with('success', 'Registration successful!');
-}
-
+        Auth::login($user);
+        return redirect()->intended('dashboard')->with('success', 'Registration successful!');
+    }
 
     // Redirect to Google for authentication
     public function redirectToGoogle()
@@ -91,5 +82,15 @@ class AuthController extends Controller
         Auth::login($user);
 
         return redirect()->intended('dashboard');
+    }
+
+    // Handle the logout process
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login'); // Redirect to your login or home page
     }
 }

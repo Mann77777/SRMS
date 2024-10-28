@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
-    <title>Home</title>
+    <title>Dashboard</title>
 </head>
 <body>
     
@@ -15,7 +15,7 @@
     <nav class="navbar navbar-expand-md fixed-top">
         <div class="container">
             <div class="navbar-logo">
-                <a href="">
+                <a href="{{ url('/dashboard') }}">
                     <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
                 </a>
             </div>
@@ -41,20 +41,29 @@
         </div>
     </nav>
 
-    <!-- HERO -->
+    <!-- HERO SECTION -->
     <section class="hero">
-        <h1>Welcome back!</h1>
+        <h1>Welcome back, {{ Auth::user()->name }}!</h1>
         <p>OPEN MONDAY to FRIDAY</p>
         <p class="hours">8:00 AM - 5:00 PM</p>
 
-
+        <!-- Role-based Buttons -->
         <div class="button-container">
-            <button onclick="window.location.href='/service-request'" class="request-service">Request Service</button>
-            <button onclick="window.location.href='/request-status'" class="request-status">Request Status</button>
+            @if(Auth::user()->role === 'Student')
+                <button onclick="window.location.href='/student-request'" class="btn-primary">Request Student Service</button>
+                <button onclick="window.location.href='/student-status'" class="btn-secondary">Check Status</button>
+            @elseif(Auth::user()->role === 'Faculty & Staff')
+                <button onclick="window.location.href='/faculty-service'" class="btn-primary">Request Faculty & Staff Services</button>
+                <button onclick="window.location.href='/faculty-status'" class="btn-secondary">Check Status</button>
+            @elseif(Auth::user()->role === 'Admin')
+                <button onclick="window.location.href='/admin-panel'" class="btn-primary">Admin Panel</button>
+                <button onclick="window.location.href='/manage-requests'" class="btn-secondary">Manage Requests</button>
+            @elseif(Auth::user()->role === 'Technician')
+                <button onclick="window.location.href='/technician-tasks'" class="btn-primary">Assigned Tasks</button>
+                <button onclick="window.location.href='/task-status'" class="btn-secondary">Update Task Status</button>
+            @endif
         </div>
-
     </section>
-
 
     <!-- ABOUT US TEASER -->
     <section class="about-us bg-white py-5">
@@ -96,7 +105,6 @@
                         <p>We organize and secure your data and documents, giving you easy access to accurate reports that meet your operational needs.</p>
                     </div>
                 </div>
-                
             </div>
         </div>
         <div class="text-center mt-3">
@@ -104,27 +112,21 @@
         </div>
     </section>
 
-
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
-            <!-- First Row: Logo -->
             <div class="footer-row logo-row">
                 <div class="footer-logo">
-                    <a href="">
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Logo"  class="footer-logo-img">
+                    <a href="{{ url('/dashboard') }}">
+                        <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="footer-logo-img">
                     </a>
-
                 </div>
             </div>
 
-        <!-- Second Row: Contact Information -->
             <div class="footer-row contact-row">
                 <div class="contact-item">
                     <i class="fas fa-map-marker-alt"></i>
-                    <a href="https://www.google.com/maps/dir//San+Marcelino+St,+Ayala+Blvd,+Ermita,+Manila,+1000/@14.5870646,120.902085,12z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3397ca21ac302015:0x92dcca0f915010d9!2m2!1d120.9844868!2d14.587079?entry=ttu&g_ep=EgoyMDI0MTAyMC4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="text-white">
-                        Ayala Blvd., Ermita, Manila, 1000, Philippines
-                    </a>
+                    <a href="https://www.google.com/maps" target="_blank" class="text-white">Ayala Blvd., Ermita, Manila, Philippines</a>
                 </div>
                 <div class="contact-item">
                     <i class="fas fa-envelope"></i>
@@ -132,9 +134,7 @@
                 </div>
                 <div class="contact-item">
                     <i class="fas fa-globe"></i>
-                    <a href="https://www.tup.edu.ph/" target="_blank" class="text-white">
-                        www.tup.edu.ph
-                    </a>
+                    <a href="https://www.tup.edu.ph/" target="_blank" class="text-white">www.tup.edu.ph</a>
                 </div>
                 <div class="contact-item">
                     <i class="fas fa-phone"></i>
@@ -142,37 +142,22 @@
                 </div>
             </div>
 
-            <!-- Third Row: Links -->
             <div class="footer-row links-row">
-                <div class="links-item">
-                    <a href="">SRMS</a>
-                </div>
-                <div class="links-item">
-                    <a href="/aboutus">About Us</a>
-                </div>
-                <div class="links-item">
-                    <a href="/services">Services</a>
-                </div>
-                <div class="links-item">
-                    <a href="/terms">Terms and Conditions</a>
-                </div>
+                <div class="links-item"><a href="/srms">SRMS</a></div>
+                <div class="links-item"><a href="/aboutus">About Us</a></div>
+                <div class="links-item"><a href="/services">Services</a></div>
+                <div class="links-item"><a href="/terms">Terms and Conditions</a></div>
             </div>
         </div>
         <div class="footer-row social-media-row">
             <div class="social-media">
-                <a href="https://www.facebook.com/TUPian" target="_blank">
-                    <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="https://twitter.com/TUPManila" target="_blank">
-                    <i class="fab fa-twitter"></i>
-                </a>
+                <a href="https://www.facebook.com/TUPian" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com/TUPManila" target="_blank"><i class="fab fa-twitter"></i></a>
             </div>
             <div class="copyright">
                 <p>&copy; 2024 SRMS.</p>
             </div>
         </div>
     </footer>
-
-
 </body>
 </html>

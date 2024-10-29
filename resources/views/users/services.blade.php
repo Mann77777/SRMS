@@ -13,9 +13,9 @@
     
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-md fixed-top">
-        <div class="container d-flex justify-content-between align-items-center">
+        <div class="container">
             <div class="navbar-logo">
-                <a href="/dashboard">
+                <a href="{{ url('/dashboard') }}">
                     <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
                 </a>
             </div>
@@ -27,7 +27,11 @@
                 <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
                 <li class="dropdown">
                     <a href="#" class="profile-icon">
-                        <i class="fas fa-user"></i>
+                        @if(Auth::user()->profile_image)
+                        <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
+                        @else
+                        <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
+                        @endif
                     </a>
                     <div class="dropdown-content">
                         <a href="{{ url('/myprofile') }}">My Profile</a>
@@ -40,6 +44,7 @@
             </ul>
         </div>
     </nav>
+
     <section class="services-overview">
         <h2 class="section-title text-center">Our Services</h2>
         <div class="container"> 

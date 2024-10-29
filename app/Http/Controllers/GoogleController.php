@@ -51,7 +51,7 @@ class GoogleController extends Controller
     
             // Log the user in
             Auth::loginUsingId($saveUser->id);
-            return redirect()->route('home');
+            return redirect('/dashboard');
     
         } catch (\Throwable $th) {
             return redirect()->route('login')->with('error', 'There was an error logging in with Google. Please try again.');

@@ -12,35 +12,39 @@
 <body>
     <!-- Check if user is logged in -->
     @auth
-        <!-- NAVBAR -->
-        <nav class="navbar navbar-expand-md fixed-top">
-            <div class="container d-flex justify-content-between align-items-center">
-                <div class="navbar-logo">
-                    <a href="/dashboard">
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
-                    </a>
-                </div>
-            
-                <ul class="navbar-menu d-md-flex" id="navbar-menu">
-                    <li><a href="{{ url('/dashboard') }}">Home</a></li>
-                    <li><a href="{{ url('/aboutus') }}">About Us</a></li>
-                    <li><a href="{{ url('/services') }}">Services</a></li>
-                    <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
-                    <li class="dropdown">
-                        <a href="#" class="profile-icon">
-                            <i class="fas fa-user"></i>
-                        </a>
-                        <div class="dropdown-content">
-                            <a href="{{ url('/myprofile') }}">My Profile</a>
-                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                @csrf
-                            </form>
-                        </div>
-                    </li>
-                </ul>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-md fixed-top">
+        <div class="container">
+            <div class="navbar-logo">
+                <a href="{{ url('/dashboard') }}">
+                    <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
+                </a>
             </div>
-        </nav>
+        
+            <ul class="navbar-menu d-md-flex" id="navbar-menu">
+                <li><a href="{{ url('/dashboard') }}">Home</a></li>
+                <li><a href="{{ url('/aboutus') }}">About Us</a></li>
+                <li><a href="{{ url('/services') }}">Services</a></li>
+                <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
+                <li class="dropdown">
+                    <a href="#" class="profile-icon">
+                        @if(Auth::user()->profile_image)
+                        <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
+                        @else
+                        <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
+                        @endif
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="{{ url('/myprofile') }}">My Profile</a>
+                        <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
     @else
         <!-- Redirect to login page if not authenticated -->
         <script>window.location.href = "{{ route('login') }}";</script>

@@ -27,7 +27,11 @@
                 <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
                 <li class="dropdown">
                     <a href="#" class="profile-icon">
-                        <i class="fas fa-user"></i>
+                        @if(Auth::user()->profile_image)
+                        <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
+                        @else
+                        <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
+                        @endif
                     </a>
                     <div class="dropdown-content">
                         <a href="{{ url('/myprofile') }}">My Profile</a>

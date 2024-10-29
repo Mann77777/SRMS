@@ -72,6 +72,13 @@ body {
     font-size: 1.5em;
 }
 
+.profile-img-navbar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .dropdown-content {
     display: none;
     position: absolute;
@@ -95,20 +102,22 @@ body {
     display: block;
 }
 
+
+
 /* PROFILE SECTION STYLE */
 :root {
     --primary-color: #4CAF50;
-    --danger-color: #f44336;
-    --text-color: #333;
+    --danger-color: #F44336;
+    --text-color: #1b1b1b;
     --background-color: #fff;
-    --border-radius: 8px;
+    --border-radius: 10px;
     --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .profile-container {
     width: 100%;
-    max-width: 400px;
-    margin: 100px auto 40px; /* Added margin-top to clear fixed navbar */
+    max-width: 700px;
+    margin: 130px auto 40px; /* Added margin-top to clear fixed navbar */
     padding: 20px;
     background-color: var(--background-color);
     border-radius: var(--border-radius);
@@ -117,33 +126,95 @@ body {
     color: var(--text-color);
 }
 
+.profile-container h2{
+    font-weight: 600;
+}
+
+.profile-container h2,
+.profile-container p {
+    text-align: left; 
+    margin: 10px; 
+}
+
+.profile-header {
+    display: flex;
+    align-items: center; 
+    margin-bottom: 22px; /* Add some space below the profile header */
+}
+
 .profile-image img {
     width: 120px;
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 15px;
-    border: 3px solid var(--primary-color);
+    margin-right: 20px; /* Add space between the image and name */
 }
 
-.username, .email, .name {
+.username {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 2rem;
     color: var(--text-color);
     margin: 8px 0;
 }
+.user-info p {
+    display: flex; 
+    align-items: center;
+    justify-content: space-between; 
+    margin: 20px 0; 
+    font-size: 16px;
+}
+
+.label {
+    flex: 1; /* Allow label to take necessary space */
+    font-weight: 600; 
+    margin-right: 20px;
+}
+
+.user-data {
+    display: flex; /* Make user-data a flex container */
+    align-items: center; /* Center items vertically */
+    flex: 2;
+    font-weight: 400; 
+}
+
+
+#success-message {
+    color: green;
+    font-weight: bold;
+    transition: opacity 0.5s ease-in-out;
+}
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    margin-top: 20px;
+}
+
+.profile-upload-form {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start;
+    margin-top: 3em;
+}
+
+.button-container {
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 12px;
+    width: 30%; 
+}
 
 .upload-btn, .remove-image-btn {
-    display: inline-block;
-    width: 100%;
     padding: 12px;
-    margin-top: 12px;
+    margin: 0 7px; /* Space between buttons */
     font-size: 15px;
     font-weight: bold;
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.1s ease;
+    flex: 1; 
 }
 
 .upload-btn {

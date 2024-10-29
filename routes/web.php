@@ -25,6 +25,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/myprofile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
 });
 
+Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
+Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
+
+Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
+
 Route::post('/service-request-submit', [ServiceRequestController::class, 'submit'])->name('service.request.submit');
 
 // Login Form Route

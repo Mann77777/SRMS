@@ -12,7 +12,7 @@ class AuthController extends Controller
     // Show the login form
     public function showLoginForm()
     {
-        return view('users.login');
+        return view('login');
     }
 
     // Handle login process
@@ -93,4 +93,22 @@ class AuthController extends Controller
 
         return redirect('/login'); // Redirect to your login or home page
     }
+
+     // Update username
+     public function updateUsername(Request $request)
+     {
+         // Validate the request data
+         $request->validate([
+             'username' => 'required|string|max:255|unique:users,username,' . auth()->id(),
+         ]);
+ 
+         // Get the authenticated user
+         $user = auth()->user();
+         // Update the username
+         $user->username = $request->username;
+         // Save the changes
+         $user->save();
+ 
+         return response()->json(['success' => true]);
+     }
 }

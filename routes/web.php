@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ServiceRequestController;
+use App\Http\Controllers\StudentRequestController;
 
 Route::get('/', function () {
     return view('login');
@@ -25,12 +26,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/myprofile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
 });
 
-Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
-Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
+//Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
+//Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
 
 Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
 
-Route::post('/service-request-submit', [ServiceRequestController::class, 'submit'])->name('service.request.submit');
+Route::post('/faculty-request-submit', [ServiceRequestController::class, 'submit'])->name('faculty.request.submit');
+Route::get('/service-request', [StudentRequestController::class, 'showForm'])->name('service.request.form');
+Route::post('/service-request/submit', [StudentRequestController::class, 'submitRequest'])->name('service.request.submit');
+
+Route::get('/student-request', [StudentRequestController::class, 'showForm'])->name('student.request.form');
+Route::post('/student-request-submit', [StudentRequestController::class, 'submitRequest'])->name('student.request.submit');
+
 
 // Login Form Route
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -68,6 +75,7 @@ Route::post('/logout', function () {
 Route::get('/dashboard', function() {
     return view('users.dashboard'); // Show the dashboard view
 })->name('users.dashboard'); // Name for the dashboard route
+
 
 
 

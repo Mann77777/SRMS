@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 * {
     font-family: "Montserrat", sans-serif;
@@ -100,6 +100,14 @@ body {
 }
 
 /* Form Styling */
+h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 650;
+    margin-top: 5%;
+    color: #141414;
+}
+
 .content {
     max-width: 800px;
     margin: 20px auto;
@@ -107,15 +115,6 @@ body {
     background-color: #fffafa;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-    text-align: center;
-    font-size: 2.5rem;
-    font-weight: 650;
-    margin-top: 5%;
-    margin-bottom: 30px;
-    color: #141414;
 }
 
 p {
@@ -147,7 +146,7 @@ input[type="checkbox"] {
 }
 
 .form-control {
-    width: 100%; /* Full width to match the layout */
+    width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -155,22 +154,11 @@ input[type="checkbox"] {
     font-size: 1rem;
 }
 
-.form-group {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.form-group label {
-    width: 150px;
-    margin-right: 5px;
-    margin-top: 2%;
-}
-
 .terms-section {
     text-align: center;
     margin-top: 20px;
 }
+
 
 .button-container {
     display: flex;

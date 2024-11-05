@@ -13,5 +13,10 @@ class Admin extends Authenticatable
     protected $table = 'admins';
 
     // Define fillable fields for mass assignment
-    protected $fillable = ['name', 'username', 'password', 'role'];
+    protected $fillable = [
+        'name', 
+        'username', 
+        'password', 
+        'role'
+    ];
 }

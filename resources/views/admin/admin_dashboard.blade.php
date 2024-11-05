@@ -12,7 +12,7 @@
 <body>
     
     <section class="hero">
-        <h1>HELLO ADMIN, {{ Auth::guard('admin')->user()->name }}!</h1>
+        <h1>Welcome Back, {{ Auth::guard('admin')->user()->name }}!</h1>
         
         <div class="button-container">
             @if(Auth::guard('admin')->user()->role === 'Admin')

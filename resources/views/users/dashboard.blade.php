@@ -59,12 +59,6 @@
             @elseif(Auth::user()->role === 'Faculty & Staff')
                 <button onclick="window.location.href='/faculty-service'" class="btn-primary">Request Faculty & Staff Services</button>
                 <button onclick="window.location.href='/faculty-status'" class="btn-secondary">Check Status</button>
-            @elseif(Auth::user()->role === 'Admin')
-                <button onclick="window.location.href='/admin-panel'" class="btn-primary">Admin Panel</button>
-                <button onclick="window.location.href='/manage-requests'" class="btn-secondary">Manage Requests</button>
-            @elseif(Auth::user()->role === 'Technician')
-                <button onclick="window.location.href='/technician-tasks'" class="btn-primary">Assigned Tasks</button>
-                <button onclick="window.location.href='/task-status'" class="btn-secondary">Update Task Status</button>
             @endif
         </div>
     </section>

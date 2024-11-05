@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\StudentRequestController;
+use App\Http\Controllers\SysadminController;
 
 Route::get('/', function () {
     return view('login');
@@ -45,8 +46,26 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 // Handle Login Form Submission
 Route::post('/login', [AuthController::class, 'login'])->name('login.custom');
 
+// Display Admin login form
+Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
+//Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+
+Route::get('/admin_dashboard', function() {
+    return view('admin.dashboard'); // Make sure this view exists
+})->name('admin_dashboard');
+
+
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
+
+Route::get('/admin_register', [SysadminController::class, 'showAdminRegisterForm'])->name('admin_register');
+Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->name('adminregister.custom');
+
+//Admin dashboard
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
+});
 
 Route::get('/aboutus', [AboutUsController::class, 'index'])->name('users.aboutus');
 

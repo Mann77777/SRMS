@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    font-family: "Montserrat", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background-color: #f8f9fa;
+    height: 160vh;
+}   
+.register-container{
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+.tuplogo {
+    width: 150px; 
+    height: auto;
+    display: block; 
+    margin: 0 auto 20px;
+}
+
+.form-control{
+    padding: 10px 11px;
+    height: auto; /* Optional: set height to auto to avoid excessive height */
+
+}
+
+.form-control::placeholder{
+    font-size: 14px;
+    color: #686868; 
+    opacity: 1; /* Optional: set opacity to ensure visibility */
+}
+
+.register-btn{
+    font-weight: 550;
+    padding: 10px 11px;
+    border-radius: 10px;
+    border: none;
+    background-color: #C4203C;
+    
+}
+.register-btn:hover{
+    background-color: #ac1b33
+}
+
+.login-link{
+    text-align: center;
+    margin-top: 15px;
+}
+.login-link a{
+    color: #212121;
+    text-decoration: none;
+}
+
+.bold-text{
+    font-weight: bold; 
+}

@@ -21,9 +21,6 @@
             </div>
         
             <ul class="navbar-menu d-md-flex" id="navbar-menu">
-                <li><a href="{{ url('/dashboard') }}">Home</a></li>
-                <li><a href="{{ url('/aboutus') }}">About Us</a></li>
-                <li><a href="{{ url('/services') }}">Services</a></li>
                 <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
                 <li class="dropdown">
                     <a href="#" class="profile-icon">

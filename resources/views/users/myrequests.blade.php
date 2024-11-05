@@ -44,16 +44,133 @@
     <!-- SIDEBAR -->
     <div class="sidebar">
         <ul class="sidebar-menu">
-            <li><a href="{{ url('/dashboard') }}">Dashboard</a></li>
-            <li><a href="{{ url('/student-request') }}">Submit Request</a></li>
-            <li><a href="{{ url('/myrequests') }}">My Requests</a></li>
-            <li><a href="{{ url('/service-history') }}">Service History</a></li>
-            <li><a href="{{ url('/messages') }}">Messages</a></li>
-            <li><a href="{{ url('/announcement') }}">Announcement</a></li>
-            <li><a href="{{ url('/help') }}">Help</a></li>
+            <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a></li>
+            <li><a href="{{ url('/student-request') }}" class="{{ request()->is('student-request') ? 'active' : '' }}">Submit Request</a></li>
+            <li><a href="{{ url('/myrequests') }}" class="{{ request()->is('myrequests') ? 'active' : '' }}">My Requests</a></li>
+            <li><a href="{{ url('/service-history') }}" class="{{ request()->is('service-history') ? 'active' : '' }}">Service History</a></li>
+            <li><a href="{{ url('/messages') }}" class="{{ request()->is('messages') ? 'active' : '' }}">Messages</a></li>
+            <li><a href="{{ url('/announcement') }}" class="{{ request()->is('announcement') ? 'active' : '' }}">Announcement</a></li>
+            <li><a href="{{ url('/help') }}" class="{{ request()->is('help') ? 'active' : '' }}">Help</a></li>
         </ul>
     </div>
 
-    
+
+    <div class="header-myrequest" style="margin-top: 100px;">
+    <h1>My Requests</h1>
+    <!-- Search and Filter -->
+    <div class="search-filter-container d-flex mb-3">
+        <div class="filter-container">
+            <select class="form-control" id="filter-status" onchange="filterRequests()">
+                <option value="">Filter by Status</option>
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        <div class="search-bar-container d-flex align-items-center">
+            <input type="text" class="form-control" id="search-bar" placeholder="Search requests..." onkeyup="performSearch()">
+            <button class="btn btn-primary" type="button" onclick="performSearch()">Search</button>
+        </div>
+    </div>
+
+    <!-- Requests Table -->
+    <section class="request my-4">
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Request ID</th>
+                    <th>Date Submitted</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Last Update</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="requests-table">
+                <tr>
+                    <td>001</td>
+                    <td>2024-11-01</td>
+                    <td>Library Access</td>
+                    <td>Pending</td>
+                    <td>2024-11-02</td>
+                    <td>
+                        <button class="btn btn-info btn-sm">View</button>
+                        <button class="btn btn-danger btn-sm">Cancel</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>002</td>
+                    <td>2024-11-02</td>
+                    <td>IT Support</td>
+                    <td>In Progress</td>
+                    <td>2024-11-03</td>
+                    <td>
+                        <button class="btn btn-info btn-sm">View</button>
+                        <button class="btn btn-danger btn-sm">Cancel</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>003</td>
+                    <td>2024-11-03</td>
+                    <td>Counseling Session</td>
+                    <td>Completed</td>
+                    <td>2024-11-04</td>
+                    <td>
+                        <button class="btn btn-info btn-sm">View</button>
+                        <button class="btn btn-danger btn-sm">Cancel</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<script>
+    function filterRequests() {
+        const filterValue = document.getElementById("filter-status").value.toLowerCase();
+        const rows = document.querySelectorAll("#requests-table tr");
+        
+        rows.forEach(row => {
+            const statusCell = row.cells[3]; // Index 3 is for the Status column
+            if (statusCell) {
+                const statusText = statusCell.textContent.toLowerCase();
+                if (filterValue === "" || statusText === filterValue) {
+                    row.style.display = ""; // Show row
+                } else {
+                    row.style.display = "none"; // Hide row
+                }
+            }
+        });
+        performSearch(); // Apply search after filtering
+    }
+
+    function performSearch() {
+        const query = document.getElementById('search-bar').value.toLowerCase();
+        const rows = document.querySelectorAll("#requests-table tr");
+        
+        rows.forEach(row => {
+            // Check if the row is currently visible before searching
+            if (row.style.display !== "none") {
+                const cells = row.getElementsByTagName('td');
+                let matchFound = false;
+                
+                for (let i = 0; i < cells.length; i++) {
+                    const cellText = cells[i].textContent.toLowerCase();
+                    if (cellText.includes(query)) {
+                        matchFound = true;
+                        break; // Exit the loop as we found a match
+                    }
+                }
+                
+                if (matchFound) {
+                    row.style.display = ""; // Show row if it matches the search
+                } else {
+                    row.style.display = "none"; // Hide row if it doesn't match
+                }
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

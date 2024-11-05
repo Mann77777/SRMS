@@ -33,8 +33,8 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
 
 Route::post('/faculty-request-submit', [ServiceRequestController::class, 'submit'])->name('faculty.request.submit');
-Route::get('/service-request', [StudentRequestController::class, 'showForm'])->name('service.request.form');
-Route::post('/service-request/submit', [StudentRequestController::class, 'submitRequest'])->name('service.request.submit');
+//Route::get('/service-request', [StudentRequestController::class, 'showForm'])->name('service.request.form');
+//Route::post('/service-request/submit', [StudentRequestController::class, 'submitRequest'])->name('service.request.submit');
 
 Route::get('/student-request', [StudentRequestController::class, 'showForm'])->name('student.request.form');
 Route::post('/student-request-submit', [StudentRequestController::class, 'submitRequest'])->name('student.request.submit');
@@ -67,13 +67,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
 });
 
-Route::get('/aboutus', [AboutUsController::class, 'index'])->name('users.aboutus');
-
-
-Route::get('/services', function () {
-    return view('users.services');
-})->name('users.services');
-
 Route::get('/myprofile', function () {
     return view('users.myprofile');
 })->name('users.profile'); 
@@ -81,10 +74,6 @@ Route::get('/myprofile', function () {
 Route::get('/faculty-service', function () {
     return view('users.faculty-service');
 })->name('faculty-service');
-
-Route::get('/service-history', function () {
-    return view('service-history');
-})->name('service-history');
 
 Route::post('/logout', function () {
     Auth::logout();
@@ -96,8 +85,17 @@ Route::get('/dashboard', function() {
 })->name('users.dashboard'); // Name for the dashboard route
 
 
+Route::get('/myrequests', function() {
+    return view('users.myrequests'); 
+})->name('users.myrequests'); 
 
+Route::get('/service-history', function () {
+    return view('users.service-history');
+})->name('service-history');
 
+Route::get('/help', function() {
+    return view('users.help'); 
+})->name('users.help'); 
 
 //Route::get('home', function(){
 //    return view('home');

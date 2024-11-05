@@ -12,7 +12,7 @@
 <body>
     
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-md fixed-top">
+    <nav class="navbar navbar-expand-md navbar-light fixed-top">
         <div class="container">
             <div class="navbar-logo">
                 <a href="{{ url('/dashboard') }}">
@@ -21,9 +21,6 @@
             </div>
         
             <ul class="navbar-menu d-md-flex" id="navbar-menu">
-                <li><a href="{{ url('/dashboard') }}">Home</a></li>
-                <li><a href="{{ url('/aboutus') }}">About Us</a></li>
-                <li><a href="{{ url('/services') }}">Services</a></li>
                 <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
                 <li class="dropdown">
                     <a href="#" class="profile-icon">
@@ -45,11 +42,36 @@
         </div>
     </nav>
 
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a></li>
+            <li><a href="{{ url('/student-request') }}" class="{{ request()->is('student-request') ? 'active' : '' }}">Submit Request</a></li>
+            <li><a href="{{ url('/myrequests') }}" class="{{ request()->is('myrequests') ? 'active' : '' }}">My Requests</a></li>
+            <li><a href="{{ url('/service-history') }}" class="{{ request()->is('service-history') ? 'active' : '' }}">Service History</a></li>
+            <li><a href="{{ url('/messages') }}" class="{{ request()->is('messages') ? 'active' : '' }}">Messages</a></li>
+            <li><a href="{{ url('/announcement') }}" class="{{ request()->is('announcement') ? 'active' : '' }}">Announcement</a></li>
+            <li><a href="{{ url('/help') }}" class="{{ request()->is('help') ? 'active' : '' }}">Help</a></li>
+        </ul>
+    </div>
+
     <!-- HERO SECTION -->
     <section class="hero">
-        <h1>Welcome back, {{ Auth::user()->name }}!</h1>
-        <p>OPEN MONDAY to FRIDAY</p>
-        <p class="hours">8:00 AM - 5:00 PM</p>
+        <?php
+        date_default_timezone_set('Asia/Manila'); // Set your timezone
+        $hour = date('H'); // Get the current hour in 24-hour format
+
+        // Determine the greeting based on the current hour
+        if ($hour >= 5 && $hour < 12) {
+            $greeting = "Good Morning";
+        } elseif ($hour >= 12 && $hour < 18) {
+            $greeting = "Good Afternoon";
+        } else {
+            $greeting = "Good Evening";
+        }
+        ?>
+
+        <h1><?php echo $greeting . ", " . Auth::user()->username . "!"; ?></h1>
 
         <!-- Role-based Buttons -->
         <div class="button-container">
@@ -63,99 +85,128 @@
         </div>
     </section>
 
-    <!-- ABOUT US TEASER -->
-    <section class="about-us bg-white py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 col-md-8">
-                    <p class="lead">
-                        The Service Request Management System helps the University IT Center handle and track IT support requests more efficiently, making it easier for staff and students to receive timely assistance.
-                    </p>
-                    <button class="learnmore-btn btn-primary btn-lg mt-3" onclick="window.location.href='/aboutus'">Learn More</button>
+    <section class="container2 my-4">
+        <div class="row">
+            <!-- Total Requests Card -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Requests</h5>
+                        <p class="card-text h1">{{ $totalRequests ?? 0 }}</p>
+                        <p>View</p>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Pending Requests Card -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Requests</h5>
+                        <p class="card-text h1">{{ $pendingRequests ?? 0 }}</p>
+                        <p>View</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed Requests Card -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Completed Requests</h5>
+                        <p class="card-text h1">{{ $completedRequests ?? 0 }}</p>
+                        <p>View</p>
+                    </div>
+                </div>
+            </div>  
+
+            
     </section>
 
-    <!-- SERVICES TEASER -->
-    <section class="services-overview">
-        <h2 class="section-title text-center">Our Services</h2>
-        <div class="container"> 
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>MS OFFICE, MS TEAMS, TUP EMAIL</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 1" class="service-image">
-                        <p>We assist with creating accounts, resetting passwords, and updating data to help you collaborate effectively.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>SOFTWARE AND WEBSITE MANAGEMENT</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 2" class="service-image">
-                        <p>We help install applications and keep your website updated with fresh content to engage users effectively.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <h3>DATA, DOCUMENTS AND REPORT</h3>
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Service 3" class="service-image">
-                        <p>We organize and secure your data and documents, giving you easy access to accurate reports that meet your operational needs.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="text-center mt-3">
-            <button class="learnmore-btn2 btn-primary btn-lg" onclick="window.location.href='/services'">Learn More</button>
-        </div>
+
+    <!-- Recent Requests Section -->
+    <section class="requests my-4">
+        <h2 class="mb-3">Recent Requests</h2>
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Request ID</th>
+                    <th>Date Submitted</th>
+                    <th>Time Submitted</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                </tr>
+                <tbody>
+                    <tr>
+                        <td>001</td>
+                        <td>2024-11-01</td>
+                        <td>09:15 AM</td>
+                        <td>Library Access</td>
+                        <td>Pending</td>
+                    </tr>
+                    <tr>
+                        <td>002</td>
+                        <td>2024-11-02</td>
+                        <td>10:30 AM</td>
+                        <td>IT Support</td>
+                        <td>In Progress</td>
+                    </tr>
+                    <tr>
+                        <td>003</td>
+                        <td>2024-11-03</td>
+                        <td>01:45 PM</td>
+                        <td>Counseling Session</td>
+                        <td>Completed</td>
+                    </tr>
+            </tbody>
+            </thead>
+      
+        </table>
     </section>
+    <button class="btn btn-primary" onclick="window.location.href='{{ url('/submit-request') }}'">Submit Request</button>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-row logo-row">
-                <div class="footer-logo">
-                    <a href="{{ url('/dashboard') }}">
-                        <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="footer-logo-img">
-                    </a>
-                </div>
+
+    
+     <!-- Floating Chatbot Button -->
+     <button class="chatbot-button" onclick="toggleChat()">💬</button>
+    <!-- Chat Window -->
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">Chatbot</div>
+            <div class="chat-body" id="chatBody">
+                <p>Hello! How can I assist you today?</p>
             </div>
-
-            <div class="footer-row contact-row">
-                <div class="contact-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <a href="https://www.google.com/maps" target="_blank" class="text-white">Ayala Blvd., Ermita, Manila, Philippines</a>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-envelope"></i>
-                    <span>uitc@tup.edu.ph</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-globe"></i>
-                    <a href="https://www.tup.edu.ph/" target="_blank" class="text-white">www.tup.edu.ph</a>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-phone"></i>
-                    <span>+632-301-3001</span>
-                </div>
-            </div>
-
-            <div class="footer-row links-row">
-                <div class="links-item"><a href="/srms">SRMS</a></div>
-                <div class="links-item"><a href="/aboutus">About Us</a></div>
-                <div class="links-item"><a href="/services">Services</a></div>
-                <div class="links-item"><a href="/terms">Terms and Conditions</a></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type your message..." />
+                <button onclick="sendMessage()">Send</button>
             </div>
         </div>
-        <div class="footer-row social-media-row">
-            <div class="social-media">
-                <a href="https://www.facebook.com/TUPian" target="_blank"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://twitter.com/TUPManila" target="_blank"><i class="fab fa-twitter"></i></a>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2024 SRMS.</p>
-            </div>
-        </div>
-    </footer>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+
+    <script>
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.style.display = chatWindow.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value;
+            if (message.trim() !== '') {
+                const chatBody = document.getElementById('chatBody');
+                chatBody.innerHTML += '<p>You: ' + message + '</p>';
+                input.value = '';
+                // Simulate a bot response
+                setTimeout(() => {
+                    chatBody.innerHTML += '<p>Bot: Thank you for your message!</p>';
+                    chatBody.scrollTop = chatBody.scrollHeight; // Scroll to the bottom
+                }, 1000);
+            }
+        }
+    </script>
 </body>
 </html>

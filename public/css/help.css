@@ -1,23 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-* {
+*{
     font-family: "Montserrat", sans-serif;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
-
-body {
+body{
     margin: 0;
     padding: 0;
     padding-top: 10px; /* Space for navbar */
     font-family: "Montserrat", sans-serif;
-    background-color: #f8f9fa;
-    height: 130vh;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-}
+    background-color: #f8f9fa;
+    height: 130vh;
+}   
 
 /* NAVBAR STYLE */
 .navbar {
@@ -88,7 +87,7 @@ body {
     z-index: 1;
     margin-top: 5px;
     border-radius: 5px;
-    right: 0; /* Align dropdown to the left */
+    right: 0; 
 }
 .dropdown-content a{
     color: white;
@@ -139,97 +138,71 @@ body {
     font-weight: bold; /* Makes the active link bold */
 }
 
-/* Form Styling */
-.header-container {
-    margin: 0; 
-    padding: 20px; 
-    text-align: center;
-    margin-bottom: 20px; 
-}
-.header-container h2 {
-    text-align: center;
-    font-size: 2.5rem;
-    font-weight: 650;
-    margin-top: 10%;
+.help{
+    margin-top: 130px;
+    padding: 0 30px; 
+    margin-left: 23%;
 
-    color: #141414;
 }
-
-.header-container p{
+.help h1{
+    font-size: 2rem;
+    margin-bottom: 20px;
     text-align: left;
-    margin-left: 25%;
+}
+.help h2{
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: left;
 }
 
-.content {
-    max-width: 700px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fffafa;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.form-section {
-    margin-bottom: 30px;
-    padding: 15px;
-}
-
-.form-section h4 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: #141414;
-}
-
-label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 1rem;
-    color: #141414;
-}
-
-input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-top: 10px;
-    font-size: 1rem;
-}
-
-.terms-section {
-    text-align: center;
+.faq {
     margin-top: 20px;
 }
 
-
-.button-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.faq-item {
+    margin-bottom: 10px;
 }
 
-.submitbtn {
-    padding: 10px 20px;
-    background-color: #C4203C;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 550;
-    margin-top: 1%;
-    margin-bottom: 5%;
+.faq-question {
     cursor: pointer;
-    transition: background-color 0.3s;
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
 }
 
-.submitbtn:hover {
-    background-color: #f12245;
+.faq-answer {
+    display: none; /* Initially hide answers */
+    padding: 10px;
+    border-left: 3px solid #f8fbff;
+    background-color: #f9f9f9;
+    margin-top: 5px;
+    border-radius: 5px;
 }
 
-.publication-form {
-    margin-top: 1%;
+.contact-support {
+    margin-top: 30px; /* Add some spacing above the contact support section */
+}
+
+.contact-support + p {
+    margin: 5px 0; /* Adjust margin for paragraphs following the heading */
+}
+
+p {
+    font-size: 16px; /* Adjust font size for better readability */
+}
+
+p i {
+    margin-right: 8px; /* Add some space between the icon and text */
+    color: #333; /* Change icon color to match your theme */
+}
+
+a {
+    color: black; /* Change link color */
+    text-decoration: none; /* Remove underline from links */
+}
+
+a:hover {
+    text-decoration: underline; /* Underline on hover for links */
 }

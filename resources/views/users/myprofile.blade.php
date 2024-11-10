@@ -84,6 +84,11 @@
                 <span class="label">Email:</span>
                 <span class="user-data">{{ Auth::user()->email }}</span>
             </p>
+
+            <p>
+                <span class="label">Role:</span>
+                <span class="user-data">{{ Auth::user()->role }}</span>
+            </p>
         </div>
 
             
@@ -105,6 +110,36 @@
                 <button type="submit" class="remove-image-btn">Remove Image</button>
             </div>
         </form>
+
+        <h3>Set or Change Password</h3>
+
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+            <form action="{{ route('myprofile.setPassword') }}" method="POST" class="password-form">
+                @csrf
+                <div class="form-group">
+                    <label for="password">New Password</label>
+                    <input type="password" name="password" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="password_confirmation">Confirm Password</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" required>
+                </div>
+                <button type="submit" class="btn">Set Password</button>
+            </form>
     </div>
 
     <script>

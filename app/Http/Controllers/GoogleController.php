@@ -19,14 +19,24 @@ class GoogleController extends Controller
     {
         try {
             $user = Socialite::driver('google')->stateless()->user();
-    
+            
             // Check if the email domain is @tup.edu.ph
             if (!str_ends_with($user->getEmail(), '@tup.edu.ph')) {
                 return redirect()->route('login')->with('error', 'Only TUP email addresses are allowed.');
             }
     
-            // After validating the domain, check if the user exists
-            $is_user = User::where('email', $user->getEmail())->first();
+            // Determine the user role based on email pattern
+            $email = $user->getEmail();
+            if (strpos($email, '.') !== false && strpos($email, '_') === false) {
+                $role = 'Student';
+            } elseif (strpos($email, '_') !== false && strpos($email, '.') === false) {
+                $role = 'Faculty & Staff';
+            } else {
+                $role = 'User'; // Default role if pattern doesn't match
+            }
+    
+            // Check if user exists
+            $is_user = User::where('email', $email)->first();
     
             if (!$is_user) {
                 // Create a new user if not exists
@@ -37,16 +47,18 @@ class GoogleController extends Controller
                     [
                         'username' => $user->getName(),
                         'name' => $user->getName(),
-                        'email' => $user->getEmail(),
+                        'email' => $email,
                         'password' => Hash::make($user->getName() . '@' . $user->getId()),
+                        'role' => $role, // Assign the determined role
                     ]
                 );
             } else {
                 // Update existing user
-                $saveUser = User::where('email', $user->getEmail())->update([
+                $is_user->update([
                     'google_id' => $user->getId(),
+                    'role' => $role, // Update role if necessary
                 ]);
-                $saveUser = User::where('email', $user->getEmail())->first();
+                $saveUser = $is_user;
             }
     
             // Log the user in
@@ -57,4 +69,4 @@ class GoogleController extends Controller
             return redirect()->route('login')->with('error', 'There was an error logging in with Google. Please try again.');
         }
     }
-}
+}    

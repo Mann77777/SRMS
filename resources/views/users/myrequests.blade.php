@@ -63,7 +63,7 @@
             <select class="form-control" id="filter-status" onchange="filterRequests()">
                 <option value="">Filter by Status</option>
                 <option value="pending">Pending</option>
-                <option value="in-progress">In Progress</option>
+                <option value="in progress">In Progress</option>
                 <option value="completed">Completed</option>
             </select>
         </div>

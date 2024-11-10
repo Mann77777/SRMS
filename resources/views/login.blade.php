@@ -14,6 +14,7 @@
         <img src="{{ asset('images/tuplogo.png') }}" class="tuplogo" alt="TUP Logo">
         <h3 class="text-center">Sign In</h3>
 
+        <!-- Display error message if login fails -->
         @if(session('error'))
             <div class="alert alert-danger">
                 {{ session('error') }}
@@ -48,7 +49,7 @@
         <!-- Register Link -->
         <div class="register-link">
             Don't have an account? 
-            <a href="{{ route('register') }}" class="btn bold-text">Sign up</a>
+            <a href="{{ route('register') }}" class="bold-text">Sign up</a>
         </div>
     </div>
 </body>

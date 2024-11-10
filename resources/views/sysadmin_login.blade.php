@@ -38,7 +38,7 @@
         <!-- Register link -->
         <div class="register-link">
             Don't have an account? 
-            <a href="{{ route('admin_register') }}" class="btn bold-text">Sign up</a>
+            <a href="{{ route('admin_register') }}" class="bold-text">Sign up</a>
         </div>
     </div>
 </body>

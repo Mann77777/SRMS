@@ -48,3 +48,16 @@ body{
 .login-btn:hover{
     background-color: #ac1b33
 }
+
+.register-link{
+    text-align: center;
+    margin-top: 15px;
+}
+.register-link a{
+    color: #212121;
+    text-decoration: none;
+}
+
+.bold-text{
+    font-weight: bold; 
+}

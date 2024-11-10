@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
 
+Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword'])->name('myprofile.setPassword');
+
 Route::post('/faculty-request-submit', [ServiceRequestController::class, 'submit'])->name('faculty.request.submit');
 //Route::get('/service-request', [StudentRequestController::class, 'showForm'])->name('service.request.form');
 //Route::post('/service-request/submit', [StudentRequestController::class, 'submitRequest'])->name('service.request.submit');

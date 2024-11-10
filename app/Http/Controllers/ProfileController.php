@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
@@ -69,5 +70,20 @@ class ProfileController extends Controller
         }
 
         return redirect()->back()->with('success', 'Profile image removed successfully.');
+    }
+    public function setPassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|confirmed|min:8',
+        ]);
+    
+        $user = Auth::user();
+        $user->password = Hash::make($request->password);
+        
+        \Log::info('Password updated for user ID:', ['id' => $user->id]); // Log user ID
+        
+        $user->save();
+    
+        return redirect()->back()->with('success', 'Password set successfully.');
     }
 }

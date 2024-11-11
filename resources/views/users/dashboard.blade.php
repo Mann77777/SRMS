@@ -7,53 +7,17 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Dashboard</title>
 </head>
 <body>
     
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-md navbar-light fixed-top">
-        <div class="container">
-            <div class="navbar-logo">
-                <a href="{{ url('/dashboard') }}">
-                    <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
-                </a>
-            </div>
-        
-            <ul class="navbar-menu d-md-flex" id="navbar-menu">
-                <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
-                <li class="dropdown">
-                    <a href="#" class="profile-icon">
-                        @if(Auth::user()->profile_image)
-                        <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
-                        @else
-                        <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
-                        @endif
-                    </a>
-                    <div class="dropdown-content">
-                        <a href="{{ url('/myprofile') }}">My Profile</a>
-                        <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                            @csrf
-                        </form>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <!-- Include Navbar -->
+    @include('layouts.navbar')
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a></li>
-            <li><a href="{{ url('/student-request') }}" class="{{ request()->is('student-request') ? 'active' : '' }}">Submit Request</a></li>
-            <li><a href="{{ url('/myrequests') }}" class="{{ request()->is('myrequests') ? 'active' : '' }}">My Requests</a></li>
-            <li><a href="{{ url('/service-history') }}" class="{{ request()->is('service-history') ? 'active' : '' }}">Service History</a></li>
-            <li><a href="{{ url('/messages') }}" class="{{ request()->is('messages') ? 'active' : '' }}">Messages</a></li>
-            <li><a href="{{ url('/announcement') }}" class="{{ request()->is('announcement') ? 'active' : '' }}">Announcement</a></li>
-            <li><a href="{{ url('/help') }}" class="{{ request()->is('help') ? 'active' : '' }}">Help</a></li>
-        </ul>
-    </div>
+    <!-- Include Sidebar -->
+    @include('layouts.sidebar')
+
 
     <!-- HERO SECTION -->
     <section class="hero">

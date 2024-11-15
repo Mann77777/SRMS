@@ -38,16 +38,19 @@
         <h1><?php echo $greeting . ", " . Auth::user()->username . "!"; ?></h1>
 
         <!-- Role-based Buttons -->
-        <div class="button-container">
-            @if(Auth::user()->role === 'Student')
-                <button onclick="window.location.href='/student-request'" class="btn-primary">Request Student Service</button>
-                <button onclick="window.location.href='/student-status'" class="btn-secondary">Check Status</button>
-            @elseif(Auth::user()->role === 'Faculty & Staff')
-                <button onclick="window.location.href='/faculty-service'" class="btn-primary">Request Faculty & Staff Services</button>
-                <button onclick="window.location.href='/faculty-status'" class="btn-secondary">Check Status</button>
-            @endif
-        </div>
-    </section>
+        <!--
+<div class="button-container">
+    @if(Auth::user()->role === 'Student')
+        <button onclick="window.location.href='/student-request'" class="btn-primary">Request Student Service</button>
+        <button onclick="window.location.href='/student-status'" class="btn-secondary">Check Status</button>
+    @elseif(Auth::user()->role === 'Faculty & Staff')
+        <button onclick="window.location.href='/faculty-service'" class="btn-primary">Request Faculty & Staff Services</button>
+        <button onclick="window.location.href='/faculty-status'" class="btn-secondary">Check Status</button>
+    @endif
+</div>
+-->
+</section>
+
 
     <section class="container2 my-4">
         <div class="row">

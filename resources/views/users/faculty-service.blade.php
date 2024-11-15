@@ -24,7 +24,7 @@
     <p>SERVICES</p>
     <p>Select Services</p>
     <div class="content">
-        <form action="{{ route('service.request.submit') }}" method="POST">
+        <form action="{{ route('faculty.request.submit') }}" method="POST">
             @csrf <!-- Add CSRF token for security -->
             <!-- MS Office 365 Section -->
             <div class="form-section">

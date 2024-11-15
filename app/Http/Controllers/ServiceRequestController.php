@@ -1,19 +1,18 @@
-<?php
+<?php   
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
 class ServiceRequestController extends Controller
 {
-    public function submit(Request $request)
+    public function ShowForm()
     {
-        // Handle the incoming request data
-        $data = $request->all();
+        return view('users.faculty-service'); // Adjust this to your view name
+    }
 
-        // You can validate, process, and save data here
-
-        // Redirect back with a success message
-        return redirect()->back()->with('success', 'Service request submitted successfully!');
-        
+    public function Submitrequest(Request $request)
+    {
+        // Validate and process the form data here
+        return redirect()->route('faculty.request.form')->with('success', 'Service request submitted successfully!');
     }
 }

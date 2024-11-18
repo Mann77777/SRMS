@@ -1,17 +1,19 @@
 <!-- resources/views/layouts/navbar.blade.php -->
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-md navbar-light fixed-top">
-        <div class="container">
-            <div class="navbar-logo">
-                <a href="{{ url('/dashboard') }}">
-                    <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
-                </a>
-            </div>
-        
-            <ul class="navbar-menu d-md-flex" id="navbar-menu">
-                <li><a href="{{ url('/notifications') }}" class="notification-icon"><i class="fas fa-bell"></i></a></li>
-                <li class="dropdown">
+
+<nav class="navbar">    
+    <div class="logo_item">
+        <i class="bx bx-menu" id="sidebarOpen"></i>
+        <a href="{{ url('/dashboard') }}">
+            <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
+        </a>      
+    </div>
+    
+    <div class="navbar-content">
+        <a href="{{ url('/notifications') }}" class="notification-icon"><i class="bx bx-bell"></i></a>
+            <li class="dropdown">
                     <a href="#" class="profile-icon">
                         @if(Auth::user()->profile_image)
                         <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
@@ -26,7 +28,6 @@
                             @csrf
                         </form>
                     </div>
-                </li>
-            </ul>
-        </div>
+            </li>
+    </div>
 </nav>

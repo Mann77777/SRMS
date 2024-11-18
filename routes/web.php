@@ -100,6 +100,8 @@ Route::get('/help', function() {
     return view('users.help'); 
 })->name('users.help'); 
 
+Route::match(['get', 'post'], '/botman', 'App\Http\Controllers\BotManController@handle');
+
 //Route::get('home', function(){
 //    return view('home');
 // })->name('home');

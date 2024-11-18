@@ -89,52 +89,54 @@
     </section>
 </div>
 
-<script>
-    function filterRequests() {
-        const filterValue = document.getElementById("filter-status").value.toLowerCase();
-        const rows = document.querySelectorAll("#requests-table tr");
-        
-        rows.forEach(row => {
-            const statusCell = row.cells[3]; // Index 3 is for the Status column
-            if (statusCell) {
-                const statusText = statusCell.textContent.toLowerCase();
-                if (filterValue === "" || statusText === filterValue) {
-                    row.style.display = ""; // Show row
-                } else {
-                    row.style.display = "none"; // Hide row
-                }
-            }
-        });
-        performSearch(); // Apply search after filtering
-    }
-
-    function performSearch() {
-        const query = document.getElementById('search-bar').value.toLowerCase();
-        const rows = document.querySelectorAll("#requests-table tr");
-        
-        rows.forEach(row => {
-            // Check if the row is currently visible before searching
-            if (row.style.display !== "none") {
-                const cells = row.getElementsByTagName('td');
-                let matchFound = false;
-                
-                for (let i = 0; i < cells.length; i++) {
-                    const cellText = cells[i].textContent.toLowerCase();
-                    if (cellText.includes(query)) {
-                        matchFound = true;
-                        break; // Exit the loop as we found a match
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+    @stack('scripts')
+    <script>
+        function filterRequests() {
+            const filterValue = document.getElementById("filter-status").value.toLowerCase();
+            const rows = document.querySelectorAll("#requests-table tr");
+            
+            rows.forEach(row => {
+                const statusCell = row.cells[3]; // Index 3 is for the Status column
+                if (statusCell) {
+                    const statusText = statusCell.textContent.toLowerCase();
+                    if (filterValue === "" || statusText === filterValue) {
+                        row.style.display = ""; // Show row
+                    } else {
+                        row.style.display = "none"; // Hide row
                     }
                 }
-                
-                if (matchFound) {
-                    row.style.display = ""; // Show row if it matches the search
-                } else {
-                    row.style.display = "none"; // Hide row if it doesn't match
+            });
+            performSearch(); // Apply search after filtering
+        }
+
+        function performSearch() {
+            const query = document.getElementById('search-bar').value.toLowerCase();
+            const rows = document.querySelectorAll("#requests-table tr");
+            
+            rows.forEach(row => {
+                // Check if the row is currently visible before searching
+                if (row.style.display !== "none") {
+                    const cells = row.getElementsByTagName('td');
+                    let matchFound = false;
+                    
+                    for (let i = 0; i < cells.length; i++) {
+                        const cellText = cells[i].textContent.toLowerCase();
+                        if (cellText.includes(query)) {
+                            matchFound = true;
+                            break; // Exit the loop as we found a match
+                        }
+                    }
+                    
+                    if (matchFound) {
+                        row.style.display = ""; // Show row if it matches the search
+                    } else {
+                        row.style.display = "none"; // Hide row if it doesn't match
+                    }
                 }
-            }
-        });
-    }
-</script>
+            });
+        }
+    </script>
 
 </body>
 </html>

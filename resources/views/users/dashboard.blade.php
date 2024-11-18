@@ -6,12 +6,11 @@
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Dashboard</title>
 </head>
 <body>
-    
     <!-- Include Navbar -->
     @include('layouts.navbar')
 
@@ -132,48 +131,20 @@
     </section>
     <button class="btn btn-primary" onclick="window.location.href='{{ url('/submit-request') }}'">Submit Request</button>
 
-
-    
-     <!-- Floating Chatbot Button -->
-     <button class="chatbot-button" onclick="toggleChat()">💬</button>
-    <!-- Chat Window -->
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">Chatbot</div>
-            <div class="chat-body" id="chatBody">
-                <p>Hello! How can I assist you today?</p>
-            </div>
-            <div class="chat-input">
-                <input type="text" id="chatInput" placeholder="Type your message..." />
-                <button onclick="sendMessage()">Send</button>
-            </div>
-        </div>
-    </div>
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    
+   
+    <script src="https://cdn.jsdelivr.net/npm/botman-web-widget@0/build/js/widget.js"></script>
 
     <script>
-        function toggleChat() {
-            const chatWindow = document.getElementById('chatWindow');
-            chatWindow.style.display = chatWindow.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value;
-            if (message.trim() !== '') {
-                const chatBody = document.getElementById('chatBody');
-                chatBody.innerHTML += '<p>You: ' + message + '</p>';
-                input.value = '';
-                // Simulate a bot response
-                setTimeout(() => {
-                    chatBody.innerHTML += '<p>Bot: Thank you for your message!</p>';
-                    chatBody.scrollTop = chatBody.scrollHeight; // Scroll to the bottom
-                }, 1000);
-            }
-        }
+        var botmanWidget = {
+            aboutText: 'Powered by BotMan',
+            introMessage: "Welcome to SRMS"
+        };
     </script>
+ 
 </body>
 </html>

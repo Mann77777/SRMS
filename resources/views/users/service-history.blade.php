@@ -18,13 +18,42 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
+    <div class="history-header">
+        <h2>History</h2>
+        <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p>
+    </div>
  
     <div class="content">
         <div class="history-section">
-            <h2>History</h2>
-            <p>Welcome, <strong>name!</strong></p>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Technician</th>
+                        <th>Review and Ratings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>001</td>
+                        <td>Internet Setup</td>
+                        <td>2023-09-15</td>
+                        <td>10:00 AM</td>
+                        <td>John Doe</td>
+                        <td><button class="btn btn-secondary">Take a survey</button></td>
+                    </tr>
+                    <!-- Repeat rows as needed for more requests -->
+                </tbody>
+            </table>
+
         </div>
     </div>
+
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+    @stack('scripts') 
 
 </body>
 </html>

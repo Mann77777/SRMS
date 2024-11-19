@@ -7,16 +7,17 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Dashboard</title>
 </head>
 <body>
+
     <!-- Include Navbar -->
     @include('layouts.navbar')
 
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
-
 
     <!-- HERO SECTION -->
     <section class="hero">
@@ -38,16 +39,16 @@
 
         <!-- Role-based Buttons -->
         <!--
-<div class="button-container">
-    @if(Auth::user()->role === 'Student')
-        <button onclick="window.location.href='/student-request'" class="btn-primary">Request Student Service</button>
-        <button onclick="window.location.href='/student-status'" class="btn-secondary">Check Status</button>
-    @elseif(Auth::user()->role === 'Faculty & Staff')
-        <button onclick="window.location.href='/faculty-service'" class="btn-primary">Request Faculty & Staff Services</button>
-        <button onclick="window.location.href='/faculty-status'" class="btn-secondary">Check Status</button>
-    @endif
-</div>
--->
+        <div class="button-container">
+            @if(Auth::user()->role === 'Student')
+                <button onclick="window.location.href='/student-request'" class="btn-primary">Request Student Service</button>
+                <button onclick="window.location.href='/student-status'" class="btn-secondary">Check Status</button>
+            @elseif(Auth::user()->role === 'Faculty & Staff')
+                <button onclick="window.location.href='/faculty-service'" class="btn-primary">Request Faculty & Staff Services</button>
+                <button onclick="window.location.href='/faculty-status'" class="btn-secondary">Check Status</button>
+            @endif
+        </div>
+        -->
 </section>
 
 

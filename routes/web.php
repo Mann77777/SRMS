@@ -49,44 +49,9 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 // Handle Login Form Submission
 Route::post('/login', [AuthController::class, 'login'])->name('login.custom');
 
-// Display Admin login form
-Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
-//Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
-Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
-
-Route::get('/admin_dashboard', function() {
-    return view('admin.dashboard'); // Make sure this view exists
-})->name('admin_dashboard');
-
-
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
-
-Route::get('/admin_register', [SysadminController::class, 'showAdminRegisterForm'])->name('admin_register');
-Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->name('adminregister.custom');
-
-//Admin dashboard
-Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
-});
-
-Route::get('/myprofile', function () {
-    return view('users.myprofile');
-})->name('users.profile'); 
-
-Route::get('/faculty-service', function () {
-    return view('users.faculty-service');
-})->name('faculty-service');
-
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('login'); // Redirect to welcome page or wherever you want
-})->name('logout');
-
 Route::get('/dashboard', function() {
     return view('users.dashboard'); // Show the dashboard view
 })->name('users.dashboard'); // Name for the dashboard route
-
 
 Route::get('/myrequests', function() {
     return view('users.myrequests'); 
@@ -100,7 +65,68 @@ Route::get('/help', function() {
     return view('users.help'); 
 })->name('users.help'); 
 
+// BotMan/Chatbot
 Route::match(['get', 'post'], '/botman', 'App\Http\Controllers\BotManController@handle');
+
+Route::get('/myprofile', function () {
+    return view('users.myprofile');
+})->name('users.profile'); 
+
+Route::get('/faculty-service', function () {
+    return view('users.faculty-service');
+})->name('faculty-service');
+
+
+// ADMIN ROUTE
+Route::get('/admin_dashboard', function() {
+    return view('admin.dashboard'); // Make sure this view exists
+})->name('admin_dashboard');
+
+// Display Admin login form
+Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
+//Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
+
+Route::get('/admin_register', [SysadminController::class, 'showAdminRegisterForm'])->name('admin_register');
+Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->name('adminregister.custom');
+
+//Admin dashboard
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
+});
+
+Route::get('/admin_myprofile', function () {
+    return view('admin.admin_myprofile');
+})->name('admin.admin_myprofile'); 
+
+Route::get('/service-request', function () {
+    return view('admin.service-request');
+})->name('admin.service-request'); 
+
+Route::get('/user-management', function () {
+    return view('admin.user-management');
+})->name('admin.user-management'); 
+
+Route::get('/assign-management', function () {
+    return view('admin.assign-management');
+})->name('admin.assign-management'); 
+
+Route::get('/admin_report', function () {
+    return view('admin.admin_report');
+})->name('admin.admin_report'); 
+
+Route::get('/settings', function () {
+    return view('admin.settings');
+})->name('admin.settings'); 
+
+
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('login'); // Redirect to welcome page or wherever you want
+})->name('logout');
 
 //Route::get('home', function(){
 //    return view('home');

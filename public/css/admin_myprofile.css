@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    font-family: "Montserrat", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Montserrat", sans-serif;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #f8f9fa;
+    height: 130vh;
+}
+
+
+/* PROFILE SECTION STYLE */
+:root {
+    --primary-color: #4CAF50;
+    --danger-color: #F44336;
+    --text-color: #1b1b1b;
+    --background-color: #fff;
+    --border-radius: 10px;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container {
+    width: 100%;
+    max-width: 700px;
+    margin: 130px auto 40px; /* Added margin-top to clear fixed navbar */
+    padding: 20px;
+    background-color: var(--background-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    text-align: center;
+    color: var(--text-color);
+}
+
+.profile-container h2{
+    font-weight: 600;
+}
+
+.profile-container h2,
+.profile-container p {
+    text-align: left; 
+    margin: 10px; 
+}
+
+.profile-header {
+    display: flex;
+    align-items: center; 
+    margin-bottom: 22px; /* Add some space below the profile header */
+}
+
+.profile-image img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    margin-right: 20px; /* Add space between the image and name */
+}
+
+.username {
+    font-weight: 600;
+    font-size: 2rem;
+    color: var(--text-color);
+    margin: 8px 0;
+}
+.user-info p {
+    display: flex; 
+    align-items: center;
+    justify-content: space-between; 
+    margin: 20px 0; 
+    font-size: 16px;
+}
+
+.label {
+    flex: 1; /* Allow label to take necessary space */
+    font-weight: 600; 
+    margin-right: 20px;
+}
+
+.user-data {
+    display: flex; /* Make user-data a flex container */
+    align-items: center; /* Center items vertically */
+    flex: 2;
+    font-weight: 400; 
+}
+
+
+#success-message {
+    color: green;
+    font-weight: bold;
+    transition: opacity 0.5s ease-in-out;
+}
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    margin-top: 20px;
+}
+
+.profile-upload-form {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start;
+    margin-top: 3em;
+}
+
+.button-container {
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 12px;
+    width: 30%; 
+}
+
+.upload-btn, .remove-image-btn {
+    padding: 12px;
+    margin: 0 7px; /* Space between buttons */
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    flex: 1; 
+}
+
+.upload-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.upload-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.03);
+}
+
+.remove-image-btn {
+    background-color: var(--danger-color);
+    color: #fff;
+}
+
+.remove-image-btn:hover {
+    background-color: #e53935;
+    transform: scale(1.03);
+}

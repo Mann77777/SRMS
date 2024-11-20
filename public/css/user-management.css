@@ -17,8 +17,6 @@ body{
     background-color: #f8f9fa;
     height: 130vh;
 }   
-
-
 .content {
     margin-top: 8%;
     margin-left: 23%;
@@ -51,11 +49,7 @@ select {
     margin-right: 20px;
     cursor: pointer;
 }
-.search-container{
-    display: flex;
-    justify-content: center; /* Horizontally centers the button */
-    align-items: center;     /* Vertically centers the button if needed */
-}
+
 .search-container input {
     width: 250px; /* Set width for search input */
     padding: 10px;
@@ -63,48 +57,35 @@ select {
     border: 1px solid #ccc;
     border-radius: 10px;
 }
-.search-btn{
-    padding: 10px 20px;
-    margin-left: 2%;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    background-color: #04AA6D;
-    color: white;
-}
 
-/* Table Styles */
-.request-table-container{
+.user-table-container{
     background-color: white;
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
     overflow-x: auto;
 }
-
-.request-table{
+.users-table{
     width: 100%;
     border-collapse: collapse;
 }
-
-.request-table th, 
-.request-table td{
+.user-table th, 
+.users-table td{
     padding: 12px;
     border-bottom: 1px solid #ddd;
 }
-.request-table tr:hover{
+.users-table tr:hover{
     background-color: #f1f1f1;
 }
-.request-table th{
+.users-table th{
     background-color: #C4203C;
     color: white;
     padding: 10px;
 }
 
-
 button {
     display: block; /* Make buttons stack vertically */
-    width: 50%; /* Optional: Adjust the width to match cell size */
+    width: 80%; /* Optional: Adjust the width to match cell size */
     margin: 5px 0; /* Add vertical spacing */
     padding: 6px; /* Add some padding for a better look */
     border: none;

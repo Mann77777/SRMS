@@ -6,7 +6,7 @@
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="{{ asset('css/student-request.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/service-history.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Service History</title>
 </head>
@@ -18,37 +18,49 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
-    <div class="history-header">
-        <h2>History</h2>
-        <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p>
-    </div>
+
  
     <div class="content">
-        <div class="history-section">
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Request ID</th>
-                        <th>Service</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Technician</th>
-                        <th>Review and Ratings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>001</td>
-                        <td>Internet Setup</td>
-                        <td>2023-09-15</td>
-                        <td>10:00 AM</td>
-                        <td>John Doe</td>
-                        <td><button class="btn btn-secondary">Take a survey</button></td>
-                    </tr>
-                    <!-- Repeat rows as needed for more requests -->
-                </tbody>
-            </table>
+        <h1>History</h1>
+        <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p>
+       
+        <div class="history-table-container">
+            <form action="">
+                <table class="history-table">
+                    <thead>
+                       <tr>
+                            <th>Request ID</th>
+                            <th>Service</th>
+                            <th>Date Submitted</th>
+                            <th>UITC Staff</th>
+                            <th>Date Completed</th>
+                            <th>Review and Ratings</th>
+                            <th>Actions</th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>MS Teams</td>
+                            <td>
+                                <strong>Date: </strong><span>2024-11-01</span><br>
+                                <strong>Time: </strong><span>10:00 AM</span>
+                            </td>
+                            <td>John Doe</td>
+                            <td>
+                                <strong>Date: </strong><span>2024-11-04</span><br>
+                                <strong>Time: </strong><span>11:30 AM</span>
+                            </td>
 
+                            <td><button class="btn-primary">Take a Survey</button></td>
+
+                            <td>
+                                <button class="btn-view">View</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
         </div>
     </div>
 

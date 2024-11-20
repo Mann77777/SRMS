@@ -44,6 +44,7 @@ class SysadminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|unique:admins,username|max:255',
+            'email' => 'required|string|email|max:255|unique:admins,email', // Add email validation
             'password' => 'required|string|confirmed|min:8',
             'role' => 'required|in:Admin,Technician',
         ]);
@@ -52,6 +53,7 @@ class SysadminController extends Controller
         Admin::create([
             'name' => $request->name,
             'username' => $request->username,
+            'email' => $request->email, // Store the email
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
@@ -64,5 +66,11 @@ class SysadminController extends Controller
     public function showAdminDashboard()
     {
         return view('admin.admin_dashboard'); // Make sure this matches your view file name
+    }
+
+    public function myProfile()
+    {
+        // Logic to show the admin profile
+        return view('admin.admin_myprofile');
     }
 }

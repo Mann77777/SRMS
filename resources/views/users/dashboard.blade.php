@@ -52,7 +52,7 @@
 </section>
 
 
-    <section class="container2 my-4">
+    <section class="container my-4">
         <div class="row">
             <!-- Total Requests Card -->
             <div class="col-lg-3 col-md-6 mb-4">
@@ -60,7 +60,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Total Requests</h5>
                         <p class="card-text h1">{{ $totalRequests ?? 0 }}</p>
-                        <p>View</p>
+                        <a href="">View</a>
                     </div>
                 </div>
             </div>
@@ -71,7 +71,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Pending Requests</h5>
                         <p class="card-text h1">{{ $pendingRequests ?? 0 }}</p>
-                        <p>View</p>
+                        <a href="">View</a>
                     </div>
                 </div>
             </div>
@@ -82,55 +82,41 @@
                     <div class="card-body">
                         <h5 class="card-title">Completed Requests</h5>
                         <p class="card-text h1">{{ $completedRequests ?? 0 }}</p>
-                        <p>View</p>
+                        <a href="">View</a>
                     </div>
                 </div>
             </div>  
-
-            
     </section>
 
 
     <!-- Recent Requests Section -->
-    <section class="requests my-4">
-        <h2 class="mb-3">Recent Requests</h2>
-        <table class="table table-bordered">
-            <thead class="thead-light">
-                <tr>
-                    <th>Request ID</th>
-                    <th>Date Submitted</th>
-                    <th>Time Submitted</th>
-                    <th>Service</th>
-                    <th>Status</th>
-                </tr>
-                <tbody>
-                    <tr>
-                        <td>001</td>
-                        <td>2024-11-01</td>
-                        <td>09:15 AM</td>
-                        <td>Library Access</td>
-                        <td>Pending</td>
-                    </tr>
-                    <tr>
-                        <td>002</td>
-                        <td>2024-11-02</td>
-                        <td>10:30 AM</td>
-                        <td>IT Support</td>
-                        <td>In Progress</td>
-                    </tr>
-                    <tr>
-                        <td>003</td>
-                        <td>2024-11-03</td>
-                        <td>01:45 PM</td>
-                        <td>Counseling Session</td>
-                        <td>Completed</td>
-                    </tr>
-            </tbody>
-            </thead>
-      
-        </table>
-    </section>
-    <button class="btn btn-primary" onclick="window.location.href='{{ url('/submit-request') }}'">Submit Request</button>
+     <div class="recentreq-table-container">
+        <h4>Recent Request</h4>
+        <form action="">
+            <div class="recentreq-table">
+                <table class="recentreq-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Service</th>
+                            <th>Date Submitted</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>MS Teams</td>
+                            <td>2024-11-01</td>
+                            <td>Pending</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+     </div>
+    
+    <button class="btn-primary" onclick="window.location.href='{{ url('/submit-request') }}'">Submit Request</button>
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 

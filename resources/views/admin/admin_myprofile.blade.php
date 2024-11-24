@@ -23,39 +23,42 @@
        <!-- Display Profile Image -->
         <div class="profile-header">
             <div class="profile-image">
-                @if(Auth::guard('admin')->user()->profile_image)
+                @if(Auth::guard('admin')->check() && Auth::guard('admin')->user()->profile_image)
                     <img src="{{ asset('storage/' . Auth::guard('admin')->user()->profile_image) }}" alt="Profile Image" class="profile-img">
                 @else
                     <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img">
                 @endif
             </div>
-            <h3 class="username">{{ Auth::guard('admin')->user()->name }}</h3>
+    @if(Auth::guard('admin')->check() && Auth::guard('admin')->user())
+    <h3 class="username">{{ Auth::guard('admin')->user()->name }}</h3>
         </div>
 
         <div class="user-info">
-            <p>
-                <span class="label">Name:</span>
-                <span class="user-data">{{ Auth::guard('admin')->user()->name }}</span>
-            </p>
-            <p>  
-                <span class="label">Username:</span>
-                <span class="user-data">
-                    <span id="username-display">{{ Auth::guard('admin')->user()->username }}</span>
-                    <input type="text" id="username-input" value="{{ Auth::guard('admin')->user()->username }}" style="display:none;">
-                    <span id="edit-username" style="color: blue; cursor: pointer; text-decoration: underline; margin-left: 10px;">Edit</span>
-                    <span class="save-username-btn" id="save-username-btn" style="display:none; cursor: pointer; color: green; text-decoration: underline; margin-left: 10px;">Save</span>
-                </span>
-            </p>
 
-            <p>
-                <span class="label">Email:</span>
-                <span class="user-data">{{ Auth::guard('admin')->user()->email }}</span>
-            </p>
-
-            <p>
-                <span class="label">Role:</span>
-                <span class="user-data">{{ Auth::guard('admin')->user()->role }}</span>
-            </p>
+    <p>
+        <span class="label">Name:</span>
+        <span class="user-data">{{ Auth::guard('admin')->user()->name }}</span>
+    </p>
+    <p>  
+        <span class="label">Username:</span>
+        <span class="user-data">
+            <span id="username-display">{{ Auth::guard('admin')->user()->username }}</span>
+            <input type="text" id="username-input" value="{{ Auth::guard('admin')->user()->username }}" style="display:none;">
+            <span id="edit-username" style="color: blue; cursor: pointer; text-decoration: underline; margin-left: 10px;">Edit</span>
+            <span class="save-username-btn" id="save-username-btn" style="display:none; cursor: pointer; color: green; text-decoration: underline; margin-left: 10px;">Save</span>
+        </span>
+    </p>
+    <p>
+        <span class="label">Email:</span>
+        <span class="user-data">{{ Auth::guard('admin')->user()->email }}</span>
+    </p>
+    <p>
+        <span class="label">Role:</span>
+        <span class="user-data">{{ Auth::guard('admin')->user()->role }}</span>
+    </p>
+@else
+    <p>User not logged in.</p>
+@endif
         </div>
 
                     

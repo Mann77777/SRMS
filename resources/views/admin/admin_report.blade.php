@@ -16,5 +16,8 @@
     
     <!-- Include Sidebar -->
     @include('layouts.admin-sidebar')
+
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+
 </body>
 </html>

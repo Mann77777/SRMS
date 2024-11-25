@@ -126,6 +126,12 @@ Route::get('/settings', function () {
     return view('admin.settings');
 })->name('admin.settings'); 
 
+// Route to display the "Add Administrator" form (GET request)
+Route::get('/admin/add', [SysadminController::class, 'showAddAdminForm'])->name('admin.add');
+
+// Route to handle form submission and save the admin (POST request)
+Route::post('/admin/save', [SysadminController::class, 'saveAdmin'])->name('admin.save');
+
 Route::post('/admin_logout', function () {
     Auth::logout();
     return redirect('sysadmin_login'); // Redirect to the login page

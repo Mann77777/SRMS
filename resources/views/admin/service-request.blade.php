@@ -92,5 +92,7 @@
         </div>
 
     </div>
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+
 </body>
 </html>

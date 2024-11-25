@@ -30,7 +30,9 @@ Route::middleware(['auth'])->group(function () {
 //Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
 //Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
 
-Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
+Route::post('/update-username', [ProfileController::class, 'updateUsername'])->name('update-username');
+Route::post('/remove-profile-image', [ProfileController::class, 'removeProfileImage'])->name('removeProfileImage');
+
 
 Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword'])->name('myprofile.setPassword');
 

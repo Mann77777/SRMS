@@ -151,3 +151,55 @@ body {
     background-color: #e53935;
     transform: scale(1.03);
 }
+
+/* Password Form Styles */
+.password-form {
+    width: 100%; 
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    font-size: 16px;
+}
+
+/* Align labels and inputs in a row */
+.password-form .form-group {
+    display: flex;
+    align-items: center; /* Vertically center label and input */
+    margin-bottom: 20px; /* Add spacing between fields */
+}
+
+/* Label styling */
+.password-form .label {
+    flex: 1; 
+    text-align: right;
+    margin-right: 20px; 
+    font-weight: 600; 
+}
+
+.password-form .input-field {
+    flex: 2; /* Input takes two parts of the row */
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%; 
+    box-sizing: border-box;
+}
+
+/* Submit button styling */
+.password-form .btn {
+    display: block;
+    width: 100%; 
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.password-form .btn:hover {
+    background-color: #0056b3;
+}

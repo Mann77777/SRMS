@@ -35,28 +35,45 @@ class ProfileController extends Controller
         return redirect()->route('dashboard'); // Redirect to the dashboard page
     }
 
+        // Update username
+        public function updateUsername(Request $request)
+        {
+            // Validate the request data
+            $request->validate([
+                'username' => 'required|string|max:255|unique:users,username,' . auth()->id(),
+            ]);
+        
+            $user = auth()->user();
+            $user->username = $request->username;
+            $user->save();
+        
+            // Return with success message for username update
+            return response()->json(['success' => true]);
+        }
+
     // Method to upload profile image
     public function uploadProfileImage(Request $request)
     {
         $request->validate([
             'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
+    
         $user = Auth::user();
-
+    
         // Delete existing profile image if it exists
         if ($user->profile_image) {
             Storage::delete('public/' . $user->profile_image);
         }
-
+    
         // Store new profile image
         $path = $request->file('profile_image')->store('profile_images', 'public');
         $user->profile_image = $path;
         $user->save();
-
-        return redirect()->back()->with('success', 'Profile image updated successfully.');
+    
+        // Return with success message for profile image upload
+        return redirect()->back()->with('upload_success', true);
     }
-
+    
     // Method to remove profile image
     public function removeProfileImage()
     {
@@ -69,21 +86,23 @@ class ProfileController extends Controller
             $user->save();
         }
 
-        return redirect()->back()->with('success', 'Profile image removed successfully.');
+        // Redirect back and trigger the modal
+        return redirect()->back()->with('image_removed', true);
     }
+    
     public function setPassword(Request $request)
     {
         $request->validate([
             'password' => 'required|confirmed|min:8',
+        ], [
+            'password.confirmed' => 'The password and confirmation password do not match.',
+            'password.min' => 'The password must be at least 8 characters long.',
         ]);
-    
-        $user = Auth::user();
-        $user->password = Hash::make($request->password);
-        
-        \Log::info('Password updated for user ID:', ['id' => $user->id]); // Log user ID
-        
+
+        $user = auth()->user();
+        $user->password = bcrypt($request->password);
         $user->save();
-    
-        return redirect()->back()->with('success', 'Password set successfully.');
+
+        return redirect()->back()->with('password_changed', true);
     }
 }

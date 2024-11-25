@@ -47,17 +47,17 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach ($users as $user)
                         <tr>
-                            <td>1</td>
+                            <td>{{ $user->id }}</td>
                             <td>
-                                <strong>First name: </strong><span>Marielle</span><br>
-                                <strong>Last name: </strong><span>Verdaluza</span><br>
-                                <strong>Email: </strong><span>m@gmail.com</span>
+                                <strong>First name: </strong><span>{{ $user->name }}</span><br>
+                                <strong>Email: </strong><span>{{ $user->email }}</span>
                             </td>
-                            <td>Student</td>
+                            <td>{{ ucfirst($user->role) }}</td>
                             <td>
-                                <strong>Date: </strong><span></span><br>
-                                <strong>Time: </strong><span></span>
+                                <strong>Date: </strong><span>{{ $user->created_at->format('Y-m-d') }}</span><br>
+                                <strong>Time: </strong><span>{{ $user->created_at->format('h:i A') }}</span>
                             </td>
                             <td>
                                 <button class="btn-edit">Edit</button>
@@ -65,30 +65,11 @@
                                 <button class="btn-delete">Delete</button>
                             </td>
                         </tr>
-
-                        <tr>
-                            <td>1</td>
-                            <td>
-                                <strong>First name: </strong><span>Marielle</span><br>
-                                <strong>Last name: </strong><span>Verdaluza</span><br>
-                                <strong>Email: </strong><span>marielle.verdaluza@tup.edu.ph</span>
-                            </td>
-                            <td>Student</td>
-                            <td>
-                                <strong>Date: </strong><span>2024-11-11</span><br>
-                                <strong>Time: </strong>07:59 PM<span></span>
-                            </td>
-                            <td>
-                                <button class="btn-edit">Edit</button>
-                                <button class="btn-view">View</button>
-                                <button class="btn-delete">Delete</button>
-                            </td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </form>
         </div>
     </div>
-    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 </body>
 </html>

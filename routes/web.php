@@ -8,6 +8,7 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\StudentRequestController;
 use App\Http\Controllers\SysadminController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('login');
@@ -30,9 +31,7 @@ Route::middleware(['auth'])->group(function () {
 //Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
 //Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
 
-Route::post('/update-username', [ProfileController::class, 'updateUsername'])->name('update-username');
-Route::post('/remove-profile-image', [ProfileController::class, 'removeProfileImage'])->name('removeProfileImage');
-
+Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
 
 Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword'])->name('myprofile.setPassword');
 
@@ -112,9 +111,7 @@ Route::get('/service-request', function () {
     return view('admin.service-request');
 })->name('admin.service-request'); 
 
-Route::get('/user-management', function () {
-    return view('admin.user-management');
-})->name('admin.user-management'); 
+Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
 
 Route::get('/assign-management', function () {
     return view('admin.assign-management');
@@ -128,19 +125,7 @@ Route::get('/settings', function () {
     return view('admin.settings');
 })->name('admin.settings'); 
 
-// Route to display the "Add Administrator" form (GET request)
-Route::get('/admin/add', [SysadminController::class, 'showAddAdminForm'])->name('admin.add');
-
-// Route to handle form submission and save the admin (POST request)
-Route::post('/admin/save', [SysadminController::class, 'saveAdmin'])->name('admin.save');
-
 Route::post('/admin_logout', function () {
     Auth::logout();
     return redirect('sysadmin_login'); // Redirect to the login page
 })->name('admin.logout');
-
-
-
-//Route::get('home', function(){
-//    return view('home');
-// })->name('home');

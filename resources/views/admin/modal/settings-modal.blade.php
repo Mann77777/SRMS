@@ -38,7 +38,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    The administrator has been added successfully!
+                    New administrator has been added successfully!
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

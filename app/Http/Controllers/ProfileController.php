@@ -13,10 +13,15 @@ class ProfileController extends Controller
     // Method to show the user profile
     public function show()
     {
-        $user = Auth::user(); // Get the authenticated user
-        return view('home', compact('user')); // Return the home view with user data
-    }
+        // Check if user is admin or regular user
+        $user = auth('admin')->check() ? auth('admin')->user() : auth()->user();
 
+        // Return the appropriate view based on user type
+        if (auth('admin')->check()) {
+            return view('admin.admin_myprofile', compact('user'));
+        }
+        return view('users.myprofile', compact('user'));
+    }
     // Method to update user details
     public function update(Request $request)
     {
@@ -35,21 +40,21 @@ class ProfileController extends Controller
         return redirect()->route('dashboard'); // Redirect to the dashboard page
     }
 
-        // Update username
-        public function updateUsername(Request $request)
-        {
-            // Validate the request data
-            $request->validate([
-                'username' => 'required|string|max:255|unique:users,username,' . auth()->id(),
-            ]);
+    // Update username
+    public function updateUsername(Request $request)
+    {
+        // Validate the request data
+        $request->validate([
+            'username' => 'required|string|max:255|unique:users,username,' . auth()->id(),
+        ]);
         
-            $user = auth()->user();
-            $user->username = $request->username;
-            $user->save();
+        $user = auth()->user();
+        $user->username = $request->username;
+        $user->save();
         
-            // Return with success message for username update
-            return response()->json(['success' => true]);
-        }
+        // Return with success message for username update
+        return response()->json(['success' => true]);
+    }
 
     // Method to upload profile image
     public function uploadProfileImage(Request $request)
@@ -70,26 +75,27 @@ class ProfileController extends Controller
         $user->profile_image = $path;
         $user->save();
     
-        // Return with success message for profile image upload
         return redirect()->back()->with('upload_success', true);
     }
     
     // Method to remove profile image
-    public function removeProfileImage()
+    public function removeProfileImage(Request $request)
     {
         $user = Auth::user();
 
-        // Delete profile image if it exists
-        if ($user->profile_image) {
+          // Delete profile image if it exists
+          if ($user->profile_image) {
             Storage::delete('public/' . $user->profile_image);
             $user->profile_image = null;
             $user->save();
-        }
 
-        // Redirect back and trigger the modal
-        return redirect()->back()->with('image_removed', true);
+            // Redirect back and trigger the modal
+            return redirect()->back()->with('image_removed', true);
+        }
+            return redirect()->back()->withErrors(['error' => 'No profile image to remove.']);
     }
-    
+
+        
     public function setPassword(Request $request)
     {
         $request->validate([

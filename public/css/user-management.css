@@ -9,7 +9,7 @@
 body{
     margin: 0;
     padding: 0;
-    padding-top: 10px; /* Space for navbar */
+    padding-top: 10px;
     font-family: "Montserrat", sans-serif;
     background-position: center;
     background-repeat: no-repeat;
@@ -28,17 +28,15 @@ body{
     text-transform: uppercase;
 }
 
+/* Dropdown and Search Styles */
 .dropdown-container {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
-    cursor: pointer;
+    gap: 15px;
+    flex-wrap: wrap;
 }
-.dropdown-container,
-.search-container {
-    display: flex;
-    align-items: center;
-}
+
 select {
     width: 180px;
     padding: 10px;
@@ -46,61 +44,124 @@ select {
     border: 1px solid #ccc;
     border-radius: 15px;
     background-color: #fff;
-    margin-right: 20px;
     cursor: pointer;
 }
 
+.search-container {
+    flex-grow: 1;
+    max-width: 300px;
+}
+
 .search-container input {
-    width: 250px; /* Set width for search input */
+    width: 100%;
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ccc;
-    border-radius: 10px;
+    border-radius: 15px;
 }
 
+/* Bulk Actions */
+.bulk-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.bulk-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-export {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Table Styles */
 .user-table-container{
     background-color: white;
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow-x: auto;
 }
 .users-table{
     width: 100%;
     border-collapse: collapse;
 }
-.user-table th, 
+.users-table th, 
 .users-table td{
     padding: 12px;
     border-bottom: 1px solid #ddd;
+    text-align: left;
 }
-.users-table tr:hover{
-    background-color: #f1f1f1;
-}
-.users-table th{
+.users-table thead th{
     background-color: #C4203C;
     color: white;
-    padding: 10px;
+    font-weight: 600;
+    padding: 12px;
 }
+.users-table tbody tr:hover{
+    background-color: #f8f9fa;
+}
+
+/* Action Buttons */
 
 button {
     display: block; /* Make buttons stack vertically */
-    width: 80%; /* Optional: Adjust the width to match cell size */
+    width: 85%; /* Optional: Adjust the width to match cell size */
     margin: 5px 0; /* Add vertical spacing */
     padding: 6px; /* Add some padding for a better look */
     border: none;
     border-radius: 10px;
     cursor: pointer;
     color: #ffffff;
+    font-size: 15px;
     font-weight: 500;
 }
+.btn-edit {
+    background-color: #16A34A;  /* Green */
+}
 
-.btn-edit{
-    background-color: #04AA6D;
+.btn-status {
+    background-color: #FFC107;  /* Yellow */
 }
-.btn-view{
-    background-color: #008CBA;
+
+.btn-reset {
+    background-color: #6C757D;  /* Gray */
 }
-.btn-delete{
-    background-color: #F44336;
+
+.btn-delete {
+    background-color: #DC3545;  /* Red */
+}
+
+/* Status Badge */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    text-transform: capitalize;
+}
+
+.status-badge.active {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-badge.inactive {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Checkbox Styles */
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }

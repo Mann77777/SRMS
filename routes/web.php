@@ -32,6 +32,9 @@ Route::middleware(['auth'])->group(function () {
 //Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
 
 Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
+Route::post('/update-username', [ProfileController::class, 'updateUsername'])->name('update-username');
+Route::post('/remove-profile-image', [ProfileController::class, 'removeProfileImage'])->name('removeProfileImage');
+
 
 Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword'])->name('myprofile.setPassword');
 
@@ -111,6 +114,11 @@ Route::get('/service-request', function () {
     return view('admin.service-request');
 })->name('admin.service-request'); 
 
+Route::get('/admin/users/{id}', [UserController::class, 'getUser']);
+Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
+Route::delete('/admin/users/{id}', [UserController::class, 'deleteUser']);
+Route::post('/admin/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
+Route::put('/admin/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
 Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
 
 Route::get('/assign-management', function () {
@@ -125,7 +133,19 @@ Route::get('/settings', function () {
     return view('admin.settings');
 })->name('admin.settings'); 
 
+// Route to display the "Add Administrator" form (GET request)
+Route::get('/admin/add', [SysadminController::class, 'showAddAdminForm'])->name('admin.add');
+
+// Route to handle form submission and save the admin (POST request)
+Route::post('/admin/save', [SysadminController::class, 'saveAdmin'])->name('admin.save');
+
 Route::post('/admin_logout', function () {
     Auth::logout();
     return redirect('sysadmin_login'); // Redirect to the login page
 })->name('admin.logout');
+
+
+
+//Route::get('home', function(){
+//    return view('home');
+// })->name('home');

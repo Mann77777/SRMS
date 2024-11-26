@@ -14,10 +14,10 @@
 </head>
 <body>
     <!-- Include Navbar -->
-    @include('layouts.admin-navbar')
+    @include('layouts.navbar')
         
     <!-- Include Sidebar -->
-    @include('layouts.admin-sidebar')
+    @include('layouts.sidebar')
 
     <!-- HERO SECTION -->
     <section class="hero">
@@ -156,7 +156,7 @@
                         @empty
                         <tr>
                             <td colspan="6" class="empty-state">
-                                <img src="{{ asset('images/empty-requests.svg') }}" alt="No requests">
+                                <i class="fas fa-inbox fa-3x"></i>
                                 <p>No recent requests found</p>
                                 <button class="btn-primary" onclick="window.location.href='{{ url('/student-request') }}'">Submit Request</button>
                                 </td>

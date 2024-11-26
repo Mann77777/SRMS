@@ -22,7 +22,7 @@
  
     <div class="content">
         <h1>History</h1>
-        <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p>
+    <!--    <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p> -->
        
         <div class="history-table-container">
             <form action="">

@@ -48,15 +48,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <td>1</td>
-                            <td>Ms Teams</td>
-                            <td>2024-11-01</td>
-                            <td>Pending</td>
-                            <td>
-                                <button class="btn-edit">Edit</button>
-                                <button class="btn-view">View</button>
-                                <button class="btn-delete">Delete</button>
-                            </td>
+                            <tr>
+                                <td>1</td>
+                                <td>Ms Teams</td>
+                                <td>2024-11-01</td>
+                                <td>Pending</td>
+                                <td>
+                                    <button class="btn-edit">Edit</button>
+                                    <button class="btn-view">View</button>
+                                    <button class="btn-delete">Delete</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </form>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">  <!-- Add this line -->
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -12,126 +13,198 @@
     <title>Dashboard</title>
 </head>
 <body>
-
     <!-- Include Navbar -->
-    @include('layouts.navbar')
-
+    @include('layouts.admin-navbar')
+        
     <!-- Include Sidebar -->
-    @include('layouts.sidebar')
+    @include('layouts.admin-sidebar')
 
     <!-- HERO SECTION -->
     <section class="hero">
-        <?php
-        date_default_timezone_set('Asia/Manila'); // Set your timezone
-        $hour = date('H'); // Get the current hour in 24-hour format
-
-        // Determine the greeting based on the current hour
-        if ($hour >= 5 && $hour < 12) {
-            $greeting = "Good Morning";
-        } elseif ($hour >= 12 && $hour < 18) {
-            $greeting = "Good Afternoon";
-        } else {
-            $greeting = "Good Evening";
-        }
-        ?>
-
-        <h1><?php echo $greeting . ", " . Auth::user()->username . "!"; ?></h1>
-
-        <!-- Role-based Buttons -->
-        <!--
-        <div class="button-container">
-            @if(Auth::user()->role === 'Student')
-                <button onclick="window.location.href='/student-request'" class="btn-primary">Request Student Service</button>
-                <button onclick="window.location.href='/student-status'" class="btn-secondary">Check Status</button>
-            @elseif(Auth::user()->role === 'Faculty & Staff')
-                <button onclick="window.location.href='/faculty-service'" class="btn-primary">Request Faculty & Staff Services</button>
-                <button onclick="window.location.href='/faculty-status'" class="btn-secondary">Check Status</button>
-            @endif
+        <div class="container">
+            <div class="hero-content">
+                <h1>
+                    <?php
+                    date_default_timezone_set('Asia/Manila');
+                    $hour = date('H');
+                    $greeting = ($hour >= 5 && $hour < 12) ? "Good Morning" : 
+                               (($hour >= 12 && $hour < 18) ? "Good Afternoon" : "Good Evening");
+                    echo $greeting . ", " . Auth::user()->username . "!";
+                    ?>
+                </h1>
+                <p class="lead">Track and manage your service requests</p>
+            </div>
         </div>
-        -->
-</section>
-
-
-    <section class="container my-4">
-        <div class="row">
-            <!-- Total Requests Card -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card bg-primary text-white">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Requests</h5>
-                        <p class="card-text h1">{{ $totalRequests ?? 0 }}</p>
-                        <a href="">View</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pending Requests Card -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card bg-warning text-white">
-                    <div class="card-body">
-                        <h5 class="card-title">Pending Requests</h5>
-                        <p class="card-text h1">{{ $pendingRequests ?? 0 }}</p>
-                        <a href="">View</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Completed Requests Card -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card bg-success text-white">
-                    <div class="card-body">
-                        <h5 class="card-title">Completed Requests</h5>
-                        <p class="card-text h1">{{ $completedRequests ?? 0 }}</p>
-                        <a href="">View</a>
-                    </div>
-                </div>
-            </div>  
     </section>
 
+    <!-- QUICK ACTIONS -->
+    <section class="quick-actions">
+        <div class="container">
+            <div class="action-buttons">
+                <a href="{{ url('/student-request') }}" class="action-button">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>New Request</span>
+                </a>
+                <a href="{{ url('/myrequests') }}" class="action-button">
+                    <i class="fas fa-list-alt"></i>
+                    <span>My Requests</span>
+                </a>
+                <a href="{{ url('/help') }}" class="action-button">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help Guide</span>
+                </a>
+            </div>
+        </div>
+    </section>
 
-    <!-- Recent Requests Section -->
-     <div class="recentreq-table-container">
-        <h4>Recent Request</h4>
-        <form action="">
-            <div class="recentreq-table">
-                <table class="recentreq-table">
+    <!-- STATUS OVERVIEW -->
+    <section class="status-overview">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="status-card total">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="status-details">
+                            <h3>{{ $totalRequests ?? 0 }}</h3>
+                            <p>Total Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card pending">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="status-details">
+                            <h3>{{ $pendingRequests ?? 0 }}</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card processing">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="status-details">
+                            <h3>{{ $processingRequests ?? 0 }}</h3>
+                            <p>Processing</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card completed">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="status-details">
+                            <h3>{{ $completedRequests ?? 0 }}</h3>
+                            <p>Completed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RECENT REQUESTS -->
+    <section class="recent-requests">
+        <div class="container">
+            <div class="section-header">
+                <h2>Recent Requests</h2>
+                <a href="{{ url('/myrequests') }}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="request-table-wrapper">
+                <table class="request-table">
                     <thead>
                         <tr>
                             <th>Request ID</th>
-                            <th>Service</th>
+                            <th>Service Type</th>
                             <th>Date Submitted</th>
+                            <th>Last Update</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse($recentRequests ?? [] as $request)
                         <tr>
-                            <td>1</td>
-                            <td>MS Teams</td>
-                            <td>2024-11-01</td>
-                            <td>Pending</td>
+                            <td><strong>#{{ $request->id }}</strong></td>
+                            <td>{{ $request->service_type }}</td>
+                            <td>{{ $request->created_at->format('M d, Y') }}</td>
+                            <td>{{ $request->updated_at->diffForHumans() }}</td>
+                            <td>
+                                <span class="status-badge {{ strtolower($request->status) }}">
+                                    {{ $request->status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url('/request/'.$request->id) }}" class="btn-view" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if($request->status === 'Pending')
+                                    <button class="btn-edit" title="Edit Request">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <img src="{{ asset('images/empty-requests.svg') }}" alt="No requests">
+                                <p>No recent requests found</p>
+                                <button class="btn-primary" onclick="window.location.href='{{ url('/student-request') }}'">Submit Request</button>
+                                </td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-        </form>
-     </div>
-    
-    <button class="btn-primary" onclick="window.location.href='{{ url('/submit-request') }}'">Submit Request</button>
+        </div>
+    </section>
+
+    <!-- SERVICE CATEGORIES -->
+    <section class="service-categories">
+        <div class="container">
+            <h2>Available Services</h2>
+            <div class="category-grid">
+                <div class="category-card">
+                    <i class="fas fa-desktop"></i>
+                    <h3>Computer Support</h3>
+                    <p>Hardware & software issues</p>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-print"></i>
+                    <h3>Printer Services</h3>
+                    <p>Printer setup & maintenance</p>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-network-wired"></i>
+                    <h3>Network Support</h3>
+                    <p>Connection & access issues</p>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-user-lock"></i>
+                    <h3>Account Management</h3>
+                    <p>Password reset & access</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
-
+    <script src="{{ asset('js/chatbot.js') }}"></script>
+    
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
    
     <script src="https://cdn.jsdelivr.net/npm/botman-web-widget@0/build/js/widget.js"></script>
 
-    <script>
-        var botmanWidget = {
-            aboutText: 'Powered by BotMan',
-            introMessage: "Welcome to SRMS"
-        };
-    </script>
- 
 </body>
 </html>

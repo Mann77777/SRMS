@@ -53,7 +53,7 @@ class SysadminController extends Controller
             'name' => $request->name,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role' => $role, // Save the normalized role
+            'role' => $request->role, // Save the normalized role
         ]);
 
         // Redirect to login with a success message

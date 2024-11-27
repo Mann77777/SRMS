@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use BotMan\BotMan\BotMan;
 use Illuminate\Http\Request;
 use BotMan\BotMan\Messages\Incoming\Answer;
+use Illuminate\Support\Facades\Log;
 
 class BotManController extends Controller
 {
+    private $confidenceThreshold = 0.6;
+
     /**
      * Handle the incoming messages from the BotMan chatbot.
      */
@@ -17,330 +20,246 @@ class BotManController extends Controller
         
         // Listen for any message
         $botman->hears('{message}', function($botman, $message) {
-            // Convert the message to lowercase to handle case insensitivity
-            $message = strtolower($message);
+            // Convert the message to lowercase and remove special characters
+            $message = strtolower(preg_replace('/[^\w\s]/', '', $message));
             
-            // Greeting
-            if ($this->isGreeting($message)) {
-                $this->askName($botman);
-            }
-            // Service information queries
-            elseif ($this->containsServiceInfoQuery($message)) {
-                $this->serviceInfo($botman);
-            }
-            elseif ($this->containsRequestServiceQuery($message)) {
-                $botman->reply("To request a service, log into our portal and fill out the service request form.");
-            }
-            elseif ($this->containsSupportTypeQuery($message)) {
-                $botman->reply("Yes, you can request both hardware and software support.");
-            }
-            elseif ($this->containsAssistanceQuery($message)) {
-                $botman->reply("We provide remote assistance, but on-site support is not available.");
-            }
-            elseif ($this->containsSubmissionQuery($message)) {
-                $botman->reply("To submit a service request, log into our portal and fill out the service request form.");
-            }
-            elseif ($this->containsRequestLocationQuery($message)) {
-                $botman->reply("You can log a service request by visiting our service request portal. Simply log into your account and submit your request.");
-            }
-            // Tracking service request queries
-            elseif ($this->containsTrackStatusQuery($message)) {
-                $botman->reply("To check the status of your service request, go to the 'Service History' or 'My Requests' section in the portal.");
-            }
-            elseif ($this->containsTrackProgressQuery($message)) {
-                $botman->reply("Yes, you can track the progress by navigating to 'My Requests' and filtering or searching by request ID.");
-            }
-            // Handle common issues
-            elseif ($this->containsInternetIssueQuery($message)) {
-                $botman->reply("Try restarting your router and checking for loose cables. If the problem persists, submit a service request with the details.");
-            }
-            elseif ($this->containsPrinterIssueQuery($message)) {
-                $botman->reply("To request printer support, log into the portal and fill out the service request form with details of the issue.");
-            }
-            // Default response
-            else {
-                $botman->reply("I'm here to help! Please let me know how I can assist you.");
+            // Get the intent and confidence score
+            $intent = $this->determineIntent($message);
+            
+            if ($intent['confidence'] >= $this->confidenceThreshold) {
+                switch ($intent['type']) {
+                    case 'greeting':
+                        $this->handleGreeting($botman);
+                        break;
+                    case 'service_info':
+                        $this->handleServiceInfo($botman);
+                        break;
+                    case 'request_service':
+                        $this->handleRequestService($botman);
+                        break;
+                    case 'track_status':
+                        $this->handleTrackStatus($botman);
+                        break;
+                    case 'technical_support':
+                        $this->handleTechnicalSupport($botman, $message);
+                        break;
+                    default:
+                        $this->handleUnknownQuery($botman, $message);
+                }
+            } else {
+                $this->handleUnknownQuery($botman, $message);
             }
         });
 
         $botman->listen();
     }
 
-
     /**
-     * Check if the message is a follow-up question based on the last query.
+     * Determine the intent of the user's message
      */
-    private function isFollowUpQuery($message)
+    private function determineIntent($message)
     {
-        // This could be enhanced by looking for key terms like 'follow up', 'status', etc.
-        return strpos($message, 'status') !== false || strpos($message, 'follow up') !== false;
-    }
-
-    /**
-     * Handle follow-up questions based on the context stored in user storage.
-     */
-    private function handleFollowUp($botman, $message)
-    {
-        $userData = $botman->userStorage()->get();
-        $lastQuery = $userData['last_query'] ?? null;
-
-        if ($lastQuery == 'request_service') {
-            $botman->reply("You can check the status of your service request by going to the 'My Requests' section in the portal.");
-        } elseif ($lastQuery == 'track_progress') {
-            $botman->reply("For follow-ups on your service request, please ensure you have the request ID handy to track its progress.");
-        } else {
-            $botman->reply("Could you clarify what you mean by follow-up? I'd be happy to assist you further.");
-        }
-    }
-
-
-    /**
-     * Check if the message is a greeting.
-     */
-    private function isGreeting($message)
-    {
-        return $message == 'hi' || $message == 'hello';
-    }
-
-    /**
-     * Check if the message contains a service information query.
-     */
-    private function containsServiceInfoQuery($message)
-    {
-        $patterns = [
-            'what services do you offer',
-            'can you tell me about your services',
-            'what are the available services',
-            'what kind of services do you have',
-            'what are the available services'
+        $intents = [
+            'greeting' => [
+                'patterns' => [
+                    'hi' => 1.0,
+                    'hello' => 1.0,
+                    'hey' => 0.9,
+                    'good morning' => 0.9,
+                    'good afternoon' => 0.9,
+                    'good evening' => 0.9,
+                    'whats up' => 0.8,
+                    'greetings' => 0.8
+                ],
+                'keywords' => ['hi', 'hello', 'hey', 'morning', 'afternoon', 'evening', 'greetings']
+            ],
+            'service_info' => [
+                'patterns' => [
+                    'what services' => 1.0,
+                    'available services' => 1.0,
+                    'services offered' => 0.9,
+                    'list of services' => 0.9,
+                    'show services' => 0.8,
+                    'tell me about services' => 0.8
+                ],
+                'keywords' => ['service', 'services', 'offer', 'available', 'provide', 'help', 'support']
+            ],
+            'request_service' => [
+                'patterns' => [
+                    'request service' => 1.0,
+                    'submit request' => 1.0,
+                    'make request' => 0.9,
+                    'new request' => 0.9,
+                    'create request' => 0.8,
+                    'start request' => 0.8
+                ],
+                'keywords' => ['request', 'submit', 'create', 'new', 'make', 'start']
+            ],
+            'track_status' => [
+                'patterns' => [
+                    'track status' => 1.0,
+                    'check status' => 1.0,
+                    'request status' => 0.9,
+                    'where is my request' => 0.9,
+                    'follow up request' => 0.8
+                ],
+                'keywords' => ['track', 'status', 'check', 'follow', 'where']
+            ],
+            'technical_support' => [
+                'patterns' => [
+                    'technical support' => 1.0,
+                    'tech support' => 1.0,
+                    'help with' => 0.9,
+                    'issue with' => 0.9,
+                    'problem with' => 0.8
+                ],
+                'keywords' => ['technical', 'tech', 'support', 'help', 'issue', 'problem']
+            ]
         ];
 
-        foreach ($patterns as $pattern) {
-            if (strpos(strtolower($message), $pattern) !== false) {
-                return true;
+        $bestMatch = ['type' => 'unknown', 'confidence' => 0];
+
+        foreach ($intents as $type => $data) {
+            // Check exact patterns
+            foreach ($data['patterns'] as $pattern => $confidence) {
+                if (strpos($message, $pattern) !== false) {
+                    if ($confidence > $bestMatch['confidence']) {
+                        $bestMatch = ['type' => $type, 'confidence' => $confidence];
+                    }
+                }
+            }
+
+            // Check keywords
+            if ($bestMatch['confidence'] < $this->confidenceThreshold) {
+                $keywordMatches = 0;
+                $totalKeywords = count($data['keywords']);
+                foreach ($data['keywords'] as $keyword) {
+                    if (strpos($message, $keyword) !== false) {
+                        $keywordMatches++;
+                    }
+                }
+                $confidence = $keywordMatches / $totalKeywords;
+                if ($confidence > $bestMatch['confidence']) {
+                    $bestMatch = ['type' => $type, 'confidence' => $confidence];
+                }
             }
         }
-        return false;
+
+        return $bestMatch;
     }
 
     /**
-     * Check if the message contains a service request query.
+     * Handle unknown queries
      */
-    private function containsRequestServiceQuery($message)
+    private function handleUnknownQuery($botman, $message)
     {
-        $patterns = [
-            'how can i request a service',
-            'how do i request a service',
-            'where can i request a service',
-            'how to submit a service request',
-            'what is the process to request a service',
-            'how do i ask for a service',
-            'where can i log a service request',
-            'can i request a service online',
-            'is there a way to request a service',
-            'how to request',
-            'how to request service'
+        // Log unknown queries for improvement
+        Log::info('Unknown query received: ' . $message);
+        
+        $botman->reply("I'm not quite sure what you're asking about. Here are some things I can help you with:
+        1. Information about our services
+        2. Submitting a service request
+        3. Tracking your request status
+        4. Technical support
 
+        Please let me know which one you'd like to know more about!");
+    }
+
+    /**
+     * Handle greeting messages
+     */
+    private function handleGreeting($botman)
+    {
+        $responses = [
+            "Hello! How can I assist you today?",
+            "Hi there! What can I help you with?",
+            "Greetings! How may I help you?",
+            "Hello! I'm here to help. What do you need?"
         ];
-    
-        foreach ($patterns as $pattern) {
-            if (strpos(strtolower($message), $pattern) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-
-    /**
-     * Check if the message asks about hardware and software support.
-     */
-    private function containsSupportTypeQuery($message)
-    {
-        return strpos($message, 'can i request both hardware and software support') !== false;
+        
+        $botman->reply($responses[array_rand($responses)]);
     }
 
     /**
-     * Check if the message asks about remote or on-site assistance.
+     * Handle service information requests
      */
-    private function containsAssistanceQuery($message)
+    private function handleServiceInfo($botman)
     {
-        $patterns = [
-            'do you provide remote assistance or on-site support',
-            'do you offer remote assistance or on-site support',
-            'can i get remote assistance or on-site support',
-            'do you provide both remote and on-site support',
-            'is remote assistance available or only on-site support',
-            'do you have remote and on-site support options'
-        ];
-    
-        foreach ($patterns as $pattern) {
-            if (strpos(strtolower($message), $pattern) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Check if the message asks how to submit a service request.
-     */
-    private function containsSubmissionQuery($message)
-    {
-        $patterns = [
-            'how do i submit a service request',
-            'how can i submit a service request',
-            'where can i log a service request',
-            'what is the process for submitting a service request',
-            'can you guide me through submitting a service request',
-            'how do i make a request for service',
-            'where do i submit my service request',
-            'how do i report an issue'
-        ];
-    
-        foreach ($patterns as $pattern) {
-            if (strpos(strtolower($message), $pattern) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
+        $serviceInfo = "Here are the services we offer:
 
-    /**
-     * Check if the message asks where to log a service request.
-     */
-    private function containsRequestLocationQuery($message)
-    {
-        return strpos($message, 'where can i log a service request') !== false;
-    }
+        1. Account Management:
+           • MS Office 365, MS Teams, TUP Email
+           • Password Reset and Account Updates
 
-    /**
-     * Check if the message asks about checking the status of a service request.
-     */
-    private function containsTrackStatusQuery($message)
-    {
-        return strpos($message, 'how can i check the status of my service request') !== false;
-    }
+        2. Technical Support:
+           • Computer and Printer Issues
+           • Internet Connectivity
+           • Software Installation
 
-    /**
-     * Check if the message asks about tracking the progress of a service request.
-     */
-    private function containsTrackProgressQuery($message)
-    {
-        $patterns = [
-            'can i track the progress of my service request',
-            'how can i track the progress of my service request',
-            'where can i check the progress of my request',
-            'is there a way to track my service request',
-            'how do i know the progress of my service request',
-            'can i see updates on my service request',
-            'how can i check the status of my request'
-        ];
-    
-        foreach ($patterns as $pattern) {
-            if (strpos(strtolower($message), $pattern) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
+        3. Equipment Services:
+           • Hardware Repairs
+           • Printer Support
+           • Network Setup
 
-    /**
-     * Check if the message mentions an internet connection issue.
-     */
-    private function containsInternetIssueQuery($message)
-    {
-        $patterns = [
-            'i’m facing an issue with my internet connection',
-            'my internet is not working',
-            'i cannot connect to the internet',
-            'having trouble with my internet'
-        ];
-
-        foreach ($patterns as $pattern) {
-            if (strpos(strtolower($message), $pattern) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if the message mentions a printer issue.
-     */
-    private function containsPrinterIssueQuery($message)
-    {
-        $patterns = [
-            'my printer is not working',
-            'printer issue',
-            'cannot print'
-        ];
-
-        foreach ($patterns as $pattern) {
-            if (strpos(strtolower($message), $pattern) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Ask the user for their name when they say 'hi'.
-     */
-    public function askName($botman)
-    {
-        $botman->ask('Hello! What is your name?', function (Answer $answer, $conversation) {
-            $userInput = $answer->getText();
-
-            // Check if the user is saying "I'm [name]" or "I am [name]"
-            if (preg_match('/^i\'m\s+([a-zA-Z]+)$/i', $userInput, $matches) || preg_match('/^i am\s+([a-zA-Z]+)$/i', $userInput, $matches)) {
-                $name = $matches[1];  // Extract name from the matched pattern
-            } else {
-                $name = $userInput;  // If no pattern matches, use the input as the name
-            }
-
-            // Capitalize only the first letter of the name
-            $name = ucfirst(strtolower($name));
-
-            $this->say('Nice to meet you, ' . $name);
-        });
-    }
-
-    /**
-     * Provide general service information.
-     */
-    public function serviceInfo($botman)
-    {
-        $serviceInfo = "
-        UITC offers a range of services, including:
-
-        • MS Office 365, MS Teams, TUP Email
-        - Account Creation, Password Reset, Data Change
-
-        • Attendance Record
-        - Daily Time and Biometric Records
-
-        • Biometrics Enrollment & ID Card
-        - New ID enrollment (with personal info)
-
-        • TUP Web ERES, ERS, TUP Portal
-        - Password Reset, Data Change
-
-        • Internet & Telephone Management
-        - New Connection, Repairs & Maintenance
-
-        • ICT Equipment Management
-        - Computer and Printer Repair, LED Screen Request
-
-        • Software & Website Management
-        - Install Software, Publish/Update Website Info
-
-        • Data/Documents Management
-        - Handling data/documents managed by UITC
-
-        If you need more details about any service, just let me know!
-        ";
+        Would you like more details about any specific service?";
 
         $botman->reply($serviceInfo);
+    }
+
+    /**
+     * Handle service request guidance
+     */
+    private function handleRequestService($botman)
+    {
+        $botman->reply("To submit a service request, please follow these steps:
+        1. Log into your account
+        2. Go to the 'Submit Request' section
+        3. Fill out the service request form
+        4. Provide all necessary details
+        5. Submit your request
+
+        Would you like me to guide you to the request form?");
+    }
+
+    /**
+     * Handle status tracking queries
+     */
+    private function handleTrackStatus($botman)
+    {
+        $botman->reply("You can track your service request status by:
+        1. Logging into your account
+        2. Going to 'My Requests' section
+        3. Finding your request using the ID or date
+        
+        Do you need help finding your request?");
+    }
+
+    /**
+     * Handle technical support queries
+     */
+    private function handleTechnicalSupport($botman, $message)
+    {
+        if (strpos($message, 'internet') !== false) {
+            $botman->reply("For internet issues, try these steps:
+            1. Restart your router
+            2. Check cable connections
+            3. Run network diagnostics
+            
+            If the problem persists, please submit a service request.");
+        } elseif (strpos($message, 'printer') !== false) {
+            $botman->reply("For printer issues:
+            1. Check if the printer is powered on
+            2. Verify paper and ink levels
+            3. Ensure printer is connected to network
+            
+            Need more help? Submit a service request.");
+        } else {
+            $botman->reply("For technical support, please:
+            1. Describe your issue in detail
+            2. Submit a service request
+            3. Our team will respond promptly
+            
+            Would you like to submit a request now?");
+        }
     }
 }

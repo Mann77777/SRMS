@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $role = $request->input('role', 'all');
+        $role = strtolower($request->input('role', 'all'));
         
         // Get regular users
         $usersQuery = User::query();
@@ -36,7 +36,7 @@ class UserController extends Controller
         $users = $usersQuery->get();
         $technicians = $techniciansQuery->get();
         
-        // Combine results
+        // Combine results without transforming to array
         $allUsers = $users->concat($technicians);
         
         if ($request->ajax()) {
@@ -64,6 +64,60 @@ class UserController extends Controller
         
         return response()->json($user);
     }
+
+    
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $userIds = $request->input('users', []);
+            
+            if (empty($userIds)) {
+                return response()->json(['error' => 'No users selected'], 400);
+            }
+
+            $deletedCount = 0;
+            $errors = [];
+
+            foreach ($userIds as $id) {
+                // Try to find user in Users table
+                $user = User::find($id);
+                $isAdmin = false;
+                
+                // If not found in Users table, check Admins table
+                if (!$user) {
+                    $user = Admin::find($id);
+                    $isAdmin = true;
+                }
+                
+                if ($user) {
+                    try {
+                        $user->delete();
+                        $deletedCount++;
+                    } catch (\Exception $e) {
+                        $errors[] = "Failed to delete user {$id}: {$e->getMessage()}";
+                    }
+                } else {
+                    $errors[] = "User {$id} not found";
+                }
+            }
+
+            $message = "{$deletedCount} users deleted successfully";
+            if (!empty($errors)) {
+                $message .= ". Errors: " . implode(", ", $errors);
+            }
+
+            return response()->json([
+                'message' => $message,
+                'deleted_count' => $deletedCount,
+                'errors' => $errors
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to delete users: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function updateUser(Request $request, $id)
     {
@@ -143,7 +197,7 @@ class UserController extends Controller
             }
 
             // Reset password to default
-            $defaultPassword = 'SRMS2023';
+            $defaultPassword = 'SRMS2024';
             $user->password = bcrypt($defaultPassword);
             $user->save();
 
@@ -155,6 +209,36 @@ class UserController extends Controller
             return response()->json([
                 'error' => 'Error resetting password',
                 'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteUser($id)
+    {
+        try {
+            // Try to find user in Users table
+            $user = User::find($id);
+            $isAdmin = false;
+            
+            // If not found in Users table, check Admins table
+            if (!$user) {
+                $user = Admin::find($id);
+                $isAdmin = true;
+            }
+            
+            if (!$user) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+
+            // Delete the user
+            $user->delete();
+
+            return response()->json([
+                'message' => 'User deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to delete user: ' . $e->getMessage()
             ], 500);
         }
     }

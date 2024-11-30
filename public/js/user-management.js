@@ -8,13 +8,20 @@ $(document).ready(function() {
     $('#role').change(function() {
         var selectedRole = $(this).val();
         $.ajax({
-            url: '{{ route("admin.user-management") }}',
+            url: '/user-management',
             type: 'GET',
             data: {
                 role: selectedRole
             },
             success: function(response) {
-                updateTable(response.users);
+                if (response && response.users) {
+                    updateTable(response.users);
+                } else {
+                    console.error('Invalid response format:', response);
+                }
+            },
+            error: function(xhr) {
+                console.error('Error filtering users:', xhr);
             }
         });
     });
@@ -33,10 +40,10 @@ $(document).ready(function() {
                         <strong>Name: </strong>${user.name}<br>
                         <strong>Email: </strong>${user.email || user.username}
                     </td>
-                    <td>${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
+                    <td>${user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</td>
                     <td>
                         <span class="status-badge ${user.status || 'active'}">
-                            ${user.status || 'Active'}
+                            ${user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : 'Active'}
                         </span>
                     </td>
                     <td>
@@ -128,6 +135,13 @@ $(document).ready(function() {
         });
     });
 
+    // Set up CSRF token for all AJAX requests
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
     // Reset Password
     $('.btn-reset').click(function() {
         if (confirm('Are you sure you want to reset this user\'s password?')) {
@@ -158,20 +172,20 @@ $(document).ready(function() {
             $.ajax({
                 url: `/admin/users/${userId}`,
                 type: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
                 success: function(response) {
-                    // Remove the row from the table
                     row.remove();
-                    alert('User deleted successfully');
+                    alert(response.message || 'User deleted successfully');
                 },
                 error: function(xhr) {
-                    alert('Error deleting user: ' + xhr.responseJSON.error);
+                    const errorMsg = xhr.responseJSON && xhr.responseJSON.error 
+                        ? xhr.responseJSON.error 
+                        : 'Failed to delete user. Please try again.';
+                    alert('Error: ' + errorMsg);
                 }
             });
         }
     });
+
 
     // Bulk Delete Users
     $('#bulk-delete').click(function() {
@@ -185,25 +199,21 @@ $(document).ready(function() {
         }
 
         if (confirm(`Are you sure you want to delete ${selectedUsers.length} users? This action cannot be undone.`)) {
-            const promises = selectedUsers.map(userId => {
-                return $.ajax({
-                    url: `/admin/users/${userId}`,
-                    type: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
-            });
-
-            Promise.all(promises)
-                .then(() => {
-                    // Remove all deleted rows
+            $.ajax({
+                url: '/admin/users/bulk-delete',
+                type: 'POST',
+                data: { users: selectedUsers },
+                success: function(response) {
                     $('.user-select:checked').closest('tr').remove();
-                    alert('Selected users deleted successfully');
-                })
-                .catch(error => {
-                    alert('Error deleting some users. Please try again.');
-                });
+                    alert(response.message || 'Selected users deleted successfully');
+                },
+                error: function(xhr) {
+                    const errorMsg = xhr.responseJSON && xhr.responseJSON.error 
+                        ? xhr.responseJSON.error 
+                        : 'Failed to delete users. Please try again.';
+                    alert('Error: ' + errorMsg);
+                }
+            });
         }
     });
 });

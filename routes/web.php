@@ -114,12 +114,16 @@ Route::get('/service-request', function () {
     return view('admin.service-request');
 })->name('admin.service-request'); 
 
-Route::get('/admin/users/{id}', [UserController::class, 'getUser']);
-Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
-Route::delete('/admin/users/{id}', [UserController::class, 'deleteUser']);
-Route::post('/admin/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
-Route::put('/admin/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
-Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
+// User Management Routes
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
+    Route::get('/admin/users/{id}', [UserController::class, 'getUser']);
+    Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
+    Route::delete('/admin/users/{id}', [UserController::class, 'deleteUser']);
+    Route::post('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword']);
+    Route::put('/admin/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+    Route::post('/admin/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
+});
 
 Route::get('/assign-management', function () {
     return view('admin.assign-management');

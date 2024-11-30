@@ -111,6 +111,7 @@
 
     <!-- Add Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/user-management.js') }}"></script>
 </body>
 </html>

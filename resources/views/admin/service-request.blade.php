@@ -14,10 +14,10 @@
 </head>
 <body>
     <!-- Include Navbar -->
-    @include('layouts.navbar')
+    @include('layouts.admin-navbar')
         
     <!-- Include Sidebar -->
-    @include('layouts.sidebar')
+    @include('layouts.admin-sidebar')
 
     <div class="content">
         <h1>Service Request</h1>

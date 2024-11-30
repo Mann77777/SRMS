@@ -17,8 +17,6 @@ body{
     background-color: #f8f9fa;
     height: 130vh;
 }   
-
-
 .content {
     margin-top: 8%;
     margin-left: 23%;
@@ -36,11 +34,7 @@ body{
     margin-bottom: 20px;
     cursor: pointer;
 }
-.dropdown-container,
-.search-container {
-    display: flex;
-    align-items: center;
-}
+
 select {
     width: 180px;
     padding: 10px;
@@ -51,29 +45,40 @@ select {
     margin-right: 20px;
     cursor: pointer;
 }
-.search-container{
+
+.delete-btn {
     display: flex;
-    justify-content: center; /* Horizontally centers the button */
-    align-items: center;     /* Vertically centers the button if needed */
+    gap: 10px;
 }
-.search-container input {
-    width: 250px; /* Set width for search input */
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-}
-.search-btn{
+
+.delete-button,
+.confirm-btn,
+.cancel-btn {
     padding: 10px 20px;
-    margin-left: 2%;
     border: none;
-    border-radius: 10px;
+    border-radius: 20px;
     cursor: pointer;
-    background-color: #04AA6D;
     color: white;
 }
 
-/* Table Styles */
+.delete-button {
+    background-color: #F44336;
+}
+
+.confirm-btn {
+    background-color: #04AA6D;
+}
+
+.cancel-btn {
+    background-color: #008CBA;
+}
+
+.delete-button:hover,
+.confirm-btn:hover,
+.cancel-btn:hover {
+    background-color: #222222;
+}
+
 .request-table-container{
     background-color: white;
     padding: 20px;
@@ -81,12 +86,10 @@ select {
     margin-top: 20px;
     overflow-x: auto;
 }
-
 .request-table{
     width: 100%;
     border-collapse: collapse;
 }
-
 .request-table th, 
 .request-table td{
     padding: 12px;
@@ -98,28 +101,4 @@ select {
 .request-table th{
     background-color: #C4203C;
     color: white;
-    padding: 10px;
-}
-
-
-button {
-    display: block; /* Make buttons stack vertically */
-    width: 50%; /* Optional: Adjust the width to match cell size */
-    margin: 5px 0; /* Add vertical spacing */
-    padding: 6px; /* Add some padding for a better look */
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    color: #ffffff;
-    font-weight: 500;
-}
-
-.btn-edit{
-    background-color: #04AA6D;
-}
-.btn-view{
-    background-color: #008CBA;
-}
-.btn-delete{
-    background-color: #F44336;
 }

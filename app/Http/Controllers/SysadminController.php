@@ -53,16 +53,50 @@ class SysadminController extends Controller
             'name' => $request->name,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'role' => $request->role, // Save the normalized role
         ]);
 
         // Redirect to login with a success message
         return redirect()->route('sysadmin_login')->with('success', 'Admin registered successfully!');
     }
-
     // Show the admin dashboard
     public function showAdminDashboard()
     {
         return view('admin.admin_dashboard'); // Make sure this matches your view file name
+    }
+
+    public function myProfile()
+    {
+        // Logic to show the admin profile
+        return view('admin.admin_myprofile');
+    }
+
+    public function saveAdmin(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',  // Add validation for name
+            'username' => 'required|string|max:255|unique:admins,username',
+            'password' => 'required|string|min:8',
+        ], [
+            'name.required' => 'The name field is required.',
+            'name.string' => 'The name must be a string.',
+            'name.max' => 'The name cannot exceed 255 characters.',
+            'username.unique' => 'The username has already been taken. Please choose another one.',
+            'password.min' => 'The password must be at least 8 characters long.',
+        ]);
+
+
+        // Set the role to "Admin" directly since it's always going to be "Admin"
+        $role = 'Admin';
+
+        
+        Admin::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'role' => $role,  // Directly assigning "Admin"
+        ]);
+
+        return redirect()->route('admin.settings')->with('success', 'Administrator added successfully!');
     }
 }

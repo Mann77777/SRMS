@@ -6,59 +6,59 @@
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="{{ asset('css/profile.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/admin_myprofile.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
+
     <title>My Profile</title>
 </head>
 <body>
 
-  <!-- Include Navbar -->
-  @include('layouts.navbar')
+    <!-- Include Navbar -->
+    @include('layouts.admin-navbar')
 
     <div class="profile-container">
         <h2>My Profile</h2>
         <p>Manage and protect your account</p>
 
-        <!-- Display Profile Image -->
+       <!-- Display Profile Image -->
         <div class="profile-header">
             <div class="profile-image">
-                @if(Auth::user()->profile_image)
-                    <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img">
+                @if(Auth::guard('admin')->check() && Auth::guard('admin')->user()->profile_image)
+                    <img src="{{ asset('storage/' . Auth::guard('admin')->user()->profile_image) }}" alt="Profile Image" class="profile-img">
                 @else
                     <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img">
                 @endif
             </div>
-            <h3 class="username">{{ Auth::user()->name }}</h3>
-        </div>
-        
-        <div class="user-info">
+            @if(Auth::guard('admin')->check() && Auth::guard('admin')->user())
+            <h3 class="username">{{ Auth::guard('admin')->user()->name }}</h3>
+                </div>
+
+                <div class="user-info">
+
             <p>
                 <span class="label">Name:</span>
-                <span class="user-data">{{ Auth::user()->name }}</span>
+                <span class="user-data">{{ Auth::guard('admin')->user()->name }}</span>
             </p>
             <p>  
                 <span class="label">Username:</span>
                 <span class="user-data">
-                    <span id="username-display">{{ Auth::user()->username }}</span>
-                    <input type="text" id="username-input" value="{{ Auth::user()->username }}" style="display:none;">
-                    <span id="edit-username" style="color: blue; cursor: pointer; text-decoration: underline; margin-left: 10px;" data-toggle="modal" data-target="#usernameUpdateModal">Edit</span>
+                    <span id="username-display">{{ Auth::guard('admin')->user()->username }}</span>
+                    <input type="text" id="username-input" value="{{ Auth::guard('admin')->user()->username }}" style="display:none;">
+                    <span id="edit-username" style="color: blue; cursor: pointer; text-decoration: underline; margin-left: 10px;">Edit</span>
                     <span class="save-username-btn" id="save-username-btn" style="display:none; cursor: pointer; color: green; text-decoration: underline; margin-left: 10px;">Save</span>
                 </span>
-            </p>
-            <input type="text" id="username-input" value="{{ Auth::user()->username }}" style="display:none;">
-            <span class="save-username-btn" id="save-username-btn" style="display:none; cursor: pointer; color: green; text-decoration: underline;">Save</span>
-            
-            <p>
-                <span class="label">Email:</span>
-                <span class="user-data">{{ Auth::user()->email }}</span>
             </p>
 
             <p>
                 <span class="label">Role:</span>
-                <span class="user-data">{{ Auth::user()->role }}</span>
+                <span class="user-data">{{ Auth::guard('admin')->user()->role }}</span>
             </p>
+            @else
+                <p>User not logged in.</p>
+            @endif
         </div>
 
+                    
         <!-- Form for uploading profile image -->
         <form action="{{ route('profile.upload') }}" method="POST" enctype="multipart/form-data" class="profile-upload-form">
             @csrf
@@ -66,7 +66,7 @@
             <input type="file" name="profile_image" id="profile_image">
            
             <div class="button-container">
-                <button type="submit" class="upload-btn" data-toggle="modal" data-target="#uploadProfileImageModal">Upload</button>
+                <button type="submit" class="upload-btn">Upload</button>
             </div>       
         </form>
 
@@ -74,11 +74,10 @@
         <form action="{{ route('profile.remove') }}" method="POST" class="remove-image-form">
             @csrf
             <div class="button-container">
-                <button type="submit" class="remove-image-btn" data-toggle="modal" data-target="#removeProfileImageModal">Remove Image</button>
+                <button type="submit" class="remove-image-btn">Remove Image</button>
             </div>
         </form>
 
-        <!-- Password Change Form -->
         <h2 class="changepass-header">Set or Change Password</h2>
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -89,29 +88,20 @@
                 </ul>
             </div>
         @endif
-
-
-        <form action="{{ route('myprofile.setPassword') }}" method="POST" class="password-form">
-            @csrf
-            <div class="form-group">
-                <label for="password" class="label">New Password:</label>
-                <input type="password" name="password" id="password" class="input-field" placeholder="Enter New Password" required>
-            </div>
-            <div class="form-group">
-                <label for="password_confirmation" class="label">Confirm Password:</label>
-                <input type="password" name="password_confirmation" id="password_confirmation" class="input-field" placeholder="Enter Confirm Password" required>
-            </div>
-            <button type="submit" class="btn">Set Password</button>
-        </form>
-
+            <form action="{{ route('myprofile.setPassword') }}" method="POST" class="password-form">
+                @csrf
+                <div class="form-group">
+                    <label for="password"  class="label">New Password</label>
+                    <input type="password" name="password" id="password"  class="input-field" placeholder="Enter New Password" required>
+                </div>
+                <div class="form-group">
+                    <label for="password_confirmation" class="label">Confirm Password</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" class="input-field" placeholder="Enter Confirm Password" required>
+                </div>
+                <button type="submit" class="btn">Set Password</button>
+            </form>
     </div>
 
-    <!-- Include the modal from the subfolder -->
-    @include('users.modals.profile-modal')
-    <script src="{{ asset('js/navbar-sidebar.js') }}" defer></script>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         document.getElementById('edit-username').addEventListener('click', function() {
             // Hide the username display and the edit link
@@ -145,8 +135,14 @@
                     document.getElementById('username-input').style.display = 'none';
                     document.getElementById('save-username-btn').style.display = 'none';
 
-                    // Show success modal
-                    $('#usernameUpdateSuccessModal').modal('show');
+                    // Show success message
+                    const successMessage = document.getElementById('success-message');
+                    successMessage.style.display = 'block';
+
+                    // Hide the success message after 3 seconds
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 3000);
                 } else {
                     alert('Error updating username.');
                 }
@@ -154,25 +150,6 @@
             .catch(error => {
                 console.error('Error:', error);
             });
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if success messages are present
-            if ('{{ session('upload_success') }}') {
-                $('#uploadSuccessModal').modal('show');
-            }
-             // Show the confirmation modal when the user clicks "Remove Image"
-            $('#removeImageBtn').on('click', function() {
-                $('#confirmRemoveImageModal').modal('show');
-            });
-
-            // If the session indicates that the image has been removed, show the success modal
-            if ('{{ session('image_removed') }}') {
-                $('#removeProfileImageModal').modal('show');
-            }
-
-            @if(session('password_changed'))
-                $('#passwordChangeModal').modal('show');
-            @endif
         });
 
     </script>

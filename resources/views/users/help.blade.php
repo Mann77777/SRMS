@@ -75,6 +75,8 @@
         <p><i class="fas fa-phone-alt"></i> Phone: +632-301-3001</p>
     </div>
 
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+    @stack('scripts') 
     <script>
         function toggleAnswer(questionElement) {
             const answerElement = questionElement.nextElementSibling;

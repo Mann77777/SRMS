@@ -1,94 +1,82 @@
-/* General Reset */
-* {
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+*{
+    font-family: "Montserrat", sans-serif;
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
-
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
+body{
+    margin: 0;
+    padding: 0;
+    padding-top: 10px; /* Space for navbar */
+    font-family: "Montserrat", sans-serif;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
     background-color: #f8f9fa;
-}
+    height: 130vh;
+}   
 
-/* Sidebar Styling */
-.sidebar {
-    width: 200px;
-    background-color: #2d2d2d;
-    color: #fff;
-    position: fixed;
-    height: 100vh;
-    padding-top: 20px;
-    padding-left: 10px;
-}
-
-.sidebar a {
-    display: block;
-    padding: 10px;
-    color: #fff;
-    text-decoration: none;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-.sidebar a:hover {
-    background-color: #444;
-    border-radius: 5px;
-}
 
 /* Main Content */
 .content {
-    margin-left: 220px;
-    padding: 20px;
-    width: 100%;
+    margin-top: 130px;
+    padding: 0 30px; 
 }
 
-.dashboard-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
+.content h1{
+    font-size: 2rem;
+    font-weight: 650;
     margin-bottom: 20px;
+    text-align: left;
+    margin-left: 23%;
+    text-transform: uppercase;
 }
 
-/* Stats Container */
-.stats-container {
+.container {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    justify-content: center;
+    align-items: center;
 }
 
-.stat-box {
-    flex: 1;
-    background-color: #fff;
-    padding: 20px;
-    margin: 0 10px;
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Adds space between the cards */
+}
+
+.card {
     border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s;
 }
 
-.stat-box h3 {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.stat-value {
-    font-size: 32px;
-    font-weight: bold;
-    color: #007bff;
-    margin-bottom: 10px;
-}
-
-.stat-box a {
-    color: #007bff;
+.card a{
     text-decoration: none;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.card:hover {
+    transform: scale(1.05); /* Slightly enlarges card on hover */
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    font-size: 2rem;
     font-weight: bold;
 }
 
-.stat-box a:hover {
-    text-decoration: underline;
+.bg-primary {
+    background-color: #007bff !important; /* Bootstrap primary color */
 }
 
 /* Recent Requests Table */

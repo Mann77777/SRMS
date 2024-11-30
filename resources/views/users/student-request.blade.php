@@ -66,8 +66,9 @@
             <button type="submit" class="submitbtn btn-primary">Submit Request</button>
         </div>
 
-    
-    <script>
+        <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+        @stack('scripts')     
+        <script>
         document.getElementById('postPublicationCheckbox').addEventListener('change', function() {
             const detailsSection = document.getElementById('postPublicationDetails');
             detailsSection.style.display = this.checked ? 'block' : 'none';

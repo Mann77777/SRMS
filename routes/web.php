@@ -8,6 +8,7 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\StudentRequestController;
 use App\Http\Controllers\SysadminController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('login');
@@ -31,6 +32,9 @@ Route::middleware(['auth'])->group(function () {
 //Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
 
 Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
+Route::post('/update-username', [ProfileController::class, 'updateUsername'])->name('update-username');
+Route::post('/remove-profile-image', [ProfileController::class, 'removeProfileImage'])->name('removeProfileImage');
+
 
 Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword'])->name('myprofile.setPassword');
 
@@ -49,26 +53,24 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 // Handle Login Form Submission
 Route::post('/login', [AuthController::class, 'login'])->name('login.custom');
 
-// Display Admin login form
-Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
-//Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
-Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+Route::get('/dashboard', function() {
+    return view('users.dashboard'); // Show the dashboard view
+})->name('users.dashboard'); // Name for the dashboard route
 
-Route::get('/admin_dashboard', function() {
-    return view('admin.dashboard'); // Make sure this view exists
-})->name('admin_dashboard');
+Route::get('/myrequests', function() {
+    return view('users.myrequests'); 
+})->name('users.myrequests'); 
 
+Route::get('/service-history', function () {
+    return view('users.service-history');
+})->name('service-history');
 
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
+Route::get('/help', function() {
+    return view('users.help'); 
+})->name('users.help'); 
 
-Route::get('/admin_register', [SysadminController::class, 'showAdminRegisterForm'])->name('admin_register');
-Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->name('adminregister.custom');
-
-//Admin dashboard
-Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
-});
+// BotMan/Chatbot
+Route::match(['get', 'post'], '/botman', 'App\Http\Controllers\BotManController@handle');
 
 Route::get('/myprofile', function () {
     return view('users.myprofile');
@@ -83,22 +85,66 @@ Route::post('/logout', function () {
     return redirect('login'); // Redirect to welcome page or wherever you want
 })->name('logout');
 
-Route::get('/dashboard', function() {
-    return view('users.dashboard'); // Show the dashboard view
-})->name('users.dashboard'); // Name for the dashboard route
+// ADMIN ROUTE
+Route::get('/admin_dashboard', function() {
+    return view('admin.dashboard'); // Make sure this view exists
+})->name('admin_dashboard');
+
+// Display Admin login form
+Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
+//Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
+
+Route::get('/admin_register', [SysadminController::class, 'showAdminRegisterForm'])->name('admin_register');
+Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->name('adminregister.custom');
+
+//Admin dashboard
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
+});
+
+    Route::get('/admin_myprofile', function () {
+    return view('admin.admin_myprofile');
+})->name('admin.admin_myprofile'); 
+
+Route::get('/service-request', function () {
+    return view('admin.service-request');
+})->name('admin.service-request'); 
+
+Route::get('/admin/users/{id}', [UserController::class, 'getUser']);
+Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
+Route::delete('/admin/users/{id}', [UserController::class, 'deleteUser']);
+Route::post('/admin/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
+Route::put('/admin/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
+
+Route::get('/assign-management', function () {
+    return view('admin.assign-management');
+})->name('admin.assign-management'); 
+
+Route::get('/admin_report', function () {
+    return view('admin.admin_report');
+})->name('admin.admin_report'); 
+
+Route::get('/settings', function () {
+    return view('admin.settings');
+})->name('admin.settings'); 
+
+// Route to display the "Add Administrator" form (GET request)
+Route::get('/admin/add', [SysadminController::class, 'showAddAdminForm'])->name('admin.add');
+
+// Route to handle form submission and save the admin (POST request)
+Route::post('/admin/save', [SysadminController::class, 'saveAdmin'])->name('admin.save');
+
+Route::post('/admin_logout', function () {
+    Auth::logout();
+    return redirect('sysadmin_login'); // Redirect to the login page
+})->name('admin.logout');
 
 
-Route::get('/myrequests', function() {
-    return view('users.myrequests'); 
-})->name('users.myrequests'); 
-
-Route::get('/service-history', function () {
-    return view('users.service-history');
-})->name('service-history');
-
-Route::get('/help', function() {
-    return view('users.help'); 
-})->name('users.help'); 
 
 //Route::get('home', function(){
 //    return view('home');

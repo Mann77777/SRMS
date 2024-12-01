@@ -40,7 +40,10 @@
 
             <!-- Search Bar -->
             <div class="search-container">
-                <input type="text" id="user-search" name="user-search" placeholder="Search users...">
+                <div class="search-input-wrapper">
+                    <input type="text" id="user-search" name="user-search" placeholder="Search users...">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
             </div>
 
             <!-- Bulk Actions -->

@@ -125,9 +125,23 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
 });
 
-Route::get('/assign-management', function () {
-    return view('admin.assign-management');
-})->name('admin.assign-management'); 
+    // TECHNICIAN/UITC STAFF ROUTES
+    Route::get('/assign-request', function () {
+        return view('uitc_staff.assign-request');
+    })->name('uitc_staff.assign-request'); 
+
+    Route::get('/assign-history', function () {
+        return view('uitc_staff.assign-history');
+    })->name('uitc_staff.assign-history'); 
+
+    Route::get('/technician-report', function () {
+        return view('uitc_staff.technician-report');
+    })->name('uitc_staff.technician-report');
+    
+
+Route::get('/service-management', function () {
+    return view('admin.service-management');
+})->name('admin.service-management'); 
 
 Route::get('/admin_report', function () {
     return view('admin.admin_report');
@@ -147,8 +161,6 @@ Route::post('/admin_logout', function () {
     Auth::logout();
     return redirect('sysadmin_login'); // Redirect to the login page
 })->name('admin.logout');
-
-
 
 //Route::get('home', function(){
 //    return view('home');

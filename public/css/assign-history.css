@@ -47,7 +47,6 @@ select {
     cursor: pointer;
 }
 
-
 .search-container {
     position: relative;
     width: 100%;
@@ -77,30 +76,29 @@ select {
     pointer-events: none; /* Makes the icon not interfere with the input */
 }
 
-/* Bulk Actions */
-.bulk-actions {
+/* Date Filter Styling */
+.date-filter {
     display: flex;
+    align-items: center;
     gap: 10px;
 }
 
-.bulk-actions button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.date-filter label {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 0;
 }
 
-.btn-export {
-    background-color: #28a745;
-    color: white;
+.date-filter input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
 }
 
-/* Table Styles */
-.user-table-container{
+
+
+.assignhistory-table-container{
     background-color: white;
     padding: 20px;
     border-radius: 8px;
@@ -108,31 +106,30 @@ select {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow-x: auto;
 }
-.users-table{
+.assignhistory-table{
     width: 100%;
     border-collapse: collapse;
 }
-.users-table th, 
-.users-table td{
+.assignhistory-table th,
+.assignhistory-table td{
     padding: 12px;
     border-bottom: 1px solid #ddd;
     text-align: left;
 }
-.users-table thead th{
+.assignhistory-table thead th{
     background-color: #C4203C;
     color: white;
     font-weight: 600;
     padding: 12px;
 }
-.users-table tbody tr:hover{
+.assignhistory-table tbody tr:hover{
     background-color: #f8f9fa;
 }
 
 /* Action Buttons */
-
 button {
     display: block; /* Make buttons stack vertically */
-    width: 85%; /* Optional: Adjust the width to match cell size */
+    width: 90%; /* Optional: Adjust the width to match cell size */
     margin: 5px 0; /* Add vertical spacing */
     padding: 6px; /* Add some padding for a better look */
     border: none;
@@ -148,37 +145,4 @@ button {
 
 .btn-status {
     background-color: #FFC107;  /* Yellow */
-}
-
-.btn-reset {
-    background-color: #6C757D;  /* Gray */
-}
-
-.btn-delete {
-    background-color: #DC3545;  /* Red */
-}
-
-/* Status Badge */
-.status-badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.9em;
-    text-transform: capitalize;
-}
-
-.status-badge.active {
-    background-color: #28a745;
-    color: white;
-}
-
-.status-badge.inactive {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* Checkbox Styles */
-input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
 }

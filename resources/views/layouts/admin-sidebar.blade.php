@@ -5,7 +5,7 @@
             @if(Auth::guard('admin')->user()->role === 'Admin')
                 <!-- Admin Sidebar Links -->
                 <li class="item">
-                    <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('dashboard') ? 'active' : '' }}">
+                    <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('admin_dashboard') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-dashboard"></i>
                         </span>
@@ -32,16 +32,16 @@
                 </li>
 
                 <li class="item">
-                    <a href="{{ url('/assign-management') }}" class="nav_link {{ request()->is('assign-management') ? 'active' : '' }}">
+                    <a href="{{ url('/service-management') }}" class="nav_link {{ request()->is('service-management') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bx-history"></i>
                         </span>
-                        <span class="navlink">Assign Management</span>
+                        <span class="navlink">Service Management</span>
                     </a>
                 </li>
 
                 <li class="item">
-                    <a href="{{ url('/admin_report') }}" class="nav_link {{ request()->is('report') ? 'active' : '' }}">
+                    <a href="{{ url('/admin_report') }}" class="nav_link {{ request()->is('admin_report') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-chat"></i>
                         </span>
@@ -60,7 +60,7 @@
             @elseif(Auth::guard('admin')->user()->role === 'Technician')
                 <!-- Technician Status Overview -->
                 <li class="item">
-                    <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('dashboard') ? 'active' : '' }}">
+                    <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('admin_dashboard') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-dashboard"></i>
                         </span>
@@ -69,11 +69,11 @@
                 </li>
 
                 <li class="item">
-                    <a href="{{ url('/assign-request') }}" class="nav_link {{ request()->is('assign-requestt') ? 'active' : '' }}">
+                    <a href="{{ url('/assign-request') }}" class="nav_link {{ request()->is('assign-request') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-book-open"></i>
                         </span>
-                        <span class="navlink">Assign Request</span>
+                        <span class="navlink">Assignment Request</span>
                     </a>
                 </li>
 
@@ -82,12 +82,22 @@
                         <span class="navlink_icon">
                             <i class="bx bx-history"></i>
                         </span>
-                        <span class="navlink">Assign History</span>
+                        <span class="navlink">Assigned History</span>
                     </a>
                 </li>
 
+               <!-- <li class="item">
+                    <a href="{{ url('/work-schedule') }}" class="nav_link {{ request()->is('work-schedule') ? 'active' : '' }}">
+                        <span class="navlink_icon">
+                            <i class="bx bx-calendar"></i>
+                        </span>
+                        <span class="navlink">Work Schedule</span>
+                    </a>
+                </li> -->
+
+
                 <li class="item">
-                    <a href="{{ url('/technician_report') }}" class="nav_link {{ request()->is('report') ? 'active' : '' }}">
+                    <a href="{{ url('/technician-report') }}" class="nav_link {{ request()->is('technician-report') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-chat"></i>
                         </span>

@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
-    <title>Admin Dashboard</title>
+    <title>Dashboard</title>
 </head>
 <body>
     <!-- Include Navbar -->
@@ -221,15 +221,15 @@
     <section class="quick-actions">
         <div class="container">
             <div class="action-buttons">
-                <a href="{{ url('/technician/tasks') }}" class="action-button">
+                <a href="{{ url('/assign-request') }}" class="action-button">
                     <i class="fas fa-tasks"></i>
                     <span>View Tasks</span>
                 </a>
-                <a href="{{ url('/technician/completed') }}" class="action-button">
+                <a href="{{ url('/assign-history') }}" class="action-button">
                     <i class="fas fa-history"></i>
                     <span>Service History</span>
                 </a>
-                <a href="{{ url('/technician/profile') }}" class="action-button">
+                <a href="{{ url('/admin_myprofile') }}" class="action-button">
                     <i class="fas fa-user-cog"></i>
                     <span>My Profile</span>
                 </a>

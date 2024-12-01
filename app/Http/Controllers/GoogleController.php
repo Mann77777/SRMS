@@ -53,6 +53,11 @@ class GoogleController extends Controller
                     ]
                 );
             } else {
+                // Check if user is inactive
+                if ($is_user->status === 'inactive' || $is_user->status === 0) {
+                    return redirect()->route('login')->with('error', 'Your account is inactive. Please contact the administrator.');
+                }
+                
                 // Update existing user
                 $is_user->update([
                     'google_id' => $user->getId(),

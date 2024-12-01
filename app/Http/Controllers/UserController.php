@@ -174,7 +174,8 @@ class UserController extends Controller
         $user->save();
 
         return response()->json([
-            'message' => 'Status updated successfully',
+            'success' => true,
+            'message' => "User status has been changed to {$user->status}",
             'status' => $user->status
         ]);
     }

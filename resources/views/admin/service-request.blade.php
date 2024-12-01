@@ -23,6 +23,7 @@
         <h1>Service Request</h1>
         <div class="dropdown-container">
             <select id="status" name="status_id">
+                <option value="all">All Status</option>
                 <option value="peding">Pending</option>
                 <option value="in progress">In Progress</option>
                 <option value="completed">Completed</option>
@@ -46,6 +47,7 @@
                             <th>Services</th>
                             <th>Request Date & Time</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>

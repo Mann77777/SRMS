@@ -20,9 +20,22 @@ class AuthController extends Controller
     {
         $credentials = $request->only('username', 'password');
 
+        // First check if the user exists
+        $user = User::where('username', $request->username)->first();
+
+        // Check if user exists and is inactive (using strict comparison)
+        if ($user && ($user->status === 'inactive' || $user->status === 0)) {
+            return back()->with('error', 'Your account is inactive. Please contact the administrator.');
+        }
+
         // Attempt to log the user in
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('dashboard'); // Redirect to dashboard or another intended page
+            // Double-check status after authentication
+            if (Auth::user()->status === 'inactive' || Auth::user()->status === 0) {
+                Auth::logout();
+                return back()->with('error', 'Your account is inactive. Please contact the administrator.');
+            }
+            return redirect()->intended('dashboard');
         }
 
         return back()->with('error', 'Invalid username or password.');
@@ -78,11 +91,19 @@ class AuthController extends Controller
             'role' => 'user', // Assign a default role or however you want to manage roles
         ]);
 
+        // Check if user is inactive before logging in
+        if ($user->status === 'inactive' || $user->status === 0) {
+            return redirect()->route('login')
+                ->with('error', 'Your account is inactive. Please contact the administrator.');
+        }
+
         // Log the user in
         Auth::login($user);
 
         return redirect()->intended('dashboard');
     }
+
+    
 
     // Handle the logout process
     public function logout(Request $request)

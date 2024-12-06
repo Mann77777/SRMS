@@ -36,6 +36,8 @@
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
+                <option value="pending_verification">Pending Verification</option>
+                <option value="verified">Verified</option>
             </select>
 
             <!-- Search Bar -->
@@ -69,6 +71,7 @@
                             <th>Role</th>
                             <th>Status</th>
                             <th>Account Created</th>
+                            <th>Verification Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -80,7 +83,9 @@
                             <td>
                                 <strong>Name: </strong>{{ $user->name }}<br>
                                 <strong>Username: </strong>{{ $user->username }}<br>
-                                <strong>Email: </strong>{{ isset($user->email) ? $user->email : $user->username }}
+                                <strong>Email: </strong>{{ isset($user->email) ? $user->email : $user->username }} <br>
+                                <strong>Student ID: </strong>{{ isset($user->student_id) ? $user->student_id : $user->username }}
+
                             </td>
                             <td>{{ ucfirst($user->role) }}</td>
                             <td>
@@ -92,6 +97,24 @@
                                 <strong>Date: </strong>{{ $user->created_at->format('Y-m-d') }}<br>
                                 <strong>Time: </strong>{{ $user->created_at->format('h:i A') }}
                             </td>
+
+                            <td>
+                                @if($user->role === 'Student')
+                                    @if(!$user->email_verified_at)
+                                        <span class="status-badge pending">Email Unverified</span>
+                                    @elseif(!$user->student_id)
+                                        <span class="status-badge pending">Details Required</span>
+                                    @elseif(!$user->admin_verified)
+                                        <span class="status-badge pending">Pending Verification</span>
+                                        <button class="btn-verify" title="Verify Student" data-id="{{ $user->id }}">Verify</button>
+                                    @else
+                                        <span class="status-badge verified">Verified</span>
+                                    @endif
+                                @else
+                                    <span class="status-badge">N/A</span>
+                                @endif
+                            </td>
+
                             <td class="b">
                                 <button class="btn-edit" title="Edit" data-id="{{ $user->id }}">Edit</button>
                                 <button class="btn-status" title="Toggle Status" data-id="{{ $user->id }}">Status</button>
@@ -108,6 +131,7 @@
 
     <!-- Include the modal from the admin > modal -->
     @include('admin.modal.usermanagement-modal')
+    @include('admin.modal.verify-student')
 
     <!-- Add jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

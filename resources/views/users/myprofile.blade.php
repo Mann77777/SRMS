@@ -54,8 +54,18 @@
             </p>
 
             <p>
+                <span class="label">Student ID:</span>
+                <span class="user-data">{{ Auth::user()->student_id }}</span>
+            </p>
+
+            <p>
                 <span class="label">Role:</span>
                 <span class="user-data">{{ Auth::user()->role }}</span>
+            </p>
+
+            <p>
+                <span class="label">Verification Status:</span>
+                <span class="user-data">{{ Auth::user()->verification_status }}</span>
             </p>
         </div>
 

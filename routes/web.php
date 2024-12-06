@@ -1,12 +1,20 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\StudentRequestController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SysadminController;
 use App\Http\Controllers\UserController;
 
@@ -22,10 +30,19 @@ Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle
 //Route::get('/home', [ProfileController::class, 'show'])->name('home'); // Use ProfileController to show the profile
 //Route::post('/home/update', [ProfileController::class, 'update'])->name('profile.update'); // Use ProfileController to update the profile
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', function() {
+        return view('users.dashboard'); // Show the dashboard view
+    })->name('users.dashboard'); // Name for the dashboard route
+
     Route::get('/myprofile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/myprofile/upTodate', [ProfileController::class, 'upTodate'])->name('profile.upTodate');
     Route::post('/myprofile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
     Route::post('/myprofile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
+
+    // Student Details Routes
+    Route::get('/student/details', [StudentController::class, 'showDetailsForm'])->name('student.details.form');
+    Route::post('/student/details', [StudentController::class, 'submitDetails'])->name('student.details.submit');
 });
 
 //Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
@@ -53,9 +70,86 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 // Handle Login Form Submission
 Route::post('/login', [AuthController::class, 'login'])->name('login.custom');
 
-Route::get('/dashboard', function() {
-    return view('users.dashboard'); // Show the dashboard view
-})->name('users.dashboard'); // Name for the dashboard route
+// Email Verification Routes
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    
+    // Redirect to details form only for students
+    if (Auth::user()->role === 'Student') {
+        return redirect()->route('student.details.form')->with('message', 'Email verified! Please complete your student details.');
+    }
+    
+    // For other roles, redirect to dashboard
+    return redirect()->route('users.dashboard')->with('message', 'Email verified!');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+// Password Reset Routes
+Route::get('/forgot-password', function () {
+    return view('auth.forgot-password');
+})->middleware('guest')->name('password.request');
+
+Route::post('/forgot-password', function (Request $request) {
+    $request->validate(['email' => 'required|email']);
+ 
+    $status = Password::sendResetLink(
+        $request->only('email')
+    );
+ 
+    return $status === Password::RESET_LINK_SENT
+                ? back()->with(['status' => __($status)])
+                : back()->withErrors(['email' => __($status)]);
+})->middleware('guest')->name('password.email');
+
+Route::get('/reset-password/{token}', function ($token) {
+    return view('auth.reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset');
+
+Route::post('/reset-password', function (Request $request) {
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
+ 
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
+ 
+            $user->save();
+ 
+            event(new PasswordReset($user));
+        }
+    );
+ 
+    return $status === Password::PASSWORD_RESET
+                ? redirect()->route('login')->with('status', __($status))
+                : back()->withErrors(['email' => [__($status)]]);
+})->middleware('guest')->name('password.update');
+
+// Admin Verification Routes
+Route::get('/admin/student/{id}/details', [UserController::class, 'getStudentDetails'])
+    ->middleware(['auth', 'admin'])
+    ->name('admin.student.details');
+
+Route::post('/admin/student/{id}/verify', [UserController::class, 'verifyStudent'])
+    ->middleware(['auth', 'admin'])
+    ->name('admin.student.verify');
+
+Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifications'])
+    ->middleware(['auth', 'admin'])
+    ->name('admin.verify.students');
 
 Route::get('/myrequests', function() {
     return view('users.myrequests'); 
@@ -85,14 +179,8 @@ Route::post('/logout', function () {
     return redirect('login'); // Redirect to welcome page or wherever you want
 })->name('logout');
 
-// ADMIN ROUTE
-Route::get('/admin_dashboard', function() {
-    return view('admin.dashboard'); // Make sure this view exists
-})->name('admin_dashboard');
-
-// Display Admin login form
+// ADMIN ROUTES
 Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
-//Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
 Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
@@ -101,21 +189,16 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.cu
 Route::get('/admin_register', [SysadminController::class, 'showAdminRegisterForm'])->name('admin_register');
 Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->name('adminregister.custom');
 
-//Admin dashboard
 Route::middleware(['auth:admin'])->group(function () {
+    // Dashboard
     Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
-});
-
+    
+    // Profile
     Route::get('/admin_myprofile', function () {
-    return view('admin.admin_myprofile');
-})->name('admin.admin_myprofile'); 
-
-Route::get('/service-request', function () {
-    return view('admin.service-request');
-})->name('admin.service-request'); 
-
-// User Management Routes
-Route::middleware(['auth:admin'])->group(function () {
+        return view('admin.admin_myprofile');
+    })->name('admin.admin_myprofile');
+    
+    // User Management
     Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
     Route::get('/admin/users/{id}', [UserController::class, 'getUser']);
     Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
@@ -123,45 +206,50 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword']);
     Route::put('/admin/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
     Route::post('/admin/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
+    
+    // Student Verification
+    Route::get('/admin/student/{id}/details', [UserController::class, 'getStudentDetails'])->name('admin.student.details');
+    Route::post('/admin/student/{id}/verify', [UserController::class, 'verifyStudent'])->name('admin.student.verify');
+    Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifications'])->name('admin.verify.students');
+    
+    // Other Admin Routes
+    Route::get('/service-request', function () {
+        return view('admin.service-request');
+    })->name('admin.service-request');
+    
+    Route::get('/service-management', function () {
+        return view('admin.service-management');
+    })->name('admin.service-management');
+    
+    Route::get('/admin_report', function () {
+        return view('admin.admin_report');
+    })->name('admin.admin_report');
+    
+    Route::get('/settings', function () {
+        return view('admin.settings');
+    })->name('admin.settings');
+    
+    // Route to display the "Add Administrator" form (GET request)
+    Route::get('/admin/add', [SysadminController::class, 'showAddAdminForm'])->name('admin.add');
+
+    // Route to handle form submission and save the admin (POST request)
+    Route::post('/admin/save', [SysadminController::class, 'saveAdmin'])->name('admin.save');
+
+    Route::post('/admin_logout', function () {
+        Auth::logout();
+        return redirect('sysadmin_login'); // Redirect to the login page
+    })->name('admin.logout');
 });
 
-    // TECHNICIAN/UITC STAFF ROUTES
-    Route::get('/assign-request', function () {
-        return view('uitc_staff.assign-request');
-    })->name('uitc_staff.assign-request'); 
+// TECHNICIAN/UITC STAFF ROUTES
+Route::get('/assign-request', function () {
+    return view('uitc_staff.assign-request');
+})->name('uitc_staff.assign-request'); 
 
-    Route::get('/assign-history', function () {
-        return view('uitc_staff.assign-history');
-    })->name('uitc_staff.assign-history'); 
+Route::get('/assign-history', function () {
+    return view('uitc_staff.assign-history');
+})->name('uitc_staff.assign-history'); 
 
-    Route::get('/technician-report', function () {
-        return view('uitc_staff.technician-report');
-    })->name('uitc_staff.technician-report');
-    
-
-Route::get('/service-management', function () {
-    return view('admin.service-management');
-})->name('admin.service-management'); 
-
-Route::get('/admin_report', function () {
-    return view('admin.admin_report');
-})->name('admin.admin_report'); 
-
-Route::get('/settings', function () {
-    return view('admin.settings');
-})->name('admin.settings'); 
-
-// Route to display the "Add Administrator" form (GET request)
-Route::get('/admin/add', [SysadminController::class, 'showAddAdminForm'])->name('admin.add');
-
-// Route to handle form submission and save the admin (POST request)
-Route::post('/admin/save', [SysadminController::class, 'saveAdmin'])->name('admin.save');
-
-Route::post('/admin_logout', function () {
-    Auth::logout();
-    return redirect('sysadmin_login'); // Redirect to the login page
-})->name('admin.logout');
-
-//Route::get('home', function(){
-//    return view('home');
-// })->name('home');
+Route::get('/technician-report', function () {
+    return view('uitc_staff.technician-report');
+})->name('uitc_staff.technician-report');

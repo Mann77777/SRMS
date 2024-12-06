@@ -35,7 +35,15 @@ class AuthController extends Controller
                 Auth::logout();
                 return back()->with('error', 'Your account is inactive. Please contact the administrator.');
             }
-            return redirect()->intended('dashboard');
+            // Check if email is verified
+            if (!Auth::user()->hasVerifiedEmail()) {
+                return redirect()->route('verification.notice');
+            }
+            // Check if student details are filled
+            if (Auth::user()->role === 'Student' && (!Auth::user()->student_id || !Auth::user()->course)) {
+                return redirect()->route('student.details.form');
+            }
+            return redirect()->route('users.dashboard');
         }
 
         return back()->with('error', 'Invalid username or password.');
@@ -68,6 +76,12 @@ class AuthController extends Controller
 
         Auth::login($user);
         return redirect()->intended('dashboard')->with('success', 'Registration successful!');
+
+        /* Send verification email
+        $user->sendEmailVerificationNotification();
+        
+        return redirect()->route('verification.notice')
+            ->with('success', 'Registration successful! Please verify your email.'); */
     }
 
     // Redirect to Google for authentication
@@ -88,7 +102,8 @@ class AuthController extends Controller
             'username' => $googleUser->getName(),
             'name' => $googleUser->getName(),
             'password' => Hash::make(uniqid()), // Generate a random password
-            'role' => 'user', // Assign a default role or however you want to manage roles
+            'role' => 'Student', // Default role for Google login
+            'email_verified_at' => now(), // Google accounts are pre-verified
         ]);
 
         // Check if user is inactive before logging in
@@ -100,10 +115,13 @@ class AuthController extends Controller
         // Log the user in
         Auth::login($user);
 
-        return redirect()->intended('dashboard');
-    }
+        // If student details are not filled, redirect to details form
+        if ($user->role === 'Student' && (!$user->student_id || !$user->course)) {
+            return redirect()->route('student.details.form');
+        }
 
-    
+        return redirect()->route('users.dashboard');
+    }
 
     // Handle the logout process
     public function logout(Request $request)

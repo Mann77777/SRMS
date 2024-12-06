@@ -217,3 +217,80 @@ $(document).ready(function() {
         }
     });
 });
+
+
+// Show verification modal
+$(document).on('click', '.btn-verify', function() {
+    const userId = $(this).data('id');
+    
+    // Fetch student details
+    $.ajax({
+        url: `/admin/student/${userId}/details`,
+        method: 'GET',
+        success: function(student) {
+            $('#student-name').text(student.name);
+            $('#student-email').text(student.email);
+            $('#student-id').text(student.student_id);
+            $('#student-course').text(student.course || 'Not provided');
+            $('#student-year').text(student.year_level || 'Not provided');
+            $('#student-verification-status').text(student.verification_status || 'Pending Verification');
+            
+            // Store user ID for verification
+            $('#verifyStudentModal').data('userId', userId);
+            
+            // Show the modal
+            $('#verifyStudentModal').modal('show');
+        },
+        error: function(xhr) {
+            alert('Error fetching student details');
+            console.error(xhr);
+        }
+    });
+});
+// Handle verification decision
+$('#verification-decision').change(function() {
+    if ($(this).val() === 'reject') {
+        $('#rejection-notes').show();
+    } else {
+        $('#rejection-notes').hide();
+    }
+});
+
+// Submit verification
+$('#submit-verification').click(function() {
+    const userId = $('.btn-verify').data('id');
+    const decision = $('#verification-decision').val();
+    const notes = $('#admin-notes').val();
+
+    if (decision === 'reject' && !notes.trim()) {
+        alert('Please provide rejection notes');
+        return;
+    }
+
+    $.ajax({
+        url: `/admin/student/${userId}/verify`,
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            decision: decision,
+            notes: notes
+        },
+        success: function(response) {
+            if (response.success) {
+                $('#verifyStudentModal').modal('hide');
+                // Refresh table or update status
+                location.reload();
+            }
+        },
+        error: function(xhr) {
+            if (xhr.status === 401) {
+                alert('You are not authorized to perform this action. Please log in as an admin.');
+            } else {
+                alert('Error processing verification. Please try again.');
+            }
+            console.error('Error:', xhr);
+        }
+    });
+});

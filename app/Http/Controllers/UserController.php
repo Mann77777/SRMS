@@ -243,4 +243,57 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function getPendingVerifications()
+    {
+        $pendingUsers = User::where('verification_status', 'pending_admin')
+            ->where('role', 'Student')
+            ->get();
+            
+        return view('admin.verify-students', ['students' => $pendingUsers]);
+    }
+
+    public function verifyStudent(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            if ($request->decision === 'approve') {
+                $user->update([
+                    'admin_verified' => true,
+                    'verification_status' => 'verified',
+                    'status' => 'active',  // Activate account when approved
+                    'admin_verification_notes' => $request->notes ?? 'Account verified by admin'
+                ]);
+                $message = 'Student account has been verified and activated successfully';
+            } else {
+                $user->update([
+                    'admin_verified' => false,
+                    'verification_status' => 'rejected',
+                    'status' => 'inactive',  // Keep account inactive when rejected
+                    'admin_verification_notes' => $request->notes ?? 'Account verification rejected by admin'
+                ]);
+                $message = 'Student account verification has been rejected';
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error verifying student: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Error processing verification. Please try again.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getStudentDetails($id)
+    {
+        $user = User::findOrFail($id);
+        return response()->json($user);
+    }
 }

@@ -32,6 +32,7 @@
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
             </div>
             <button type="submit" class="login-btn btn-primary btn-block">Sign In</button>
+         
         </form>
 
         <!-- OR separator -->

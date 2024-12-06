@@ -182,3 +182,36 @@ input[type="checkbox"] {
     height: 16px;
     cursor: pointer;
 }
+
+
+/* Add to public/css/user-management.css */
+.status-badge.pending {
+    color: #000;
+}
+
+.status-badge.verified {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-verify {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.btn-verify:hover {
+    background-color: #0056b3;
+}
+
+#rejection-notes {
+    margin-top: 10px;
+}
+
+#admin-notes {
+    width: 100%;
+    margin-top: 5px;
+}

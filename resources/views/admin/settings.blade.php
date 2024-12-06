@@ -27,8 +27,8 @@
             <!-- Add Administrator Button -->
             <button type="button" id="add-admin-btn" class="btn btn-primary">Add Administrator</button>
 
-            <!-- Logout Button -->
-            <button type="button" class="btn logout-btn" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</button>
+            <!-- Logout Button 
+            <button type="button" class="btn logout-btn" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</button> -->
             
             <!-- Logout Form (Hidden) -->
             <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">

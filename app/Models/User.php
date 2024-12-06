@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\CustomVerifyEmail;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -24,29 +25,57 @@ class User extends Authenticatable
         'role',
         'password',
         'google_id',
-        'status' 
+        'status',
+        'email_verified_at',
+        'student_id',
+        'course',
+        'year_level',
+        'verification_status',
+        'admin_verified',
+        'admin_verification_notes',
+        'employee_id'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'admin_verified' => 'boolean',
+    ];
+
+    public function sendEmailVerificationNotification()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        $this->notify(new CustomVerifyEmail);
     }
+
+    // Helper methods for verification status
+    public function isEmailVerified()
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    public function isPendingAdminVerification()
+    {
+        return $this->isEmailVerified() && !$this->admin_verified;
+    }
+
+    public function isFullyVerified()
+    {
+        return $this->isEmailVerified() && $this->admin_verified;
+    }
+
+    public function canAccessDashboard()
+    {
+        return $this->isEmailVerified();
+    }
+
+    public function canSubmitRequests()
+    {
+        return $this->isFullyVerified();
+    }
+
+    
 }

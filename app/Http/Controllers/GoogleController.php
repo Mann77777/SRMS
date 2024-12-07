@@ -39,19 +39,30 @@ class GoogleController extends Controller
             }
     
             // Find or create user
-            $user = User::updateOrCreate(
-                ['email' => $email],
-                [
+            $existingUser = User::where('email', $email)->first();
+            
+            if ($existingUser) {
+                // Update only Google-related fields for existing users
+                $existingUser->update([
+                    'google_id' => $user->getId(),
+                    'name' => $user->getName(),
+                    'username' => $user->getName(),
+                ]);
+                $user = $existingUser;
+            } else {
+                // Create new user with pending verification
+                $user = User::create([
+                    'email' => $email,
                     'name' => $user->getName(),
                     'username' => $user->getName(),
                     'google_id' => $user->getId(),
                     'role' => $role,
                     'password' => Hash::make(Str::random(16)),
-                    'verification_status' => 'unverified',
+                    'verification_status' => 'pending_admin',
                     'admin_verified' => false,
-                    'status' => 'inactive'  // Set initial status as inactive
-                ]
-            );
+                    'status' => 'active'
+                ]);
+            }
     
             Auth::login($user);
     

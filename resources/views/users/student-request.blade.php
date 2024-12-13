@@ -18,16 +18,24 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
-
     <div class="header-container">
         <h2>SRMS Request Form</h2>
         <p>SERVICES</p>
         <p>Select Services</p>
     </div>
 
-    <div class="content">
+    <div class="container">
+        <!-- Success message after form submission -->
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- Request Form -->
         <form action="{{ route('student.request.submit') }}" method="POST">
-            @csrf <!-- Add CSRF token for security -->
+            @csrf
+
             <!-- MS Office 365 Section -->
             <div class="form-section">
                 <h4>MS Office 365, MS Teams, TUP Email</h4>
@@ -49,26 +57,25 @@
             <div class="form-section">
                 <h4>ICT Equipment Management</h4>
                 <label><input type="checkbox" name="ict_equip[]" value="reset_password">Request to use LED Screen</label>
-                <!-- <input type="text" name="ict_equip[]" value="Activity Date"> -->
                 <input type="text" name="ict_equip_date" placeholder="Activity Date" class="form-control">
+            </div>
+
+            <!-- Terms and Conditions Section -->
+            <div class="terms-section">
+                <input type="checkbox" name="terms" required> I agree to the Terms and Conditions
+            </div>
+
+            <!-- Submit Button -->
+            <div class="button-container">
+                <button type="submit" class="submitbtn btn-primary">Submit Request</button>
             </div>
         </form>
     </div>
 
-        <!-- Terms and Conditions Section -->
-        <div class="terms-section">
-            <input type="checkbox" name="terms" required> I agree to the Terms and Conditions
-        </div>
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+    @stack('scripts') 
 
-
-        <!-- Submit Button -->
-        <div class="button-container">
-            <button type="submit" class="submitbtn btn-primary">Submit Request</button>
-        </div>
-
-        <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
-        @stack('scripts')     
-        <script>
+    <script>
         document.getElementById('postPublicationCheckbox').addEventListener('change', function() {
             const detailsSection = document.getElementById('postPublicationDetails');
             detailsSection.style.display = this.checked ? 'block' : 'none';

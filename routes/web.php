@@ -13,8 +13,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ServiceRequestController;
-use App\Http\Controllers\StudentRequestController;
-use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SysadminController;
 use App\Http\Controllers\UserController;
 
@@ -57,11 +55,21 @@ Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword']
 
 Route::get('/faculty-service', [ServiceRequestController::class, 'ShowForm'])->name('faculty.request.form');
 Route::post('/faculty-service', [ServiceRequestController::class, 'Submitrequest'])->name('faculty.request.submit');
+
+//student request
+
+Route::get('/student-request', [ServiceRequestController::class, 'showForm'])->name('student.request.create');
+Route::post('/student-request', [ServiceRequestController::class, 'submitRequest'])->name('student.request.submit');
+Route::get('/myrequests', [ServiceRequestController::class, 'index'])->name('requests.index');
+Route::post('/requests/{id}/approve', [ServiceRequestController::class, 'approve'])->name('requests.approve');
+Route::post('/requests/{id}/complete', [ServiceRequestController::class, 'complete'])->name('requests.complete');
+
+
+
 //Route::get('/service-request', [StudentRequestController::class, 'showForm'])->name('service.request.form');
 //Route::post('/service-request/submit', [StudentRequestController::class, 'submitRequest'])->name('service.request.submit');
 
-Route::get('/student-request', [StudentRequestController::class, 'showForm'])->name('student.request.form');
-Route::post('/student-request-submit', [StudentRequestController::class, 'submitRequest'])->name('student.request.submit');
+
 
 
 // Login Form Route

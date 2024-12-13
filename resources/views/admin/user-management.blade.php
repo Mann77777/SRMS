@@ -21,6 +21,13 @@
 
     <div class="content">
         <h1>User Management</h1>
+
+        <div class="top-controls">
+            <!-- Add User Button -->
+            <button class="btn btn-primary add-user-btn" data-toggle="modal" data-target="#addUserModal">
+                <i class="fas fa-plus"></i> Add User
+            </button>
+        </div>
         
         <div class="dropdown-container">
             <!-- Role Filter -->

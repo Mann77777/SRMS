@@ -38,6 +38,15 @@
                         </span>
                         <span class="navlink">Service Management</span>
                     </a>
+                </li>   
+                
+                <li class="item">
+                    <a href="{{ url('/admin-messages') }}" class="nav_link {{ request()->is('admin-messages') ? 'active' : '' }}">
+                        <span class="navlink_icon">
+                            <i class="bx bx-chat"></i>
+                        </span>
+                        <span class="navlink">Messages</span>
+                    </a>
                 </li>
 
                 <li class="item">

@@ -1,3 +1,36 @@
+// Handle Add User Form Submission
+$('#addUserForm').on('submit', function(e) {
+    e.preventDefault();
+    $.ajax({
+        url: $(this).attr('action'),
+        method: 'POST',
+        data: $(this).serialize(),
+        success: function(response) {
+            if (response.success) {
+                alert(response.message);
+                $('#addUserModal').modal('hide');
+                $('#addUserForm')[0].reset();
+                // Refresh the table without page reload
+                $.ajax({
+                    url: '/user-management',
+                    type: 'GET',
+                    success: function(response) {
+                        if (response && response.users) {
+                            updateTable(response.users);
+                        }
+                    }
+                });
+            } else {
+                alert(response.error || 'Error adding user');
+            }
+        },
+        error: function(xhr) {
+            console.error('Error adding user:', xhr);
+            alert('Error adding user: ' + (xhr.responseJSON?.error || 'Unknown error'));
+        }
+    });
+});
+
 $(document).ready(function() {
     // Select All Checkbox
     $('#select-all').change(function() {
@@ -218,7 +251,6 @@ $(document).ready(function() {
     });
 });
 
-
 // Show verification modal
 $(document).on('click', '.btn-verify', function() {
     const userId = $(this).data('id');
@@ -236,7 +268,7 @@ $(document).on('click', '.btn-verify', function() {
             $('#student-verification-status').text(student.verification_status || 'Pending Verification');
             
             // Store user ID for verification
-            $('#verifyStudentModal').data('userId', userId);
+            $('#verifyStudentModal').data('user-id', userId);
             
             // Show the modal
             $('#verifyStudentModal').modal('show');
@@ -247,29 +279,32 @@ $(document).on('click', '.btn-verify', function() {
         }
     });
 });
-// Handle verification decision
-$('#verification-decision').change(function() {
+
+// Show/hide notes field based on decision
+$('#verification-decision').on('change', function() {
     if ($(this).val() === 'reject') {
         $('#rejection-notes').show();
     } else {
         $('#rejection-notes').hide();
+        $('#admin-notes').val(''); // Clear notes when switching back to approve
     }
 });
 
-// Submit verification
+// Handle verification submission
 $('#submit-verification').click(function() {
-    const userId = $('.btn-verify').data('id');
+    const userId = $('#verifyStudentModal').data('user-id');
     const decision = $('#verification-decision').val();
     const notes = $('#admin-notes').val();
 
+    // Validate rejection notes
     if (decision === 'reject' && !notes.trim()) {
         alert('Please provide rejection notes');
         return;
     }
 
     $.ajax({
-        url: `/admin/student/${userId}/verify`,
-        type: 'POST',
+        url: `/admin/student/${userId}/verify`,  
+        method: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
@@ -279,18 +314,16 @@ $('#submit-verification').click(function() {
         },
         success: function(response) {
             if (response.success) {
+                alert(response.message);
                 $('#verifyStudentModal').modal('hide');
-                // Refresh table or update status
                 location.reload();
+            } else {
+                alert(response.error || 'Error processing verification');
             }
         },
         error: function(xhr) {
-            if (xhr.status === 401) {
-                alert('You are not authorized to perform this action. Please log in as an admin.');
-            } else {
-                alert('Error processing verification. Please try again.');
-            }
-            console.error('Error:', xhr);
+            console.error('Verification error:', xhr);
+            alert('Error processing verification: ' + (xhr.responseJSON?.error || 'Unknown error'));
         }
     });
 });

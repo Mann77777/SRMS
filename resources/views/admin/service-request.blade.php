@@ -29,9 +29,11 @@
                 <option value="completed">Completed</option>
             </select>
             <div class="requests-btn">
-                <button type="button" class="delete-button" id="delete-btn">Delete</button>
-                <button type="button" class="cancel-btn" id="cancel-btn">Cancel</button>
-                <button type="button" class="confirm-btn" id="confirm-btn">Confirm</button>
+                <button type="button" class="delete-button" id="delete-btn">
+                    <i class="fas fa-trash"></i>  Delete Selected
+                </button>
+             <!--   <button type="button" class="cancel-btn" id="cancel-btn">Cancel</button>
+                <button type="button" class="confirm-btn" id="confirm-btn">Confirm</button> -->
             </div>
         </div>
 
@@ -68,6 +70,10 @@
                                 <strong>Time: </strong><span>9:15 AM</span>
                             </td>
                             <td>Pending</td>
+                            <td>
+                                <button class="btn-approve">Approve</button>
+                                <button class="btn-reject">Reject</button>
+                            </td>
                         </tr>
 
                         <tr>
@@ -87,6 +93,10 @@
                                 <strong>Time: </strong><span>9:15 AM</span>
                             </td>
                             <td>Pending</td>
+                            <td class="btns"> 
+                                <button class="btn-approve">Approve</button>
+                                <button class="btn-reject">Reject</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

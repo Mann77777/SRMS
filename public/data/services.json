@@ -1,0 +1,44 @@
+{
+    "services": [
+        {
+            "id": 2,
+            "name": "MS Teams",
+            "description": "Assistance with account creation, password reset, and data updates.",
+            "image": "\/images\/services\/1733669874.jpg",
+            "status": "active",
+            "created_at": "2024-12-08"
+        },
+        {
+            "id": 3,
+            "name": "Attendance Record",
+            "description": "Retrieve attendance records or biometric data.",
+            "image": "\/images\/services\/1733670447.png",
+            "status": "active",
+            "created_at": "2024-12-08"
+        },
+        {
+            "id": 4,
+            "name": "Biometrics Enrollment & ID Card",
+            "description": "Submit requests for enrollment or ID cards.",
+            "image": "\/images\/services\/1733671443.png",
+            "status": "active",
+            "created_at": "2024-12-08"
+        },
+        {
+            "id": 5,
+            "name": "TUP Web Portal and ERS",
+            "description": "Reset passwords and update data.",
+            "image": "\/images\/services\/1733671073.png",
+            "status": "active",
+            "created_at": "2024-12-08"
+        },
+        {
+            "id": 6,
+            "name": "Internet and Telephone Services",
+            "description": "Request new connections, repairs, or maintenance.",
+            "image": "\/images\/services\/1733671180.png",
+            "status": "active",
+            "created_at": "2024-12-08"
+        }
+    ]
+}

@@ -20,17 +20,26 @@ class StudentController extends Controller
             'course' => 'required|string',
             'year_level' => 'required|string',
         ]);
-
+    
         $user = Auth::user();
+        
+        // If user was created by admin (already verified), keep status active
+        $status = ($user->admin_verified) ? 'active' : 'inactive';
+        $verificationStatus = ($user->admin_verified) ? 'verified' : 'pending_admin';
+        
         $user->update([
-            'status' => 'inactive',  // Keep status inactive until admin verification
+            'status' => $status,
             'student_id' => $request->student_id,
             'course' => $request->course,
             'year_level' => $request->year_level,
-            'verification_status' => 'pending_admin'
+            'verification_status' => $verificationStatus
         ]);
-
+    
+        $message = ($user->admin_verified) 
+            ? 'Details submitted successfully!' 
+            : 'Details submitted successfully. Waiting for admin verification.';
+    
         return redirect()->route('users.dashboard')
-            ->with('message', 'Details submitted successfully. Waiting for admin verification.');
+            ->with('message', $message);
     }
 }

@@ -132,7 +132,7 @@ select {
 
 button {
     display: block; /* Make buttons stack vertically */
-    width: 85%; /* Optional: Adjust the width to match cell size */
+    width: 100%; /* Optional: Adjust the width to match cell size */
     margin: 5px 0; /* Add vertical spacing */
     padding: 6px; /* Add some padding for a better look */
     border: none;
@@ -157,7 +157,10 @@ button {
 .btn-delete {
     background-color: #DC3545;  /* Red */
 }
+.top-controls{
+    max-width: 300px; /* Limit the width of the parent container */
 
+}
 /* Status Badge */
 .status-badge {
     padding: 5px 10px;
@@ -214,4 +217,17 @@ input[type="checkbox"] {
 #admin-notes {
     width: 100%;
     margin-top: 5px;
+}
+
+.add-student-btn {
+    margin-left: 10px;
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.add-student-btn:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    color: white;
 }

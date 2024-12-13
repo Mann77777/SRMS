@@ -17,12 +17,19 @@ body{
     background-color: #f8f9fa;
     height: 130vh;
 }   
-.content {
+.service-content {
     margin-top: 8%;
     margin-left: 23%;
     padding: 20px;
 }
-.content h1{
+.service-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.service-header h1{
     font-size: 2rem;
     font-weight: 650;
     text-transform: uppercase;
@@ -54,4 +61,65 @@ body{
 
 .btn-add:hover {
     background-color: #005103; 
+}
+
+.service-list {
+    margin-top: 2rem;
+}
+
+.service-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.service-info {
+    flex: 1;
+}
+
+.service-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.service-info p {
+    margin: 0;
+    color: #666;
+}
+
+.service-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.status.active {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.service-btn {
+    margin: 1rem 0;
 }

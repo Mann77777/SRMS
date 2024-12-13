@@ -86,6 +86,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="status-card services">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="status-details">
+                            <h3 class="service-count">0</h3>
+                            <p>Available Services</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

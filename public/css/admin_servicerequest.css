@@ -104,30 +104,21 @@ select {
 }
 
 
-.b {
+button {
     display: block; /* Make buttons stack vertically */
-    width: 85%; /* Optional: Adjust the width to match cell size */
+    width: 100%; /* Optional: Adjust the width to match cell size */
     margin: 5px 0; /* Add vertical spacing */
     padding: 6px; /* Add some padding for a better look */
     border: none;
     border-radius: 10px;
     cursor: pointer;
     color: #ffffff;
-    font-size: 15px;
     font-weight: 500;
 }
-.btn-edit {
+
+.btn-approve {
     background-color: #16A34A;  /* Green */
 }
-
-.btn-status {
-    background-color: #FFC107;  /* Yellow */
-}
-
-.btn-reset {
-    background-color: #6C757D;  /* Gray */
-}
-
-.btn-delete {
+.btn-reject {
     background-color: #DC3545;  /* Red */
 }

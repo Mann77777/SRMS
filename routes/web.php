@@ -15,6 +15,7 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\SysadminController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ServiceController;
 
 Route::get('/', function () {
     return view('login');
@@ -167,6 +168,10 @@ Route::get('/service-history', function () {
     return view('users.service-history');
 })->name('service-history');
 
+Route::get('/messages', function () {
+    return view('users.messages');
+})->name('messages');
+
 Route::get('/help', function() {
     return view('users.help'); 
 })->name('users.help'); 
@@ -208,6 +213,7 @@ Route::middleware(['auth:admin'])->group(function () {
     
     // User Management
     Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
+    Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
     Route::get('/admin/users/{id}', [UserController::class, 'getUser']);
     Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
     Route::delete('/admin/users/{id}', [UserController::class, 'deleteUser']);
@@ -220,6 +226,13 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/student/{id}/verify', [UserController::class, 'verifyStudent'])->name('admin.student.verify');
     Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifications'])->name('admin.verify.students');
     
+    // Services Management
+    Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('/services/list', [ServiceController::class, 'getServices'])->name('services.list');
+    Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
+    Route::put('/services/{id}', [ServiceController::class, 'update'])->name('services.update');
+    Route::delete('/services/{id}', [ServiceController::class, 'destroy'])->name('services.destroy');
+    
     // Other Admin Routes
     Route::get('/service-request', function () {
         return view('admin.service-request');
@@ -228,6 +241,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/service-management', function () {
         return view('admin.service-management');
     })->name('admin.service-management');
+
+    Route::get('/admin-messages', function () {
+        return view('admin.admin-messages');
+    })->name('admin.admin-messages');
     
     Route::get('/admin_report', function () {
         return view('admin.admin_report');
@@ -261,3 +278,5 @@ Route::get('/assign-history', function () {
 Route::get('/technician-report', function () {
     return view('uitc_staff.technician-report');
 })->name('uitc_staff.technician-report');
+
+Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');

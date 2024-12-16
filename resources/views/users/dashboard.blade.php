@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/chatbot.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Dashboard</title>
 </head>
@@ -171,40 +172,32 @@
     <!-- SERVICE CATEGORIES -->
     <section class="service-categories">
         <div class="container">
-            <h2>Available Services</h2>
-            <div class="category-grid">
-                <div class="category-card">
-                    <i class="fas fa-desktop"></i>
-                    <h3>Computer Support</h3>
-                    <p>Hardware & software issues</p>
-                </div>
-                <div class="category-card">
-                    <i class="fas fa-print"></i>
-                    <h3>Printer Services</h3>
-                    <p>Printer setup & maintenance</p>
-                </div>
-                <div class="category-card">
-                    <i class="fas fa-network-wired"></i>
-                    <h3>Network Support</h3>
-                    <p>Connection & access issues</p>
-                </div>
-                <div class="category-card">
-                    <i class="fas fa-user-lock"></i>
-                    <h3>Account Management</h3>
-                    <p>Password reset & access</p>
+            <div class="row justify-content-center">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Available Services</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="category-grid service-list">
+                                <!-- Services will be loaded here dynamically -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+   
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/chatbot.js') }}"></script>
-    
+    <script src="{{ asset('js/service-dashboard.js') }}"></script>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
    
     <script src="https://cdn.jsdelivr.net/npm/botman-web-widget@0/build/js/widget.js"></script>
-
 </body>
 </html>

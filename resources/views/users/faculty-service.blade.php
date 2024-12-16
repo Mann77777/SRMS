@@ -8,24 +8,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="{{ asset('css/facultyservice.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
-
     <title>Service Request Form</title>
 </head>
 <body>
-    
+
     <!-- Include Navbar -->
     @include('layouts.navbar')
 
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
+    <div class="header-container">
+        <h2>SRMS Request Form</h2>
+        <p>SERVICES</p>
+        <p>Select Services</p>
+    </div>
 
-    <h2>SRMS Request Form</h2>
-    <p>SERVICES</p>
-    <p>Select Services</p>
-    <div class="content">
+    <div class="container">
+        <!-- Success message after form submission -->
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- Request Form -->
         <form action="{{ route('faculty.request.submit') }}" method="POST">
-            @csrf <!-- Add CSRF token for security -->
+            @csrf
+
             <!-- MS Office 365 Section -->
             <div class="form-section">
                 <h4>MS Office 365, MS Teams, TUP Email</h4>
@@ -34,7 +44,8 @@
                 <label><input type="checkbox" name="ms_option[]" value="change_data"> Change of Data</label>
                 <input type="text" name="ms_other" placeholder="Others (Please specify)" class="form-control">
             </div>
-
+            
+            <!-- Attendance Record Section -->
             <div class="form-section">
                 <h4>Attendance Record</h4>
                 <input type="text" name="attendance_date" placeholder="For the month/s of" class="form-control">
@@ -132,70 +143,61 @@
                 <label><input type="checkbox" name="ict_equip[]" value="comp_repair_maintenance">Computer Repair and Maintenance</label>
                 <label><input type="checkbox" name="ict_equip[]" value="printer_repair_maintenance">Printer Repair and Maintenance</label>
                 <label><input type="checkbox" name="ict_equip[]" value="reset_password">Request to use LED Screen</label>
-                <!-- <input type="text" name="ict_equip[]" value="Activity Date"> -->
                 <input type="text" name="ict_equip_date" placeholder="Activity Date" class="form-control">
-                <input type="text" name="ict_equip_other" placeholder="Others (Please specify)" class="form-control">
-
+                 <input type="text" name="ict_equip_other" placeholder="Others (Please specify)" class="form-control">
             </div>
 
             <!-- Software and Website Management Section -->
             <div class="form-section">
                 <h4>Software and Website Management</h4>
-                <label><input type="checkbox" name="ict_equip[]" value="comp_repair_maintenance">Install Application</label>
+                 <label><input type="checkbox" name="ict_equip[]" value="comp_repair_maintenance">Install Application</label>
                 <label><input type="checkbox" name="ict_equip[]" value="printer_repair_maintenance">Information System</label>
                 <label><input type="checkbox" id="postPublicationCheckbox" name="ict_equip[]" value="reset_password">Post Publication</label>
             
             </div>
             
-
-        <div id="postPublicationDetails" class="publication-form"  style="display: none;">
-            <!-- Additional fields -->
-            <div class="form-group">
+            <div id="postPublicationDetails" class="publication-form"  style="display: none;">
+              <!-- Additional fields -->
+              <div class="form-group">
                 <label for="author">Author</label>
                 <input type="text" id="author" name="author" placeholder="Author" class="form-control">
-            </div>
-
-            <div class="form-group">
+                </div>
+                
+              <div class="form-group">
                 <label for="editor">Editor</label>
                 <input type="text" id="editor" name="editor" placeholder="Editor" class="form-control">
-            </div>
-
-            <div class="form-group">
+              </div>
+              
+              <div class="form-group">
                 <label for="publication_date">Date of Publication</label>
                 <input type="date" id="publication_date" name="publication_date" class="form-control">
+              </div>
+              
+                <div class="form-group">
+                    <label for="end_publication">End of Publication</label>
+                    <input type="date" id="end_publication" name="end_publication" class="form-control">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="end_publication">End of Publication</label>
-                <input type="date" id="end_publication" name="end_publication" class="form-control">
-            </div>
-        </div>
-
-            <!--Data Documents and Reports Section -->
+             <!--Data Documents and Reports Section -->
             <div class="form-section">
                 <h4>Data, Documents and Reports</h4>
                 <input type="text" name="data_docs_report" placeholder="(Please specify)" class="form-control">
             </div>
-        </div>
 
-
-                
             <!-- Terms and Conditions Section -->
             <div class="terms-section">
                 <input type="checkbox" name="terms" required> I agree to the Terms and Conditions
             </div>
 
-            </div>
-
-
             <!-- Submit Button -->
-             <div class="button-container">
+            <div class="button-container">
                 <button type="submit" class="submitbtn btn-primary">Submit Request</button>
-             </div>
+            </div>
         </form>
     </div>
-
-    <script>
+<script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+     <script>
         document.getElementById('postPublicationCheckbox').addEventListener('change', function() {
             const detailsSection = document.getElementById('postPublicationDetails');
             detailsSection.style.display = this.checked ? 'block' : 'none';

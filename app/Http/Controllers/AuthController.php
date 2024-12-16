@@ -36,13 +36,13 @@ class AuthController extends Controller
                 return back()->with('error', 'Your account is inactive. Please contact the administrator.');
             }
             // Check if email is verified
-            if (!Auth::user()->hasVerifiedEmail()) {
+           /* if (!Auth::user()->hasVerifiedEmail()) {
                 return redirect()->route('verification.notice');
             }
             // Check if student details are filled
             if (Auth::user()->role === 'Student' && (!Auth::user()->student_id || !Auth::user()->course)) {
                 return redirect()->route('student.details.form');
-            }
+            }*/
             return redirect()->route('users.dashboard');
         }
 

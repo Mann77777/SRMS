@@ -12,15 +12,17 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AboutUsController;
-use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\SysadminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\StudentRequestController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FacultyRequestController;
+
 
 Route::get('/', function () {
     return view('login');
 });
-
 
 // USERS ROUTE
 Route::get('auth/google', [GoogleController::class, 'loginWithGoogle']) ->name('login.google');
@@ -30,9 +32,7 @@ Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle
 //Route::post('/home/update', [ProfileController::class, 'update'])->name('profile.update'); // Use ProfileController to update the profile
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', function() {
-        return view('users.dashboard'); // Show the dashboard view
-    })->name('users.dashboard'); // Name for the dashboard route
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('users.dashboard');
 
     Route::get('/myprofile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/myprofile/upTodate', [ProfileController::class, 'upTodate'])->name('profile.upTodate');
@@ -45,7 +45,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 //Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
-//Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('profile.remove');
+//Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('removeProfileImage');
 
 Route::post('/update-username', [AuthController::class, 'updateUsername'])->name('username.update');
 Route::post('/update-username', [ProfileController::class, 'updateUsername'])->name('update-username');
@@ -54,22 +54,13 @@ Route::post('/remove-profile-image', [ProfileController::class, 'removeProfileIm
 
 Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword'])->name('myprofile.setPassword');
 
-Route::get('/faculty-service', [ServiceRequestController::class, 'ShowForm'])->name('faculty.request.form');
-Route::post('/faculty-service', [ServiceRequestController::class, 'Submitrequest'])->name('faculty.request.submit');
+Route::get('/faculty-service', [FacultyRequestController::class, 'showForm'])->name('faculty.request.form');
+Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
+Route::get('/myrequests', [FacultyRequestController::class, 'myRequests'])->name('myrequests');
 
 //student request
-
-Route::get('/student-request', [ServiceRequestController::class, 'showForm'])->name('student.request.create');
-Route::post('/student-request', [ServiceRequestController::class, 'submitRequest'])->name('student.request.submit');
-Route::get('/myrequests', [ServiceRequestController::class, 'index'])->name('requests.index');
-Route::post('/requests/{id}/approve', [ServiceRequestController::class, 'approve'])->name('requests.approve');
-Route::post('/requests/{id}/complete', [ServiceRequestController::class, 'complete'])->name('requests.complete');
-
-
-
-//Route::get('/service-request', [StudentRequestController::class, 'showForm'])->name('service.request.form');
-//Route::post('/service-request/submit', [StudentRequestController::class, 'submitRequest'])->name('service.request.submit');
-
+Route::get('/student-request', [StudentRequestController::class, 'showForm'])->name('student.request.form');
+Route::post('/student-request-submit', [StudentRequestController::class, 'submitRequest'])->name('student.request.submit');
 
 
 
@@ -86,12 +77,12 @@ Route::get('/email/verify', function () {
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
-    
+
     // Redirect to details form only for students
     if (Auth::user()->role === 'Student') {
         return redirect()->route('student.details.form')->with('message', 'Email verified! Please complete your student details.');
     }
-    
+
     // For other roles, redirect to dashboard
     return redirect()->route('users.dashboard')->with('message', 'Email verified!');
 })->middleware(['auth', 'signed'])->name('verification.verify');
@@ -108,11 +99,11 @@ Route::get('/forgot-password', function () {
 
 Route::post('/forgot-password', function (Request $request) {
     $request->validate(['email' => 'required|email']);
- 
+
     $status = Password::sendResetLink(
         $request->only('email')
     );
- 
+
     return $status === Password::RESET_LINK_SENT
                 ? back()->with(['status' => __($status)])
                 : back()->withErrors(['email' => __($status)]);
@@ -128,24 +119,26 @@ Route::post('/reset-password', function (Request $request) {
         'email' => 'required|email',
         'password' => 'required|min:8|confirmed',
     ]);
- 
+
     $status = Password::reset(
         $request->only('email', 'password', 'password_confirmation', 'token'),
         function ($user, $password) {
             $user->forceFill([
                 'password' => Hash::make($password)
             ])->setRememberToken(Str::random(60));
- 
+
             $user->save();
- 
+
             event(new PasswordReset($user));
         }
     );
- 
+
     return $status === Password::PASSWORD_RESET
                 ? redirect()->route('login')->with('status', __($status))
                 : back()->withErrors(['email' => [__($status)]]);
 })->middleware('guest')->name('password.update');
+
+
 
 // Admin Verification Routes
 Route::get('/admin/student/{id}/details', [UserController::class, 'getStudentDetails'])
@@ -160,9 +153,6 @@ Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifica
     ->middleware(['auth', 'admin'])
     ->name('admin.verify.students');
 
-Route::get('/myrequests', function() {
-    return view('users.myrequests'); 
-})->name('users.myrequests'); 
 
 Route::get('/service-history', function () {
     return view('users.service-history');
@@ -173,15 +163,15 @@ Route::get('/messages', function () {
 })->name('messages');
 
 Route::get('/help', function() {
-    return view('users.help'); 
-})->name('users.help'); 
+    return view('users.help');
+})->name('users.help');
 
 // BotMan/Chatbot
 Route::match(['get', 'post'], '/botman', 'App\Http\Controllers\BotManController@handle');
 
 Route::get('/myprofile', function () {
     return view('users.myprofile');
-})->name('users.profile'); 
+})->name('users.profile');
 
 Route::get('/faculty-service', function () {
     return view('users.faculty-service');
@@ -205,12 +195,12 @@ Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->na
 Route::middleware(['auth:admin'])->group(function () {
     // Dashboard
     Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
-    
+
     // Profile
     Route::get('/admin_myprofile', function () {
         return view('admin.admin_myprofile');
     })->name('admin.admin_myprofile');
-    
+
     // User Management
     Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
     Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
@@ -220,24 +210,24 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword']);
     Route::put('/admin/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
     Route::post('/admin/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
-    
+
     // Student Verification
     Route::get('/admin/student/{id}/details', [UserController::class, 'getStudentDetails'])->name('admin.student.details');
     Route::post('/admin/student/{id}/verify', [UserController::class, 'verifyStudent'])->name('admin.student.verify');
     Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifications'])->name('admin.verify.students');
-    
+
     // Services Management
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/list', [ServiceController::class, 'getServices'])->name('services.list');
     Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
     Route::put('/services/{id}', [ServiceController::class, 'update'])->name('services.update');
     Route::delete('/services/{id}', [ServiceController::class, 'destroy'])->name('services.destroy');
-    
+
     // Other Admin Routes
     Route::get('/service-request', function () {
         return view('admin.service-request');
     })->name('admin.service-request');
-    
+
     Route::get('/service-management', function () {
         return view('admin.service-management');
     })->name('admin.service-management');
@@ -245,15 +235,15 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin-messages', function () {
         return view('admin.admin-messages');
     })->name('admin.admin-messages');
-    
+
     Route::get('/admin_report', function () {
         return view('admin.admin_report');
     })->name('admin.admin_report');
-    
+
     Route::get('/settings', function () {
         return view('admin.settings');
     })->name('admin.settings');
-    
+
     // Route to display the "Add Administrator" form (GET request)
     Route::get('/admin/add', [SysadminController::class, 'showAddAdminForm'])->name('admin.add');
 
@@ -269,11 +259,11 @@ Route::middleware(['auth:admin'])->group(function () {
 // TECHNICIAN/UITC STAFF ROUTES
 Route::get('/assign-request', function () {
     return view('uitc_staff.assign-request');
-})->name('uitc_staff.assign-request'); 
+})->name('uitc_staff.assign-request');
 
 Route::get('/assign-history', function () {
     return view('uitc_staff.assign-history');
-})->name('uitc_staff.assign-history'); 
+})->name('uitc_staff.assign-history');
 
 Route::get('/technician-report', function () {
     return view('uitc_staff.technician-report');

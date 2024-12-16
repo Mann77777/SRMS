@@ -32,7 +32,7 @@
             </div>
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Password" required>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
             </div>
             <div class="form-group">
                 <label for="email">Email</label>
@@ -51,8 +51,6 @@
                 <select class="form-control" id="role" name="role" required>
                     <option value="Student">Student</option>
                     <option value="Faculty & Staff">Faculty & Staff</option>
-                    <option value="Admin">Admin</option>
-                    <option value="technician">Technician</option>
                 </select>
             </div>
             <button type="submit" class="register-btn btn-primary btn-block">Sign Up</button>

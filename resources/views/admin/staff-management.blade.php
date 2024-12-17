@@ -140,7 +140,68 @@
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 
     <script>
-        
+         document.addEventListener('DOMContentLoaded', function() {
+            const staffList = document.querySelector('.staff-list');
+            
+            // Event delegation for edit buttons
+            staffList.addEventListener('click', function(e) {
+                const editButton = e.target.closest('.edit-staff');
+                if (editButton) {
+                    const staffCard = editButton.closest('.staff-card');
+                    const staffName = staffCard.querySelector('p:nth-child(1)').textContent.replace('Name: ', '').trim();
+                    const staffUsername = staffCard.querySelector('p:nth-child(2)').textContent.replace('Username: ', '').trim();
+                    const staffStatus = staffCard.querySelector('p:nth-child(3)').textContent.replace('Availability Status: ', '').trim().toLowerCase();
+
+                    // Populate edit modal
+                    document.getElementById('editStaffId').value = editButton.getAttribute('data-id');
+                    document.getElementById('editStaffName').value = staffName;
+                    document.getElementById('editStaffUsername').value = staffUsername;
+                    
+                    // Set the correct status in dropdown
+                    const statusDropdown = document.getElementById('editStaffStatus');
+                    statusDropdown.value = staffStatus === 'active' ? 'available' : staffStatus;
+
+                    // Show the edit modal
+                    $('#editStaffModal').modal('show');
+                }
+            });
+        });
+
+        function saveEditedStaff() {
+            const staffId = document.getElementById('editStaffId').value;
+            const staffName = document.getElementById('editStaffName').value;
+            const staffUsername = document.getElementById('editStaffUsername').value;
+            const staffStatus = document.getElementById('editStaffStatus').value;
+
+            // AJAX call to update staff
+            $.ajax({
+                url: '/update-staff/' + staffId,
+                method: 'POST',
+                data: {
+                    name: staffName,
+                    username: staffUsername,
+                    status: staffStatus,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    // Update staff card
+                    const staffCard = document.querySelector(`.edit-staff[data-id="${staffId}"]`).closest('.staff-card');
+                    staffCard.querySelector('p:nth-child(1)').innerHTML = `<strong>Name:</strong> ${staffName}`;
+                    staffCard.querySelector('p:nth-child(2)').innerHTML = `<strong>Username:</strong> ${staffUsername}`;
+                    staffCard.querySelector('p:nth-child(3)').innerHTML = `<strong>Availability Status:</strong> ${staffStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+
+                    // Close modal
+                    $('#editStaffModal').modal('hide');
+                    
+                    // Optional: Show success message
+                    alert('Staff updated successfully');
+                },
+                error: function(xhr) {
+                    // Handle error
+                    alert('Error updating staff: ' + xhr.responseText);
+                }
+            });
+        }
     </script>
 </body>
 </html>

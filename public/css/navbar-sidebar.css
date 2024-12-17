@@ -201,11 +201,11 @@ body{
 }
 
 .menu_items .item {
-    margin-bottom: -17px; /* Adjust this value for spacing */
+    margin-bottom: -15px; /* Adjust this value for spacing */
 }
 
 .navlink {
-    margin-top: 4%;  /* Adjust this value as needed */
+    margin-top: 12%;  /* Adjust this value as needed */
 }
 
 .navlink_icon {
@@ -216,7 +216,7 @@ body{
     display: inline-block;
     text-align: center;
     border-radius: 6px;
-    margin-top: 8%;
+    margin-top: 12%;
     margin-left: -1.25rem;
 }
 

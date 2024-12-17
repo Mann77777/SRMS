@@ -118,6 +118,24 @@ body{
     transition: all 0.5s ease;
 }
 
+.sidebar .logo_item {
+    /*display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+    margin-top: 20px; */
+    display: none;
+
+}
+
+.sidebar .logo_item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
 /* Style for the active sidebar link */
 .nav_link.active {
     font-weight: bold; 
@@ -183,11 +201,11 @@ body{
 }
 
 .menu_items .item {
-    margin-bottom: -15px; /* Adjust this value for spacing */
+    margin-bottom: -17px; /* Adjust this value for spacing */
 }
 
 .navlink {
-    margin-top: 12%;  /* Adjust this value as needed */
+    margin-top: 4%;  /* Adjust this value as needed */
 }
 
 .navlink_icon {
@@ -198,7 +216,7 @@ body{
     display: inline-block;
     text-align: center;
     border-radius: 6px;
-    margin-top: 12%;
+    margin-top: 8%;
     margin-left: -1.25rem;
 }
 
@@ -318,6 +336,24 @@ body{
 }
 
 @media screen and (max-width: 768px) {
+    /*.navbar .logo_item {
+        display: none; 
+    } */
+    .sidebar .logo_item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+    .sidebar .logo_item img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 50%;
+    }
     #sidebarOpen {
       font-size: 25px;
       display: block;

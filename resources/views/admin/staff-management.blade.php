@@ -140,51 +140,7 @@
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-    // Add event listeners for edit buttons
-    document.querySelectorAll('.edit-staff').forEach(button => {
-        button.addEventListener('click', function() {
-            // Find the closest staff card
-            const staffCard = this.closest('.staff-card');
-            
-            // Extract current values
-            const nameElement = staffCard.querySelector('p:nth-child(1)');
-            const usernameElement = staffCard.querySelector('p:nth-child(2)');
-            
-            // Get the current values, removing the "Name: " and "Username: " prefixes
-            const currentName = nameElement.textContent.replace('Name: ', '').trim();
-            const currentUsername = usernameElement.textContent.replace('Username: ', '').trim();
-            
-            // Populate the edit modal
-            document.getElementById('editStaffName').value = currentName;
-            document.getElementById('editStaffUsername').value = currentUsername;
-            
-            // Show the edit modal
-            $('#editStaffModal').modal('show');
-        });
-    });
-});
-
-function saveEditedStaff() {
-    // Get values from the edit modal
-    const newName = document.getElementById('editStaffName').value;
-    const newUsername = document.getElementById('editStaffUsername').value;
-    const newStatus = document.getElementById('editStaffStatus').value;
-    
-    // Update the staff card in the UI
-    const staffCard = document.querySelector('.staff-card');
-    if (staffCard) {
-        const nameElement = staffCard.querySelector('p:nth-child(1)');
-        const usernameElement = staffCard.querySelector('p:nth-child(2)');
         
-        // Update name and username
-        nameElement.innerHTML = `<strong>Name:</strong> ${newName}`;
-        usernameElement.innerHTML = `<strong>Username:</strong> ${newUsername}`;
-    }
-    
-    // Close the modal
-    $('#editStaffModal').modal('hide');
-}
     </script>
 </body>
 </html>

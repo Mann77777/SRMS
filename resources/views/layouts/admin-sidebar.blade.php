@@ -1,5 +1,11 @@
 <!-- SIDEBAR -->
 <nav class="sidebar">
+    <div class="logo_item">
+        <a href="{{ url('/admin_dashboard') }}">
+            <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
+        </a>      
+    </div>
+    
     <div class="menu_content">
         <ul class="menu_items">
             @if(Auth::guard('admin')->user()->role === 'Admin')
@@ -23,15 +29,6 @@
                 </li>
 
                 <li class="item">
-                    <a href="{{ url('/user-management') }}" class="nav_link {{ request()->is('user-management') ? 'active' : '' }}">
-                        <span class="navlink_icon">
-                            <i class="bx bxs-book-open"></i>
-                        </span>
-                        <span class="navlink">User Management</span>
-                    </a>
-                </li>
-
-                <li class="item">
                     <a href="{{ url('/service-management') }}" class="nav_link {{ request()->is('service-management') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bx-history"></i>
@@ -39,6 +36,24 @@
                         <span class="navlink">Service Management</span>
                     </a>
                 </li>   
+
+                <li class="item">
+                    <a href="{{ url('/staff-management') }}" class="nav_link {{ request()->is('staff-management') ? 'active' : '' }}">
+                        <span class="navlink_icon">
+                            <i class="bx bxs-book-open"></i>
+                        </span>
+                        <span class="navlink">Staff Management</span>
+                    </a>
+                </li>
+
+                <li class="item">
+                    <a href="{{ url('/user-management') }}" class="nav_link {{ request()->is('user-management') ? 'active' : '' }}">
+                        <span class="navlink_icon">
+                            <i class="bx bxs-book-open"></i>
+                        </span>
+                        <span class="navlink">User Management</span>
+                    </a>
+                </li>
                 
                 <li class="item">
                     <a href="{{ url('/admin-messages') }}" class="nav_link {{ request()->is('admin-messages') ? 'active' : '' }}">

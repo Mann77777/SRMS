@@ -19,9 +19,11 @@
     <!-- Include Sidebar -->
     @include('layouts.admin-sidebar')
 
-    <div class="content">
-        <h1>User Management</h1>
-
+    <div class="user-content">
+        <div class="user-header">
+            <h1>User Management</h1>
+        </div>
+        
         <div class="top-controls">
             <!-- Add User Button -->
             <button class="btn btn-primary add-user-btn" data-toggle="modal" data-target="#addUserModal">

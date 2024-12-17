@@ -16,6 +16,7 @@ use App\Http\Controllers\SysadminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\StudentRequestController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacultyRequestController;
 
@@ -231,6 +232,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/service-management', function () {
         return view('admin.service-management');
     })->name('admin.service-management');
+
+    Route::get('/staff-management', function () {
+        return view('admin.staff-management');
+    })->name('admin.staff-management');
 
     Route::get('/admin-messages', function () {
         return view('admin.admin-messages');

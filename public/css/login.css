@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-*{
+* {
     font-family: "Montserrat", sans-serif;
     box-sizing: border-box;
     margin: 0;
@@ -8,23 +8,25 @@
 }
 
 body {
-     background: linear-gradient(135deg, #f5c6c6, #e6a0a0); /* More vibrant red gradient */
+   background: linear-gradient(to bottom, #f7d1d1, #e28989); /* Replicated red gradient */
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #343a40;
+    color: #333; /* Adjusted default text color */
 }
 
-.login-container{
-    max-width: 500px;
-    padding: 40px;
-    background-color: white;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    border-radius: 12px;
-    text-align: center;
-     animation: fadeIn 0.5s ease-in-out;
+.login-container {
+    max-width: 400px; /* Adjust width for the login box */
+    padding: 30px;
+    background-color: rgba(60, 30, 30, 0.8); /* Dark, semi-transparent background */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Reduced card box shadow */
+    border-radius: 10px;
+    text-align: left; /* Left align content within the container */
+    color: #eee; /* Set card text color to off-white */
+    animation: fadeIn 0.5s ease-in-out;
 }
+
 
 @keyframes fadeIn {
     from {
@@ -37,104 +39,113 @@ body {
     }
 }
 
-.tuplogo{
-    width: 150px;
+.tuplogo {
+    width: 130px; /* Slightly smaller logo width */
     height: auto;
-    margin: 0 auto 30px;
+    margin: 0 auto 25px;
     display: block;
 }
 
 .form-control {
-    padding: 14px 16px;
-    height: auto;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    transition: border-color 0.3s;
+    padding: 12px;
     margin-bottom: 15px;
-    font-size: 15px;
+    border: 1px solid #ddd; /* Light input border */
+    border-radius: 5px;
+    background-color: white; /* Set input background */
+    color: #212121;  /* Input text color */
+    font-size: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle input box shadow */
 }
 
 .form-control:focus {
-    border-color: #495057;
-    outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+   border-color: #9e9e9e; /* Set focus border color */
+    outline: none; /* Remove default focus outline */
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle box shadow */
 }
 
+
 .form-control::placeholder{
-    font-size: 15px;
+    font-size: 14px;
     color: #9e9e9e;
     opacity: 1;
 }
+
 .login-btn {
-    font-weight: 600;
-    padding: 14px 16px;
-    border-radius: 10px;
+    font-weight: 550;
+    padding: 10px 12px; /* Slightly reduced padding */
+    border-radius: 5px; /* Sharper corners */
     border: none;
     background-color: #C4203C;
-    color: white;
-    transition: background-color 0.3s;
-     width: 100%;
-      font-size: 16px;
+    color: #fff; /* White text color */
+       transition: background-color 0.3s;
+        font-size: 14px; /* Smaller font size */
+         margin-top: 10px;
 }
 
 .login-btn:hover {
-    background-color: #ac1b33;
+      background-color: #ac1b33;
 }
 
-.separator{
+.separator {
     text-align: center;
-    margin: 30px 0;
+    margin: 20px 0;
     position: relative;
 }
 
-.separator::before, .separator::after{
+.separator::before, .separator::after {
     content: '';
     flex: 1;
     height: 1px;
-    background-color: #dee2e6;
+    background-color: #616161; /* Lighter separator color */
     align-self: center;
 }
-.separator::before{
-    margin-right: 1em;
+
+.separator::before {
+    margin-right: .5em;
 }
 
-.separator::after{
-    margin-left: 1em;
+.separator::after {
+    margin-left: .5em;
 }
-.btn-outline-google{
+
+.btn-outline-google {
     width: 100%;
-    border: 1px solid #9e9e9e;
-    border-radius: 10px;
-    padding: 14px 16px;
-    color: #424242;
+    border: 1px solid #616161;
+    border-radius: 5px;
+    padding: 10px 12px;
+     color: #eee;
     background-color: transparent;
     transition: background-color 0.3s, color 0.3s;
 }
 
-.btn-outline-google:hover{
-    background-color: #f8f9fa;
+.btn-outline-google:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
+
 
 .google-icon{
     width: 25px;
     height: 25px;
-    margin-right: 10px;
+    margin-right: 8px;
     vertical-align: middle;
 }
-.register-link{
+
+.register-link {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 10px;
 }
-.register-link a{
-    color: #424242;
+.register-link a {
+    color: #ddd; /* Adjusted link color */
     text-decoration: none;
-     transition: color 0.3s;
+    transition: color 0.3s;
 }
 
 .register-link a:hover {
-    color: #212121;
+     color: white;
     text-decoration: underline;
 }
+
 
 .bold-text{
     font-weight: 600;

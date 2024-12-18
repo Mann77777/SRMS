@@ -31,27 +31,33 @@
         </div>
 
         <div class="row staff-list">
-            <div class="col-md-4 mb-4">
-                <div class="staff-card">
-                    <div class="staff-image">
-                        <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image">
-                    </div>
-                    <div class="staff-details">
-                        <p><strong>Name:</strong> Staff 1</p>
-                        <p><strong>Username:</strong> staff1</p>
-                        <p><strong>Availability Status:</strong> Active</p>
+          @forelse($staff as $staffMember)
+                <div class="col-md-4 mb-4">
+                    <div class="staff-card">
+                        <div class="staff-image">
+                            <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image">
+                        </div>
+                        <div class="staff-details">
+                            <p><strong>Name:</strong> {{ $staffMember->name }}</p>
+                            <p><strong>Username:</strong> {{ $staffMember->username }}</p>
+                            <p><strong>Availability Status:</strong> {{ ucfirst(str_replace('_', ' ', $staffMember->availability_status)) }}</p>
 
-                        <div class="staff-actions">
-                            <button class="btn btn-sm btn-primary edit-staff" data-id="">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-sm btn-danger delete-staff" data-id="">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                            <div class="staff-actions">
+                                <button class="btn btn-sm btn-primary edit-staff" data-toggle="modal" data-target="#editStaffModal"
+                                        data-id="{{ $staffMember->id }}" data-name="{{ $staffMember->name }}"
+                                        data-username="{{ $staffMember->username }}" data-status="{{ $staffMember->availability_status }}">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                 <button class="btn btn-sm btn-danger delete-staff" data-id="{{ $staffMember->id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+           @empty
+            <p> No staff members found.</p>
+            @endforelse
         </div>
     </div>
 
@@ -63,11 +69,12 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Add New Staff</h5>
                     <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
+                        <span>×</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="addStaffForm">
+                    <form id="addStaffForm" action="{{ route('staff.store') }}" method="POST">
+                      @csrf
                         <div class="form-group">
                             <label>Name</label>
                             <input type="text" class="form-control" name="name" required>
@@ -82,13 +89,13 @@
                         </div>
                         <div class="form-group">
                             <label>Confirm Password</label>
-                            <input type="password" class="form-control" name="confirm_password" required>
+                            <input type="password" class="form-control" name="password_confirmation" required>
+                        </div>
+                         <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save Staff</button>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveNewStaff()">Save Staff</button>
                 </div>
             </div>
         </div>
@@ -101,34 +108,37 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Staff Member</h5>
                     <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
+                        <span>×</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <form id="editStaffForm">
-                        <input type="hidden" id="editStaffId">
+                 <div class="modal-body">
+                  <form id="editStaffForm" action="" method="POST">
+                         @csrf
+                         @method('PUT')
+                        <input type="hidden" id="editStaffId" name="staff_id">
                         <div class="form-group">
                             <label>Name</label>
-                            <input type="text" class="form-control" id="editStaffName" required>
+                            <input type="text" class="form-control" name="name" id="editStaffName" required>
                         </div>
                         <div class="form-group">
                             <label>Username</label>
-                            <input type="text" class="form-control" id="editStaffUsername" required>
+                            <input type="text" class="form-control" name="username"  id="editStaffUsername" required>
                         </div>
                         <div class="form-group">
                             <label>Availability Status</label>
-                            <select class="form-control" id="editStaffStatus" required>
+                             <select class="form-control" name="availability_status" id="editStaffStatus" required>
                                 <option value="available">Available</option>
                                 <option value="busy">Busy</option>
                                 <option value="on_leave">On Leave</option>
                             </select>
                         </div>
-                    </form>
+                     <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" >Save Changes</button>
+                       </div>
+                   </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEditedStaff()">Save Changes</button>
-                </div>
+
             </div>
         </div>
     </div>
@@ -140,7 +150,50 @@
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 
     <script>
-        
+
+    $(document).ready(function() {
+      $('#editStaffModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var staffId = button.data('id');
+         var staffName = button.data('name');
+          var staffUsername = button.data('username');
+          var staffStatus = button.data('status');
+
+        var modal = $(this);
+           modal.find('#editStaffForm').attr('action', '/admin/staff/' + staffId +'/update')
+           modal.find('#editStaffId').val(staffId);
+        modal.find('#editStaffName').val(staffName);
+        modal.find('#editStaffUsername').val(staffUsername);
+        modal.find('#editStaffStatus').val(staffStatus);
+       });
+
+        $('.delete-staff').on('click', function(){
+           var staffId = $(this).data('id');
+           var $button = $(this);
+
+            if (confirm('Are you sure you want to delete this staff member?')) {
+                $.ajax({
+                url: '/admin/staff/' + staffId,
+                    type: 'DELETE',
+                  headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                     if(response.success){
+                            $button.closest('.col-md-4').remove();
+                           alert(response.message);
+                        }else{
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                         alert('An error occurred while deleting this staff member')
+                      console.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+      });
     </script>
 </body>
 </html>

@@ -19,6 +19,9 @@ use App\Http\Controllers\StudentRequestController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacultyRequestController;
+use App\Http\Controllers\AdminServiceRequestController;
+use App\Http\Controllers\StaffManagementController;
+use App\Http\Controllers\TechnicianDashboardController;
 
 
 Route::get('/', function () {
@@ -186,6 +189,8 @@ Route::post('/logout', function () {
 // ADMIN ROUTES
 Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
 Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
+ Route::get('/staff_login', [SysadminController::class, 'showStaffLoginForm'])->name('staff_login');
+ Route::post('/staff_login', [SysadminController::class, 'staff_login'])->name('stafflogin.custom');
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
@@ -225,17 +230,15 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::delete('/services/{id}', [ServiceController::class, 'destroy'])->name('services.destroy');
 
     // Other Admin Routes
-    Route::get('/service-request', function () {
-        return view('admin.service-request');
-    })->name('admin.service-request');
+    Route::get('/service-request', [AdminServiceRequestController::class, 'index'])->name('admin.service-request');
 
     Route::get('/service-management', function () {
         return view('admin.service-management');
     })->name('admin.service-management');
-
-    Route::get('/staff-management', function () {
-        return view('admin.staff-management');
-    })->name('admin.staff-management');
+    Route::get('/staff-management', [StaffManagementController::class, 'index'])->name('admin.staff-management');
+      Route::post('/admin/staff', [StaffManagementController::class, 'saveNewStaff'])->name('staff.store');
+        Route::post('/admin/staff/{id}/update', [StaffManagementController::class, 'saveEditedStaff'])->name('staff.update');
+       Route::delete('/admin/staff/{id}', [StaffManagementController::class, 'deleteStaff'])->name('staff.delete');
 
     Route::get('/admin-messages', function () {
         return view('admin.admin-messages');
@@ -262,16 +265,15 @@ Route::middleware(['auth:admin'])->group(function () {
 });
 
 // TECHNICIAN/UITC STAFF ROUTES
-Route::get('/assign-request', function () {
-    return view('uitc_staff.assign-request');
-})->name('uitc_staff.assign-request');
+Route::middleware(['auth:staff'])->group(function () {
+     Route::get('/assign-request', [TechnicianDashboardController::class, 'index'])->name('uitc_staff.assign-request');
 
-Route::get('/assign-history', function () {
-    return view('uitc_staff.assign-history');
-})->name('uitc_staff.assign-history');
+    Route::get('/assign-history', function () {
+        return view('uitc_staff.assign-history');
+    })->name('uitc_staff.assign-history');
 
-Route::get('/technician-report', function () {
-    return view('uitc_staff.technician-report');
-})->name('uitc_staff.technician-report');
-
+     Route::get('/technician-report', function () {
+        return view('uitc_staff.technician-report');
+    })->name('uitc_staff.technician-report');
+});
 Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');

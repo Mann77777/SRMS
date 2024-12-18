@@ -42,11 +42,14 @@ return [
         ],
         'admin' => [
             'driver' => 'session',
-            'provider' => 'admins', // Ensure this matches the provider you define below
+            'provider' => 'admins',
         ],
-    
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'staff',
+        ],
+       
     ],
-
 
     /*
     |--------------------------------------------------------------------------
@@ -75,16 +78,11 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\Admin::class),
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'staff' => [
+           'driver' => 'eloquent',
+            'model' => App\Models\Staff::class,
+        ],
     ],
-
-    
-
-    
 
     /*
     |--------------------------------------------------------------------------

@@ -53,51 +53,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>1</td>
-                            <td>
-                                <strong>First name: </strong><span>Marielle</span><br>
-                                <strong>Last name: </strong><span>Verdaluza</span><br>
-                                <strong>Email: </strong><span>m@gmail.com</span>
-                            </td>
-                            <td>
-                                <strong>Service: </strong><span>MS Teams</span><br>
-                                <strong>UITC Staff: </strong><span>John</span>
-                            </td>
-                            <td>
-                                <strong>Date: </strong><span>2024-11-01</span><br>
-                                <strong>Time: </strong><span>9:15 AM</span>
-                            </td>
-                            <td>Pending</td>
-                            <td>
-                                <button class="btn-approve">Approve</button>
-                                <button class="btn-reject">Reject</button>
-                            </td>
+                         @forelse($requests as $request)
+                            <tr>
+                                <td><input type="checkbox" name="selected_requests[]" value="{{ $request['id'] }}"></td>
+                                <td>{{ $request['id'] }}</td>
+                                <td>
+                                      {!!  $request['request_data'] !!}
+                                </td>
+                                <td>
+                                    <strong>Service: </strong>{{ $request['service'] }}
+                                </td>
+                                <td>
+                                    <strong>Date: </strong><span>{{ $request['date']->format('Y-m-d') }}</span><br>
+                                    <strong>Time: </strong><span>{{ $request['date']->format('g:i A') }}</span>
+                                </td>
+                                 <td>{{ $request['status'] }}</td>
+                                 <td class="btns"> 
+                                  <button class="btn-approve" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">Approve</button>
+                                  <button class="btn-reject" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">Reject</button>
+                             </td>
+                            </tr>
+                        @empty
+                          <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox fa-3x"></i>
+                                <p>No requests found</p>
+                                </td>
                         </tr>
-
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>2</td>
-                            <td>
-                                <strong>First name: </strong><span>Marielle</span><br>
-                                <strong>Last name: </strong><span>Verdaluza</span><br>
-                                <strong>Email: </strong><span>m@gmail.com</span>
-                            </td>
-                            <td>
-                                <strong>Service: </strong><span>MS Teams</span><br>
-                                <strong>UITC Staff: </strong><span>John</span>
-                            </td>
-                            <td>
-                                <strong>Date: </strong><span>2024-11-01</span><br>
-                                <strong>Time: </strong><span>9:15 AM</span>
-                            </td>
-                            <td>Pending</td>
-                            <td class="btns"> 
-                                <button class="btn-approve">Approve</button>
-                                <button class="btn-reject">Reject</button>
-                            </td>
-                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </form>
@@ -112,7 +95,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Assign Technician</h5>
                     <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
+                        <span>×</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -170,7 +153,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="rejectServiceRequestModalLabel">Reject Service Request</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">

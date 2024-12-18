@@ -14,22 +14,17 @@ class UserController extends Controller
     {
         $role = strtolower($request->input('role', 'all'));
         
-        // Get regular users
-        $usersQuery = User::query();
+        // Get regular users, explicitly excluding technicians
+        $usersQuery = User::query()->whereNotIn('role', ['Technician']);
         
-        // Get technicians from admins table
-        $techniciansQuery = Admin::query()->where('role', 'Technician');
+        // Completely remove technicians from the query
+        $techniciansQuery = Admin::query()->where('id', null);
         
         if ($role !== 'all') {
             if ($role === 'faculty') {
                 $usersQuery->where('role', 'Faculty & Staff');
-                $techniciansQuery->whereNull('id'); // Don't include technicians
             } elseif ($role === 'student') {
                 $usersQuery->where('role', 'Student');
-                $techniciansQuery->whereNull('id'); // Don't include technicians
-            } elseif ($role === 'technician') {
-                $usersQuery->whereNull('id'); // Don't include regular users
-                // techniciansQuery already filtered to Technician role
             }
         }
         
@@ -57,7 +52,7 @@ class UserController extends Controller
                 'username' => 'required|string|max:255|unique:users',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
-                'role' => 'required|string|in:Student,Faculty & Staff,Technician',
+                'role' => 'required|string|in:Student,Faculty & Staff',
             ]);
 
             $user = User::create([

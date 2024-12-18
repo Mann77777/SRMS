@@ -37,7 +37,6 @@
                 <option value="all">All Users</option>
                 <option value="student">Student</option>
                 <option value="faculty">Faculty & Staff</option>
-                <option value="technician">Technician</option>
             </select>
 
             <!-- Status Filter -->

@@ -16,6 +16,11 @@
   @include('layouts.navbar')
 
     <div class="profile-container">
+        <div class="back-button-container">
+            <a href="{{ url('/dashboard') }}" class="btn btn-secondary back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
         <h2>My Profile</h2>
         <p>Manage and protect your account</p>
 

@@ -39,8 +39,38 @@ body {
     box-shadow: var(--box-shadow);
     text-align: center;
     color: var(--text-color);
+    position: relative;
+}
+.back-button-container {
+    position: absolute;
+    left: -60px; /* Adjust based on your layout */
+    top: 0;
+    margin-bottom: 20px;
 }
 
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.back-btn i {
+    font-size: 18px;
+}
+
+.back-btn:hover {
+    background-color: #545b62;
+    color: white;
+    text-decoration: none;
+}
 .profile-container h2{
     font-weight: 600;
 }

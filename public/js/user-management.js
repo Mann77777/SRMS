@@ -44,7 +44,7 @@ $(document).ready(function() {
             url: '/user-management',
             type: 'GET',
             data: {
-                role: selectedRole
+                role: selectedRole === 'all' ? null : selectedRole
             },
             success: function(response) {
                 if (response && response.users) {
@@ -58,6 +58,57 @@ $(document).ready(function() {
             }
         });
     });
+    $(document).ready(function() {
+        // Status Filter
+        $('#status').change(function() {
+            var selectedStatus = $(this).val();
+            $.ajax({
+                url: '/user-management',
+                type: 'GET',
+                data: {
+                    status: selectedStatus
+                },
+                success: function(response) {
+                    if (response && response.users) {
+                        updateTable(response.users);
+                    } else {
+                        console.error('Invalid response format:', response);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error filtering users by status:', xhr);
+                }
+            });
+        });
+    
+        // Combined Role and Status Filter
+        function applyFilters() {
+            var selectedRole = $('#role').val();
+            var selectedStatus = $('#status').val();
+            
+            $.ajax({
+                url: '/user-management',
+                type: 'GET',
+                data: {
+                    role: selectedRole,
+                    status: selectedStatus
+                },
+                success: function(response) {
+                    if (response && response.users) {
+                        updateTable(response.users);
+                    } else {
+                        console.error('Invalid response format:', response);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error applying filters:', xhr);
+                }
+            });
+        }
+    
+        // Add event listeners for combined filtering
+        $('#role, #status').change(applyFilters);
+    });
 
     // Update Table Function
     function updateTable(users) {
@@ -65,13 +116,43 @@ $(document).ready(function() {
         tbody.empty();
         
         users.forEach(function(user) {
+            // Determine verification status
+            let verificationStatus = '<span class="status-badge">N/A</span>';
+            if (user.role === 'Student') {
+                if (!user.email_verified_at) {
+                    verificationStatus = '<span class="status-badge pending">Email Unverified</span>';
+                } else if (!user.student_id) {
+                    verificationStatus = '<span class="status-badge pending">Details Required</span>';
+                } else if (!user.admin_verified) {
+                    verificationStatus = `
+                        <span class="status-badge pending">Pending Verification</span>
+                        <button class="btn-verify" title="Verify Student" data-id="${user.id}">Verify</button>
+                    `;
+                } else {
+                    verificationStatus = '<span class="status-badge verified">Verified</span>';
+                }
+            } else if (user.role === 'Faculty') {
+                if (!user.email_verified_at) {
+                    verificationStatus = '<span class="status-badge pending">Email Unverified</span>';
+                } else if (!user.admin_verified) {
+                    verificationStatus = `
+                        <span class="status-badge pending">Pending Verification</span>
+                        <button class="btn-verify" title="Verify Faculty" data-id="${user.id}">Verify</button>
+                    `;
+                } else {
+                    verificationStatus = '<span class="status-badge verified">Verified</span>';
+                }
+            }
+
             var row = `
                 <tr>
                     <td><input type="checkbox" class="user-select" value="${user.id}"></td>
                     <td>${user.id}</td>
                     <td>
                         <strong>Name: </strong>${user.name}<br>
-                        <strong>Email: </strong>${user.email || user.username}
+                        <strong>Username: </strong>${user.username}<br>
+                        <strong>Email: </strong>${user.email || user.username}<br>
+                        <strong>Student ID: </strong>${user.student_id || 'N/A'}
                     </td>
                     <td>${user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</td>
                     <td>
@@ -82,6 +163,9 @@ $(document).ready(function() {
                     <td>
                         <strong>Date: </strong>${new Date(user.created_at).toLocaleDateString()}<br>
                         <strong>Time: </strong>${new Date(user.created_at).toLocaleTimeString()}
+                    </td>
+                    <td>
+                        ${verificationStatus}
                     </td>
                     <td>
                         <button class="btn-edit" title="Edit" data-id="${user.id}">Edit</button>
@@ -95,6 +179,34 @@ $(document).ready(function() {
         });
     }
 });
+
+// Search Functionality
+$('#search-input').on('input', function() {
+    var searchTerm = $(this).val().toLowerCase().trim();
+    var selectedRole = $('#role').val() === 'all' ? null : $('#role').val();
+    var selectedStatus = $('#status').val() === 'all' ? null : $('#status').val();
+    
+    $.ajax({
+        url: '/user-management',
+        type: 'GET',
+        data: {
+            search: searchTerm,
+            role: selectedRole,
+            status: selectedStatus
+        },
+        success: function(response) {
+            if (response && response.users) {
+                updateTable(response.users);
+            } else {
+                console.error('Invalid response format:', response);
+            }
+        },
+        error: function(xhr) {
+            console.error('Error searching users:', xhr);
+        }
+    });
+});
+
 
 $(document).ready(function() {
     // Edit User

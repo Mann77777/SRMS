@@ -138,7 +138,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                         @forelse($recentRequests ?? [] as $request)
+                         @forelse($recentRequests->take(3) ?? [] as $request)
                         <tr>
                             <td><strong>#{{ $request['id'] }}</strong></td>
                             <td>{{ $request['service_type'] }}</td>

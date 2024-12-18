@@ -2,8 +2,8 @@
 var botmanWidget = {
     frameEndpoint: '/botman/chat',
     chatServer: '/botman',
-    title: 'SRMS Assistant',
-    introMessage: 'Hello! 👋 I\'m your SRMS Assistant. How can I help you today?',
+    title: 'SRMS Chatbot',
+    introMessage: 'Hello! 👋 I\'m your SRMS Chatbot. How can I help you today?',
     placeholderText: 'Send a message...',
     mainColor: '#C4203C',
     bubbleBackground: '#C4203C',
@@ -31,7 +31,7 @@ var botmanWidget = {
     
     // Custom widget behavior
     alwaysUseFloatingButton: true,
-    buttonIconUrl: '/images/chat-icon.png',
+    buttonIconUrl: '/public/images/chat-icon.png',
     
     // Widget positioning
     position: 'right',

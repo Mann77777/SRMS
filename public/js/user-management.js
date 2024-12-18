@@ -44,7 +44,7 @@ $(document).ready(function() {
             url: '/user-management',
             type: 'GET',
             data: {
-                role: selectedRole
+                role: selectedRole === 'all' ? null : selectedRole
             },
             success: function(response) {
                 if (response && response.users) {
@@ -58,7 +58,6 @@ $(document).ready(function() {
             }
         });
     });
-
     $(document).ready(function() {
         // Status Filter
         $('#status').change(function() {
@@ -181,6 +180,32 @@ $(document).ready(function() {
     }
 });
 
+// Search Functionality
+$('#search-input').on('input', function() {
+    var searchTerm = $(this).val().toLowerCase().trim();
+    var selectedRole = $('#role').val() === 'all' ? null : $('#role').val();
+    var selectedStatus = $('#status').val() === 'all' ? null : $('#status').val();
+    
+    $.ajax({
+        url: '/user-management',
+        type: 'GET',
+        data: {
+            search: searchTerm,
+            role: selectedRole,
+            status: selectedStatus
+        },
+        success: function(response) {
+            if (response && response.users) {
+                updateTable(response.users);
+            } else {
+                console.error('Invalid response format:', response);
+            }
+        },
+        error: function(xhr) {
+            console.error('Error searching users:', xhr);
+        }
+    });
+});
 
 
 $(document).ready(function() {

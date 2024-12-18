@@ -63,7 +63,7 @@ class DashboardController extends Controller
           // Merge and sort requests by created_at
           $recentRequests = collect(array_merge($transformedStudentRequests->toArray(), $transformedFacultyRequests->toArray()))
             ->sortByDesc('created_at')
-            ->take(5);
+            ->take(3);
 
         } catch (\Exception $e) {
             Log::error('Error fetching dashboard data: ' . $e->getMessage());

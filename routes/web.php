@@ -63,8 +63,6 @@ Route::get('/myrequests', [FacultyRequestController::class, 'myRequests'])->name
 Route::get('/student-request', [StudentRequestController::class, 'showForm'])->name('student.request.form');
 Route::post('/student-request-submit', [StudentRequestController::class, 'submitRequest'])->name('student.request.submit');
 
-
-
 // Login Form Route
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 

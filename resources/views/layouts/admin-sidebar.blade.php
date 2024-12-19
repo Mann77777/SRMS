@@ -19,13 +19,26 @@
                     </a>
                 </li>
 
-                <li class="item">
-                    <a href="{{ url('/service-request') }}" class="nav_link {{ request()->is('service-request') ? 'active' : '' }}">
+                <li class="item has-submenu">
+                    <a href="#" class="nav_link">
                         <span class="navlink_icon">
                             <i class="bx bxs-check-circle"></i>
                         </span>
                         <span class="navlink">Service Request</span>
+                        <i class="bx bx-chevron-down arrow_icon"></i>
                     </a>
+                    <ul class="submenu">
+                        <li>
+                            <a href="{{ url('/service-request') }}" class="nav_link {{ request()->is('service-request') ? 'active' : '' }}">
+                                <span class="navlink">All Requests</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url('/request-form-management') }}" class="nav_link {{ request()->is('request-form-management') ? 'active' : '' }}">
+                                <span class="navlink">Request Form</span>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <li class="item">
@@ -55,14 +68,14 @@
                     </a>
                 </li>
                 
-                <li class="item">
+                <!-- <li class="item">
                     <a href="{{ url('/admin-messages') }}" class="nav_link {{ request()->is('admin-messages') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bx-chat"></i>
                         </span>
                         <span class="navlink">Messages</span>
                     </a>
-                </li>
+                </li> -->
 
                 <li class="item">
                     <a href="{{ url('/admin_report') }}" class="nav_link {{ request()->is('admin_report') ? 'active' : '' }}">

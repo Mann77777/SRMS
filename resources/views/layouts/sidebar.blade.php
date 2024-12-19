@@ -59,7 +59,7 @@
                 </a>
             </li>
 
-            <!-- Messages Link -->
+            <!-- Messages Link 
             <li class="item">
                 <a href="{{ url('/messages') }}" class="nav_link {{ request()->is('messages') ? 'active' : '' }}">
                     <span class="navlink_icon">
@@ -67,7 +67,7 @@
                     </span>
                     <span class="navlink">Messages</span>
                 </a>
-            </li>
+            </li> -->
 
             <!-- Help Link -->
             <li class="item">

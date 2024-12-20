@@ -11,6 +11,8 @@
     <title>Service Request Form</title>
 </head>
 <body>
+
+
 <div class="container">
     <div class="form-section">
         <h4>Select Service Category</h4>
@@ -207,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 </body>

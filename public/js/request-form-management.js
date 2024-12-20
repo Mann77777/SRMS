@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const userTypeFilter = document.getElementById('userTypeFilter');
 
     // Field types for dynamic form creation
-    const fieldTypes = ['Text', 'Number', 'Email', 'Date', 'Time', 'Dropdown', 'Checkbox'];
+    const fieldTypes = ['Text', 'Number', 'Email', 'Date', 'Time', 'Dropdown', 'Checkbox', 'File'];
 
     // Add dynamic option with nested fields
     addOptionBtn.addEventListener('click', function () {
@@ -51,9 +51,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Create field row function
+  
     function createFieldRow() {
         const fieldRow = document.createElement('div');
-        fieldRow.classList.add('field-row', 'form-row', 'mb-2');
+        fieldRow.classList.add('field-row', 'form-row', 'mb-2', 'p-2', 'border');
         
         // Field Name Input
         const nameInput = document.createElement('input');
@@ -64,11 +65,125 @@ document.addEventListener('DOMContentLoaded', function () {
         // Field Type Dropdown
         const typeSelect = document.createElement('select');
         typeSelect.classList.add('form-control', 'col-md-4', 'mr-2');
+        
+        // Add a default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select Field Type';
+        typeSelect.appendChild(defaultOption);
+        
+        // Add field types
         fieldTypes.forEach(type => {
             const option = document.createElement('option');
             option.value = type.toLowerCase();
             option.textContent = type;
             typeSelect.appendChild(option);
+        });
+        
+        // File Upload Configuration Container
+        const fileConfigContainer = document.createElement('div');
+        fileConfigContainer.classList.add('file-config-container', 'col-md-12', 'mt-2', 'bg-light', 'p-3');
+        fileConfigContainer.style.display = 'none'; // Initially hidden
+        fileConfigContainer.setAttribute('data-debug', 'file-config-container');
+        
+        // File Configuration Wrapper
+        const configWrapper = document.createElement('div');
+        configWrapper.classList.add('row');
+        
+        // File Type Restrictions
+        const fileTypeCol = document.createElement('div');
+        fileTypeCol.classList.add('col-md-6');
+        
+        const fileTypeLabel = document.createElement('label');
+        fileTypeLabel.textContent = 'Allowed File Types';
+        const fileTypeInput = document.createElement('input');
+        fileTypeInput.type = 'text';
+        fileTypeInput.classList.add('form-control');
+        fileTypeInput.placeholder = 'e.g., .pdf,.jpg,.png';
+        fileTypeInput.name = 'file_types';
+        
+        fileTypeCol.appendChild(fileTypeLabel);
+        fileTypeCol.appendChild(fileTypeInput);
+        
+        // File Size Limit
+        const fileSizeCol = document.createElement('div');
+        fileSizeCol.classList.add('col-md-6');
+        
+        const fileSizeLabel = document.createElement('label');
+        fileSizeLabel.textContent = 'Max File Size (MB)';
+        const fileSizeInput = document.createElement('input');
+        fileSizeInput.type = 'number';
+        fileSizeInput.classList.add('form-control');
+        fileSizeInput.min = '1';
+        fileSizeInput.max = '50';
+        fileSizeInput.value = '5';
+        fileSizeInput.placeholder = 'Max file size in MB';
+        fileSizeInput.name = 'max_file_size';
+        
+        fileSizeCol.appendChild(fileSizeLabel);
+        fileSizeCol.appendChild(fileSizeInput);
+        
+        // Additional File Configuration Options
+        const additionalConfigCol = document.createElement('div');
+        additionalConfigCol.classList.add('col-md-12', 'mt-2');
+        
+        // Required File Checkbox
+        const requiredFileCheckbox = document.createElement('div');
+        requiredFileCheckbox.classList.add('form-check', 'form-check-inline');
+        const requiredFileInput = document.createElement('input');
+        requiredFileInput.type = 'checkbox';
+        requiredFileInput.classList.add('form-check-input');
+        requiredFileInput.id = 'requiredFile_' + Date.now();
+        requiredFileInput.name = 'is_required';
+        
+        const requiredFileLabel = document.createElement('label');
+        requiredFileLabel.classList.add('form-check-label');
+        requiredFileLabel.htmlFor = requiredFileInput.id;
+        requiredFileLabel.textContent = 'Required File';
+        
+        requiredFileCheckbox.appendChild(requiredFileInput);
+        requiredFileCheckbox.appendChild(requiredFileLabel);
+        
+        // Multiple File Upload Checkbox
+        const multipleFileCheckbox = document.createElement('div');
+        multipleFileCheckbox.classList.add('form-check', 'form-check-inline', 'ml-3');
+        const multipleFileInput = document.createElement('input');
+        multipleFileInput.type = 'checkbox';
+        multipleFileInput.classList.add('form-check-input');
+        multipleFileInput.id = 'multipleFiles_' + Date.now();
+        multipleFileInput.name = 'multiple_files';
+        
+        const multipleFileLabel = document.createElement('label');
+        multipleFileLabel.classList.add('form-check-label');
+        multipleFileLabel.htmlFor = multipleFileInput.id;
+        multipleFileLabel.textContent = 'Allow Multiple Files';
+        
+        multipleFileCheckbox.appendChild(multipleFileInput);
+        multipleFileCheckbox.appendChild(multipleFileLabel);
+        
+        additionalConfigCol.appendChild(requiredFileCheckbox);
+        additionalConfigCol.appendChild(multipleFileCheckbox);
+        
+        // Combine configuration elements
+        configWrapper.appendChild(fileTypeCol);
+        configWrapper.appendChild(fileSizeCol);
+        fileConfigContainer.appendChild(configWrapper);
+        fileConfigContainer.appendChild(additionalConfigCol);
+        
+        // Show/Hide File Configuration based on field type
+        typeSelect.addEventListener('change', function() {
+            console.log('Selected type:', this.value); // Debug log
+            
+            // Reset all configurations
+            fileConfigContainer.style.display = 'none';
+            
+            if (this.value === 'file') {
+                fileConfigContainer.style.display = 'block';
+                console.log('File configuration should be visible');
+            } else {
+                fileConfigContainer.style.display = 'none';
+                console.log('File configuration hidden');
+            }
         });
         
         // Remove Field Button
@@ -80,9 +195,11 @@ document.addEventListener('DOMContentLoaded', function () {
             fieldRow.remove();
         });
         
+        // Append elements to field row
         fieldRow.appendChild(nameInput);
         fieldRow.appendChild(typeSelect);
         fieldRow.appendChild(removeFieldBtn);
+        fieldRow.appendChild(fileConfigContainer);
         
         return fieldRow;
     }
@@ -292,6 +409,7 @@ function deleteRequestForm(formId) {
         const formName = document.getElementById('formName').value;
         const formDescription = document.getElementById('formDescription').value;
         const userType = document.getElementById('userType').value;
+        
     
         const options = Array.from(dynamicOptions.children).map((optionRow) => {
             const optionNameInput = optionRow.querySelector('input[type="text"]');

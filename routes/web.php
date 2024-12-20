@@ -22,6 +22,7 @@ use App\Http\Controllers\FacultyRequestController;
 use App\Http\Controllers\AdminServiceRequestController;
 use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\TechnicianDashboardController;
+use App\Http\Controllers\RequestFormController;
 
 
 Route::get('/', function () {
@@ -229,6 +230,19 @@ Route::middleware(['auth:admin'])->group(function () {
 
     // Other Admin Routes
     Route::get('/service-request', [AdminServiceRequestController::class, 'index'])->name('admin.service-request');
+
+    Route::get('/request-form-management', function () {
+        return view('admin.request-form-management');
+    })->name('admin.request-form-management');
+
+    Route::post('/save-request-form', [RequestFormController::class, 'saveRequestForm']);
+Route::get('/get-request-forms', [RequestFormController::class, 'getRequestForms']);
+// Add these routes
+Route::post('/update-request-form', [RequestFormController::class, 'updateRequestForm']);
+Route::post('/delete-request-form', [RequestFormController::class, 'deleteRequestForm']);
+
+Route::get('/debug-storage-path', [RequestFormController::class, 'debugStoragePath']);
+
 
     Route::get('/service-management', function () {
         return view('admin.service-management');

@@ -1,0 +1,74 @@
+[
+    {
+        "id": 1734624166978,
+        "name": "MS Office 365, MS Teams, TUP Email",
+        "description": "Request to access MS Office, MS Teams, and TUP Email",
+        "userType": "student",
+        "options": [
+            {
+                "optionName": "Create MS Office\/TUP Email Account",
+                "fields": []
+            },
+            {
+                "optionName": "Reset MS Office\/TUP Email Password",
+                "fields": []
+            },
+            {
+                "optionName": "Change of Data",
+                "fields": [
+                    {
+                        "name": "Data to change (first name, last name, etc)",
+                        "type": "text"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 1734627236682,
+        "name": "TUP Web ERS, ERS, and TUP Portal",
+        "description": null,
+        "userType": "student",
+        "options": [
+            {
+                "optionName": "Reset TUP Web password",
+                "fields": [
+                    {
+                        "name": "Name",
+                        "type": "text"
+                    }
+                ]
+            },
+            {
+                "optionName": "Reset ERS password",
+                "fields": [
+                    {
+                        "name": "Name",
+                        "type": "text"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 1734627362078,
+        "name": "ICT Equipment Management",
+        "description": null,
+        "userType": "student",
+        "options": [
+            {
+                "optionName": "Request to use LED Screen",
+                "fields": [
+                    {
+                        "name": "Date",
+                        "type": "date"
+                    },
+                    {
+                        "name": "Time",
+                        "type": "time"
+                    }
+                ]
+            }
+        ]
+    }
+]

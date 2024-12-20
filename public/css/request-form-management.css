@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    font-family: "Montserrat", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    padding-top: 10px;
+    font-family: "Montserrat", sans-serif;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #f8f9fa;
+    height: 130vh;
+}
+
+.reqform-content {
+    margin-top: 8%;
+    margin-left: 23%;
+    padding: 20px;
+}
+
+.reqform-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.reqform-header h1 {
+    font-size: 2rem;
+    font-weight: 650;
+    text-transform: uppercase;
+}
+
+.reqform-btn {
+    margin-bottom: 30px;
+}
+
+.reqform-btn .btn-primary {
+    padding: 10px 14px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.dropdown-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+select {
+    width: 180px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.reqform-table-container{
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow-x: auto;
+}
+
+.table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td{
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+.table thead th{
+    background-color: #C4203C;
+    color: white;
+    font-weight: 600;
+    padding: 12px;
+}
+
+.table tbody tr:hover{
+    background-color: #f8f9fa;
+}

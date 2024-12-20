@@ -43,3 +43,26 @@ if (window.innerWidth < 768) {
 } else {
   sidebar.classList.remove("close");
 }
+
+// Submenu Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const submenus = document.querySelectorAll('.has-submenu > .nav_link');
+    
+    submenus.forEach(submenu => {
+        submenu.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default link behavior
+            
+            // Toggle active class on parent li
+            const parentLi = this.closest('.has-submenu');
+            parentLi.classList.toggle('active');
+            
+            // Close other open submenus
+            const otherSubmenus = document.querySelectorAll('.has-submenu.active');
+            otherSubmenus.forEach(other => {
+                if (other !== parentLi) {
+                    other.classList.remove('active');
+                }
+            });
+        });
+    });
+});

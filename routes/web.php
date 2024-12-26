@@ -63,6 +63,13 @@ Route::get('/faculty-service', [FacultyRequestController::class, 'showForm'])->n
 Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
 Route::get('/myrequests', [FacultyRequestController::class, 'myRequests'])->name('myrequests');
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat-history', [BotManController::class, 'getChatHistoryApi']);
+    Route::post('/botman/save-message', [BotManController::class, 'saveChatMessageApi']);
+});
+
+// Route::get('/botman/chat-history', [BotManController::class, 'getChatHistoryApi'])->middleware('auth');
+
 //student request
 Route::get('/student-request', [StudentRequestController::class, 'showForm'])->name('student.request.form');
 Route::post('/student-request-submit', [StudentRequestController::class, 'submitRequest'])->name('student.request.submit');

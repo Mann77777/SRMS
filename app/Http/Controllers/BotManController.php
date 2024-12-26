@@ -2,14 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatHistory;
 use BotMan\BotMan\BotMan;
-use Illuminate\Http\Request;
 use BotMan\BotMan\Messages\Incoming\Answer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+
 
 class BotManController extends Controller
 {
     private $confidenceThreshold = 0.6;
+
+        /**
+     * Save chat message to database
+     */
+    private function saveChatMessage($message, $sender)
+    {
+        // Ensure user is authenticated before saving
+        if (Auth::check()) {
+            ChatHistory::create([
+                'user_id' => Auth::id(),
+                'message' => $message,
+                'sender' => $sender
+            ]);
+        }
+    }
+
+    /**
+     * Retrieve chat history for a user
+     */
+    private function getChatHistory($userId = null)
+    {
+        $userId = $userId ?? (Auth::check() ? Auth::id() : null);
+
+        if ($userId) {
+            return ChatHistory::where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->limit(50) // Limit to last 50 messages
+                ->get();
+        }
+
+        return collect(); // Return empty collection if no user
+    }
 
     /**
      * Handle the incoming messages from the BotMan chatbot.
@@ -20,39 +55,71 @@ class BotManController extends Controller
         
         // Listen for any message
         $botman->hears('{message}', function($botman, $message) {
+            // Only save if user is authenticated
+            if (Auth::check()) {
+                // Save user message
+                $this->saveChatMessage($message, 'user');
+            }
+
             // Convert the message to lowercase and remove special characters
             $message = strtolower(preg_replace('/[^\w\s]/', '', $message));
             
             // Get the intent and confidence score
             $intent = $this->determineIntent($message);
             
+            // Existing intent handling logic
+            $botResponse = null;
             if ($intent['confidence'] >= $this->confidenceThreshold) {
                 switch ($intent['type']) {
                     case 'greeting':
-                        $this->handleGreeting($botman);
+                        $botResponse = $this->handleGreeting($botman);
                         break;
                     case 'service_info':
-                        $this->handleServiceInfo($botman);
+                        $botResponse = $this->handleServiceInfo($botman);
                         break;
                     case 'request_service':
-                        $this->handleRequestService($botman);
+                        $botResponse = $this->handleRequestService($botman);
                         break;
                     case 'track_status':
-                        $this->handleTrackStatus($botman);
+                        $botResponse = $this->handleTrackStatus($botman);
                         break;
                     case 'technical_support':
-                        $this->handleTechnicalSupport($botman, $message);
+                        $botResponse = $this->handleTechnicalSupport($botman, $message);
                         break;
                     default:
-                        $this->handleUnknownQuery($botman, $message);
+                        $botResponse = $this->handleUnknownQuery($botman, $message);
                 }
             } else {
-                $this->handleUnknownQuery($botman, $message);
+                $botResponse = $this->handleUnknownQuery($botman, $message);
+            }
+
+            // Save bot response only if user is authenticated
+            if (Auth::check() && $botResponse) {
+                $this->saveChatMessage($botResponse, 'bot');
             }
         });
 
         $botman->listen();
     }
+
+
+     /**
+     * API method to retrieve chat history
+     */
+    public function getChatHistoryApi()
+    {
+        // Ensure user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Retrieve chat history for current user
+        $chatHistory = $this->getChatHistory();
+
+        // Return as JSON response
+        return response()->json($chatHistory);
+    }
+
 
     /**
      * Determine the intent of the user's message
@@ -156,13 +223,16 @@ class BotManController extends Controller
         // Log unknown queries for improvement
         Log::info('Unknown query received: ' . $message);
         
-        $botman->reply("I'm not quite sure what you're asking about. Here are some things I can help you with:
+        $unknownMessage = "I'm not quite sure what you're asking about. Here are some things I can help you with:
         1. Information about our services
         2. Submitting a service request
         3. Tracking your request status
         4. Technical support
 
-        Please let me know which one you'd like to know more about!");
+        Please let me know which one you'd like to know more about!";
+
+        $botman->reply($unknownMessage);
+        return $unknownMessage;
     }
 
     /**
@@ -171,13 +241,15 @@ class BotManController extends Controller
     private function handleGreeting($botman)
     {
         $responses = [
-            "Hello! How can I assist you today?",
-            "Hi there! What can I help you with?",
-            "Greetings! How may I help you?",
-            "Hello! I'm here to help. What do you need?"
+            "Hello! Welcome to the Service Request Management System support. How can I assist you today?",
+            "Hi there! Welcome to the Service Request Management System support. What can I help you with?",
+            "Greetings! Welcome to the Service Request Management System. How may I help you?",
+            "Hello! Welcome to the Service Request Management System I'm here to help. What do you need?"
         ];
         
-        $botman->reply($responses[array_rand($responses)]);
+        $response = $responses[array_rand($responses)];
+        $botman->reply($response);
+        return $response;
     }
 
     /**
@@ -204,6 +276,7 @@ class BotManController extends Controller
         Would you like more details about any specific service?";
 
         $botman->reply($serviceInfo);
+        return $serviceInfo; // Return the response string
     }
 
     /**
@@ -211,14 +284,17 @@ class BotManController extends Controller
      */
     private function handleRequestService($botman)
     {
-        $botman->reply("To submit a service request, please follow these steps:
+        $requestMessage ="To submit a service request, please follow these steps:
         1. Log into your account
         2. Go to the 'Submit Request' section
         3. Fill out the service request form
         4. Provide all necessary details
         5. Submit your request
 
-        Would you like me to guide you to the request form?");
+        Would you like me to guide you to the request form?";
+
+        $botman->reply($requestMessage);
+        return $requestMessage;
     }
 
     /**
@@ -226,12 +302,15 @@ class BotManController extends Controller
      */
     private function handleTrackStatus($botman)
     {
-        $botman->reply("You can track your service request status by:
+        $statusMessage = "You can track your service request status by:
         1. Logging into your account
         2. Going to 'My Requests' section
         3. Finding your request using the ID or date
         
-        Do you need help finding your request?");
+        Do you need help finding your request?";
+
+        $botman->reply($statusMessage);
+        return $statusMessage;
     }
 
     /**
@@ -239,27 +318,34 @@ class BotManController extends Controller
      */
     private function handleTechnicalSupport($botman, $message)
     {
+        $supportMessage = "";
+        
         if (strpos($message, 'internet') !== false) {
-            $botman->reply("For internet issues, try these steps:
+            $supportMessage = "For internet issues, try these steps:
             1. Restart your router
             2. Check cable connections
             3. Run network diagnostics
             
-            If the problem persists, please submit a service request.");
+            If the problem persists, please submit a service request.";
         } elseif (strpos($message, 'printer') !== false) {
-            $botman->reply("For printer issues:
+            $supportMessage = "For printer issues:
             1. Check if the printer is powered on
             2. Verify paper and ink levels
             3. Ensure printer is connected to network
             
-            Need more help? Submit a service request.");
+            Need more help? Submit a service request.";
         } else {
-            $botman->reply("For technical support, please:
+            $supportMessage = "For technical support, please:
             1. Describe your issue in detail
             2. Submit a service request
             3. Our team will respond promptly
             
-            Would you like to submit a request now?");
+            Would you like to submit a request now?";
         }
+    
+        $botman->reply($supportMessage);
+        return $supportMessage;
     }
+    
+
 }

@@ -12,205 +12,254 @@
 </head>
 <body>
 
-
-<div class="container">
-    <div class="form-section">
-        <h4>Select Service Category</h4>
-        <select id="serviceCategory" class="form-control" required>
-            <option value="">Select a Service Category</option>
-            @foreach($studentForms as $form)
-                <optgroup label="{{ $form['name'] }}">
-                    @foreach($form['options'] as $index => $option)
-                        <option value="{{ $form['id'] }}-{{ $index }}">
-                            {{ $option['optionName'] }}
-                        </option>
-                    @endforeach
-                </optgroup>
-            @endforeach
-            <optgroup label="Other Services">
-                <option value="others">Others</option>
-            </optgroup>
-        </select>
-    </div>
-
-    <!-- Personal Information Form Template -->
-    <div id="personalInfoForm" style="display:none;">
-        <div class="form-section">
-            <h4>Personal Information</h4>
-            <div class="row">
-                <div class="col-md-4">
-                    <label>First Name</label>
-                    <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
-                </div>
-                <div class="col-md-4">
-                    <label>Last Name</label>
-                    <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
-                </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <label>Email Address</label>
-                    <input type="email" class="form-control" name="email" placeholder="Email Address" required>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dynamic Form Fields Container -->
-    <div id="dynamicFieldsContainer" class="mt-3">
-        <!-- Dynamically generated fields will appear here -->
-    </div>
-
-    <!-- Others Request Form -->
-    <div id="othersRequestForm" style="display:none;">
-        <div class="form-section">
-            <h4>Other Service Request</h4>
-            <div class="form-group">
-                <label>Describe Your Request</label>
-                <textarea class="form-control" id="othersRequestDescription" name="others_request_description" rows="4" placeholder="Please provide detailed information about your request"></textarea>
-                <small class="form-text text-muted">Be as specific as possible to help us understand and process your request.</small>
-            </div>
-            <div class="form-group">
-                <label>Preferred Contact Method</label>
-                <div class="row">
-                    <div class="col-md-6">
-                        <select class="form-control" name="contact_method">
-                            <option value="">Select Contact Method</option>
-                            <option value="email">Email</option>
-                            <option value="phone">Phone</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <input type="text" class="form-control" name="contact_detail" placeholder="Enter contact detail">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Submit Button -->
-    <div class="form-group mt-3">
-        <button type="submit" class="btn btn-primary" id="submitStudentRequest">Submit Request</button>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const serviceCategory = document.getElementById('serviceCategory');
-    const dynamicFieldsContainer = document.getElementById('dynamicFieldsContainer');
-    const personalInfoForm = document.getElementById('personalInfoForm');
-    const othersRequestForm = document.getElementById('othersRequestForm');
-    const submitButton = document.getElementById('submitStudentRequest');
-
-    // Parsed student forms from the backend
-    const studentForms = @json($studentForms);
-
-    serviceCategory.addEventListener('change', function() {
-        // Clear previous dynamic fields
-        dynamicFieldsContainer.innerHTML = '';
-        
-        // Hide personal info and others form
-        personalInfoForm.style.display = 'none';
-        othersRequestForm.style.display = 'none';
-
-        const selectedValue = this.value;
-
-        if (selectedValue === 'others') {
-            // Show others request form and personal info
-            othersRequestForm.style.display = 'block';
-            personalInfoForm.style.display = 'block';
-            return;
-        }
-
-        if (selectedValue) {
-            // Parse the selected value (formId-optionIndex)
-            const [formId, optionIndex] = selectedValue.split('-');
+    <!-- Include Navbar -->
+    @include('layouts.navbar')
             
-            // Find the corresponding form and option
-            const selectedForm = studentForms.find(form => form.id == formId);
-            if (selectedForm) {
-                const selectedOption = selectedForm.options[optionIndex];
+    <!-- Include Sidebar -->
+    @include('layouts.sidebar')
 
-                // Create form for the selected option
-                const optionFormDiv = document.createElement('div');
-                optionFormDiv.classList.add('form-section');
+    <div class="student-content">
+        <div class="student-header">
+            <h1>Student Service Request</h1>
+        </div>
+        <!-- Form -->
+         <div class="container">
+
+            <div class="form-section">
+                <h5>Select Service Category</h5>
+                <select id="serviceCategory" class="form-control" required onchange="showFormFields()">
+                    <option value="">Select a Service Category</option>
+                    <!-- Dynamically generated options -->
+                    <optgroup label="MS Office 365, MS Teams, TUP Email">
+                        <option value="create">Create MS Office/TUP Email Account</option>
+                        <option value="reset_email_password">Reset MS Office/TUP Email Password</option>
+                        <option value="change_of_data_ms">Change of Data</option>
+                    </optgroup>
+                    <optgroup label="TUP Web ERS, ERS, and TUP Portal">
+                        <option value="reset_tup_web_password">Reset TUP Web Password</option>
+                        <option value="reset_ers_password">Reset ERS Password</option>
+                        <option value="change_of_data_portal">Change of Data</option>
+                    </optgroup>
+                    <optgroup label="ICT Equipment Management">
+                        <option value="request_led_screen">Request to use LED Screen</option>
+                    </optgroup>
+                    <!-- Other Services -->
+                    <optgroup label="Other Services">
+                        <option value="others">Others</option>
+                    </optgroup>
+                </select>
+
+            </div>
+
+            <!-- Personal Information Form Template -->
+            <div id="personalInfoForm" style="display: none;">
+                <div class="form-section">
+                    <h5>Personal Information</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>First Name</label>
+                            <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Last Name</label>
+                            <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                        </div>
+                    </div>
                 
-                // Option name as heading
-                const headingH4 = document.createElement('h4');
-                headingH4.textContent = selectedOption.optionName;
-                optionFormDiv.appendChild(headingH4);
 
-                // Create row for fields
-                const fieldsRow = document.createElement('div');
-                fieldsRow.classList.add('row');
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label>Student ID</label>
+                            <input type="text" class="form-control" name="text" placeholder="Student ID" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                // Generate fields dynamically
-                selectedOption.fields.forEach(field => {
-                    const fieldCol = document.createElement('div');
-                    fieldCol.classList.add('col-md-6', 'mb-3');
+            <!-- Additional Forms for Each Option -->
+            <div id="resetForm" style="display: none;">
+                <div class="form-section">
+                    <h5>Reset Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Account Email</label>
+                            <input type="email" class="form-control" name="account_email" placeholder="Account Email" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    const label = document.createElement('label');
-                    label.textContent = field.name;
+            <div id="changeOfDataForm" style="display: none;">
+                <div class="form-section">
+                    <h5>Change of Data</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Type of Data to Change</label>
+                            <select class="form-control" name="data_type" required>
+                                <option value="">Select Data Type</option>
+                                <option value="name">Name</option>
+                                <option value="email">Email Address</option>
+                                <option value="contact_number">Contact Number</option>
+                                <option value="address">Address</option>
+                                <option value="others">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Specify New Information</label>
+                            <input type="text" class="form-control" name="new_data" placeholder="Enter New Information" required>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label>Upload Supporting Document</label>
+                            <input type="file" class="form-control" name="supporting_document" required>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label>Additional Notes (Optional)</label>
+                            <textarea class="form-control" name="additional_notes" rows="3" placeholder="Provide any additional details..."></textarea>
+                        </div>
+                    </div>
+            
+                </div>
+            </div>
 
-                    const input = document.createElement('input');
-                    input.type = field.type === 'text' ? 'text' : field.type;
-                    input.classList.add('form-control');
-                    input.name = field.name.toLowerCase().replace(/\s+/g, '_');
-                    input.required = true;
+            <div id="useled" style="display: none;">
+                <div class="form-section">
+                    <h5>Request to use LED Screen</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label>Preferred Date</label>
+                            <input type="date" class="form-control" name="preferred_date" required>
+                        </div>
 
-                    fieldCol.appendChild(label);
-                    fieldCol.appendChild(input);
-                    fieldsRow.appendChild(fieldCol);
-                });
+                        <div class="col-md-6">
+                            <label>Preferred Time</label>
+                            <input type="time" class="form-control" name="preferred_time" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="otherServicesForm" style="display: none;">
+                <div class="form-section">
+                    <h5>Other Services</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Describe Your Request</label>
+                            <textarea class="form-control" name="description" placeholder="Describe Your Request" required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                optionFormDiv.appendChild(fieldsRow);
-                dynamicFieldsContainer.appendChild(optionFormDiv);
 
-                // Show personal info form
-                personalInfoForm.style.display = 'block';
+            <!-- Terms and Conditions with Submit Button -->
+            <div class="form-section">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 text-center">
+                        <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                        <label for="agreeTerms">
+                            I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms and Conditions</a>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Submit Button -->
+            <div class="form-section">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 text-center">
+                        <button type="submit" class="submitbtn">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+          <!-- Terms and Conditions Modal -->
+        <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ol>
+                            <li>By filling out this form, it is understood that you adhere and accept the Terms and Conditions of the Use of ICT Resources Policy, Data Privacy Act of 2012, and Privacy Policy of the University.</li>
+                            <li>Services that can be offered by the UITC are exclusively in its areas of expertise and specialization and specifically for TUP properties only.</li>
+                            <li>File backup should be initially done by the requesting client. The UITC and its personnel will not be liable for any missing files.</li>
+                            <li>Only completely filled-out request forms shall be entertained by the UITC.</li>
+                            <li>The UITC has the discretion to prioritize job requests according to the volume of requests and the gravity of work to be done based on the approved Work Instruction Manual.</li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </div>
+    <!-- JavaScript -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Add event listener to the dropdown
+        const serviceCategoryDropdown = document.getElementById("serviceCategory");
+
+        serviceCategoryDropdown.addEventListener("change", showFormFields);
+
+        function showFormFields() {
+            // Hide all forms by default
+            document.getElementById("personalInfoForm").style.display = "none";
+            document.getElementById("resetForm").style.display = "none";
+            document.getElementById("changeOfDataForm").style.display = "none";
+            document.getElementById("useled").style.display = "none";
+            document.getElementById("otherServicesForm").style.display = "none";
+
+            // Get the selected value
+            const selectedOption = serviceCategoryDropdown.value;
+
+            // Display the appropriate form based on the selected option
+            switch (selectedOption) {
+                case "create":
+                case "change_of_data_email":
+                    document.getElementById("personalInfoForm").style.display = "block";
+                    break;
+                case "reset_email_password":
+                case "reset_tup_web_password":
+                case "reset_ers_password":
+                    document.getElementById("personalInfoForm").style.display = "block";
+                    document.getElementById("resetForm").style.display = "block";
+                    break;
+                case "change_of_data_ms":
+                case "change_of_data_portal":
+                    document.getElementById("personalInfoForm").style.display = "block";
+                    document.getElementById("changeOfDataForm").style.display = "block";
+                    break;
+                case "request_led_screen":
+                    document.getElementById("personalInfoForm").style.display = "block";
+                    document.getElementById("useled").style.display = "block";
+                    break;
+                case "others":
+                    document.getElementById("personalInfoForm").style.display = "block";
+                    document.getElementById("otherServicesForm").style.display = "block";
+                    break;
+                default:
+                    // No action needed for default
+                    break;
             }
         }
     });
-
-    // Submit button event listener (placeholder for form submission logic)
-    submitButton.addEventListener('click', function() {
-        // Collect form data
-        const formData = new FormData();
-        
-        // Add service category
-        formData.append('service_category', serviceCategory.value);
-
-        // Add personal info
-        const personalInfoInputs = personalInfoForm.querySelectorAll('input');
-        personalInfoInputs.forEach(input => {
-            formData.append(input.name, input.value);
-        });
-
-        // Add dynamic fields
-        const dynamicInputs = dynamicFieldsContainer.querySelectorAll('input');
-        dynamicInputs.forEach(input => {
-            formData.append(input.name, input.value);
-        });
-
-        // Add others request data if applicable
-        if (othersRequestForm.style.display !== 'none') {
-            const othersDescription = document.getElementById('othersRequestDescription');
-            const contactMethod = othersRequestForm.querySelector('select[name="contact_method"]');
-            const contactDetail = othersRequestForm.querySelector('input[name="contact_detail"]');
-
-            formData.append('others_request_description', othersDescription.value);
-            formData.append('contact_method', contactMethod.value);
-            formData.append('contact_detail', contactDetail.value);
-        }
-
-        // TODO: Send data to server using AJAX
-        console.log('Form data collected:', Object.fromEntries(formData));
-        alert('Form submission logic to be implemented');
-    });
-});
 </script>
-<script src="{{ asset('js/navbar-sidebar.js') }}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+
+    <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

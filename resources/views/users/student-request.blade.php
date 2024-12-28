@@ -202,7 +202,7 @@
                     </div>
                 </div>
             </div>
-    </div>
+        </div>
     </div>
     <!-- JavaScript -->
     <script>
@@ -227,25 +227,25 @@
             switch (selectedOption) {
                 case "create":
                 case "change_of_data_email":
-                    document.getElementById("personalInfoForm").style.display = "block";
+                    //document.getElementById("personalInfoForm").style.display = "block";
                     break;
                 case "reset_email_password":
                 case "reset_tup_web_password":
                 case "reset_ers_password":
-                    document.getElementById("personalInfoForm").style.display = "block";
+                    //document.getElementById("personalInfoForm").style.display = "block";
                     document.getElementById("resetForm").style.display = "block";
                     break;
                 case "change_of_data_ms":
                 case "change_of_data_portal":
-                    document.getElementById("personalInfoForm").style.display = "block";
+                    //document.getElementById("personalInfoForm").style.display = "block";
                     document.getElementById("changeOfDataForm").style.display = "block";
                     break;
                 case "request_led_screen":
-                    document.getElementById("personalInfoForm").style.display = "block";
+                    //document.getElementById("personalInfoForm").style.display = "block";
                     document.getElementById("useled").style.display = "block";
                     break;
                 case "others":
-                    document.getElementById("personalInfoForm").style.display = "block";
+                    //document.getElementById("personalInfoForm").style.display = "block";
                     document.getElementById("otherServicesForm").style.display = "block";
                     break;
                 default:

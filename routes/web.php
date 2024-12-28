@@ -164,9 +164,9 @@ Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifica
     ->name('admin.verify.students');
 
 
-Route::get('/service-history', function () {
-    return view('users.service-history');
-})->name('service-history');
+Route::get('/request-history', function () {
+    return view('users.request-history');
+})->name('request-history');
 
 Route::get('/messages', function () {
     return view('users.messages');

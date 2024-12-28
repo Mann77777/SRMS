@@ -19,26 +19,13 @@
                     </a>
                 </li>
 
-                <li class="item has-submenu">
-                    <a href="#" class="nav_link">
+                <li class="item">
+                    <a href="{{ url('/service-request') }}" class="nav_link {{ request()->is('service-request') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-check-circle"></i>
                         </span>
                         <span class="navlink">Service Request</span>
-                        <i class="bx bx-chevron-down arrow_icon"></i>
                     </a>
-                    <ul class="submenu">
-                        <li>
-                            <a href="{{ url('/service-request') }}" class="nav_link {{ request()->is('service-request') ? 'active' : '' }}">
-                                <span class="navlink">All Requests</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url('/request-form-management') }}" class="nav_link {{ request()->is('request-form-management') ? 'active' : '' }}">
-                                <span class="navlink">Request Form</span>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
 
                 <li class="item">

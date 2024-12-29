@@ -58,37 +58,47 @@ class ProfileController extends Controller
 
     // Method to upload profile image
     public function uploadProfileImage(Request $request)
-    {
+    { 
         $request->validate([
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
-        $user = Auth::user();
-    
+
+        // Determine the user based on the guard
+        $user = auth('admin')->check() ? auth('admin')->user() : auth()->user();
+
         // Delete existing profile image if it exists
         if ($user->profile_image) {
             Storage::delete('public/' . $user->profile_image);
         }
-    
+
         // Store new profile image
         $path = $request->file('profile_image')->store('profile_images', 'public');
         $user->profile_image = $path;
         $user->save();
-    
+
+        // Add debugging log
+        \Log::info('Profile Image Uploaded', [
+            'user_id' => $user->id,
+            'user_type' => get_class($user),
+            'image_path' => $path,
+            'full_storage_path' => storage_path('app/public/' . $path)
+        ]);
+
         return redirect()->back()->with('upload_success', true);
     }
     
     // Method to remove profile image
     public function removeProfileImage(Request $request)
     {
-        $user = Auth::user();
+        // Determine the user based on the guard
+        $user = auth('admin')->check() ? auth('admin')->user() : auth()->user();
 
-          // Delete profile image if it exists
-          if ($user->profile_image) {
+        // Delete profile image if it exists
+        if ($user->profile_image) {
             Storage::delete('public/' . $user->profile_image);
             $user->profile_image = null;
             $user->save();
-
+  
             // Redirect back and trigger the modal
             return redirect()->back()->with('image_removed', true);
         }

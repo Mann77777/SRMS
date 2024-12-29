@@ -65,7 +65,7 @@
 
                     
         <!-- Form for uploading profile image -->
-        <form action="{{ route('profile.upload') }}" method="POST" enctype="multipart/form-data" class="profile-upload-form">
+        <form action="{{ route('admin.profile.upload') }}" method="POST" enctype="multipart/form-data" class="profile-upload-form">
             @csrf
             <label for="profile_image">Upload Profile</label>
             <input type="file" name="profile_image" id="profile_image">
@@ -76,13 +76,13 @@
         </form>
 
         <!-- Form for removing profile image -->
-        <form action="{{ route('profile.remove') }}" method="POST" class="remove-image-form">
+        <form action="{{ route('admin.profile.remove') }}" method="POST" class="remove-image-form">
             @csrf
             <div class="button-container">
                 <button type="submit" class="remove-image-btn">Remove Image</button>
             </div>
         </form>
-
+        
         <h2 class="changepass-header">Set or Change Password</h2>
         @if ($errors->any())
             <div class="alert alert-danger">

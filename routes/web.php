@@ -213,6 +213,9 @@ Route::middleware(['auth:admin'])->group(function () {
         return view('admin.admin_myprofile');
     })->name('admin.admin_myprofile');
 
+    Route::post('/admin_myprofile/upload', [ProfileController::class, 'uploadProfileImage'])->name('admin.profile.upload');
+    Route::post('/admin_myprofile/remove', [ProfileController::class, 'removeProfileImage'])->name('admin.profile.remove');
+
     // User Management
     Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
     Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');

@@ -96,12 +96,10 @@
         <!-- Password Change Form -->
         <h2 class="changepass-header">Set or Change Password</h2>
         @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <div class="alert alert-danger" style="list-style-type: none; padding-left: 0;">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
             </div>
         @endif
 

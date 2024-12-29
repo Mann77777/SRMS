@@ -85,12 +85,10 @@
         
         <h2 class="changepass-header">Set or Change Password</h2>
         @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <div class="alert alert-danger" style="list-style-type: none; padding-left: 0;">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
             </div>
         @endif
             <form action="{{ route('myprofile.setPassword') }}" method="POST" class="password-form">
@@ -107,8 +105,13 @@
             </form>
     </div>
 
+    @include('admin.modal.myprofile-modal')
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
-        document.getElementById('edit-username').addEventListener('click', function() {
+          document.getElementById('edit-username').addEventListener('click', function() {
             // Hide the username display and the edit link
             document.getElementById('username-display').style.display = 'none';
             this.style.display = 'none';
@@ -140,14 +143,8 @@
                     document.getElementById('username-input').style.display = 'none';
                     document.getElementById('save-username-btn').style.display = 'none';
 
-                    // Show success message
-                    const successMessage = document.getElementById('success-message');
-                    successMessage.style.display = 'block';
-
-                    // Hide the success message after 3 seconds
-                    setTimeout(() => {
-                        successMessage.style.display = 'none';
-                    }, 3000);
+                    // Show success modal
+                    $('#usernameUpdateSuccessModal').modal('show');
                 } else {
                     alert('Error updating username.');
                 }
@@ -156,6 +153,18 @@
                 console.error('Error:', error);
             });
         });
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if success messages are present
+        if ('{{ session('upload_success') }}') {
+            $('#profileImageUploadSuccessModal').modal('show');
+        }
+
+        if ('{{ session('image_removed') }}') {
+            $('#profileImageRemoveSuccessModal').modal('show');
+        }
+    });
 
     </script>
 </body>

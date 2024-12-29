@@ -95,14 +95,56 @@ class ProfileController extends Controller
 
         // Delete profile image if it exists
         if ($user->profile_image) {
-            Storage::delete('public/' . $user->profile_image);
-            $user->profile_image = null;
-            $user->save();
-  
-            // Redirect back and trigger the modal
-            return redirect()->back()->with('image_removed', true);
+            // Add detailed logging
+            \Log::info('Attempting to remove profile image', [
+                'user_id' => $user->id,
+                'user_type' => get_class($user),
+                'current_image_path' => $user->profile_image,
+                'storage_path' => 'public/' . $user->profile_image
+            ]);
+
+            try {
+                // Delete from storage
+                if (Storage::exists('public/' . $user->profile_image)) {
+                    Storage::delete('public/' . $user->profile_image);
+                    
+                    // Set profile image to null
+                    $user->profile_image = null;
+                    $user->save();
+
+                    \Log::info('Profile image successfully removed', [
+                        'user_id' => $user->id,
+                        'user_type' => get_class($user)
+                    ]);
+
+                    // Redirect back and trigger the modal
+                    return redirect()->back()->with('image_removed', true);
+                } else {
+                    \Log::warning('Profile image file does not exist', [
+                        'user_id' => $user->id,
+                        'user_type' => get_class($user),
+                        'image_path' => $user->profile_image
+                    ]);
+
+                    // If file doesn't exist, just update the database
+                    $user->profile_image = null;
+                    $user->save();
+
+                    return redirect()->back()->with('image_removed', true);
+                }
+            } catch (\Exception $e) {
+                // Log any errors
+                \Log::error('Error removing profile image', [
+                    'user_id' => $user->id,
+                    'user_type' => get_class($user),
+                    'error_message' => $e->getMessage()
+                ]);
+
+                return redirect()->back()->withErrors(['error' => 'Failed to remove profile image.']);
+            }
         }
-            return redirect()->back()->withErrors(['error' => 'No profile image to remove.']);
+        
+        return redirect()->back()->withErrors(['error' => 'No profile image to remove.']);
     }
 
         

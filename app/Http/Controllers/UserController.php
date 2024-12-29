@@ -53,6 +53,8 @@ class UserController extends Controller
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
                 'role' => 'required|string|in:Student,Faculty & Staff',
+                'college' => 'required|string',
+                'course' => 'required|string',
             ]);
 
             $user = User::create([
@@ -64,7 +66,9 @@ class UserController extends Controller
                 'status' => 'active',
                 'email_verified_at' => now(), // Since admin is creating the account
                 'verification_status' => 'verified',
-                'admin_verified' => true
+                'admin_verified' => true,
+                'college' => $request->college,  
+                'course' => $request->course   
             ]);
 
             return response()->json([
@@ -73,9 +77,12 @@ class UserController extends Controller
                 'user' => $user
             ]);
         } catch (\Exception $e) {
+            \Log::error('User Creation Error: ' . $e->getMessage());
+            \Log::error('Request Data: ' . json_encode($request->all()));
             return response()->json([
                 'success' => false,
-                'error' => 'Error creating user: ' . $e->getMessage()
+                'error' => 'Error creating user: ' . $e->getMessage(),
+                'details' => $request->all()
             ], 500);
         }
     }  

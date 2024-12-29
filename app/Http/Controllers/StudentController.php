@@ -17,6 +17,7 @@ class StudentController extends Controller
     {
         $request->validate([
             'student_id' => 'required|string|unique:users,student_id,' . Auth::id(),
+            'college' => 'required|string',
             'course' => 'required|string',
             'year_level' => 'required|string',
         ]);
@@ -28,10 +29,11 @@ class StudentController extends Controller
         $verificationStatus = ($user->admin_verified) ? 'verified' : 'pending_admin';
         
         $user->update([
-            'status' => $status,
+            'status' => 'active',
             'student_id' => $request->student_id,
             'course' => $request->course,
             'year_level' => $request->year_level,
+            'college' => $request->college, 
             'verification_status' => $verificationStatus
         ]);
     

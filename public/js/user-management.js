@@ -375,6 +375,7 @@ $(document).on('click', '.btn-verify', function() {
             $('#student-name').text(student.name);
             $('#student-email').text(student.email);
             $('#student-id').text(student.student_id);
+            $('#student-college').text(student.college || 'Not provided');
             $('#student-course').text(student.course || 'Not provided');
             $('#student-year').text(student.year_level || 'Not provided');
             $('#student-verification-status').text(student.verification_status || 'Pending Verification');

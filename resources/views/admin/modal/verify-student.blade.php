@@ -10,6 +10,7 @@
                     <p><strong>Name:</strong> <span id="student-name"></span></p>
                     <p><strong>Email:</strong> <span id="student-email"></span></p>
                     <p><strong>Student ID:</strong> <span id="student-id"></span></p>
+                    <p><strong>College:</strong> <span id="student-college"></span></p>
                     <p><strong>Course:</strong> <span id="student-course"></span></p>
                     <p><strong>Year Level:</strong> <span id="student-year"></span></p>
                     <p><strong>Verification Status:</strong> <span id="student-verification-status"></span></p>

@@ -14,13 +14,16 @@
     <div class="navbar-content">
         <a href="{{ url('/notifications') }}" class="notification-icon"><i class="bx bx-bell"></i></a>
             <li class="dropdown">
-                    <a href="#" class="profile-icon">
-                        @if(Auth::user()->profile_image)
+                <a href="#" class="profile-icon">
+                    @if(Auth::check() && Auth::user()->profile_image)
                         <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
-                        @else
+                    @elseif(Auth::check())
                         <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
-                        @endif
-                    </a>
+                    @else
+                        <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
+                    @endif
+                </a>
+                @if(Auth::check())
                     <div class="dropdown-content">
                         <a href="{{ url('/myprofile') }}">My Profile</a>
                         <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
@@ -28,6 +31,7 @@
                             @csrf
                         </form>
                     </div>
+                @endif
             </li>
     </div>
 </nav>

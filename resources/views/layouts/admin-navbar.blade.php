@@ -1,4 +1,4 @@
-<!-- resources/views/layouts/navbar.blade.php -->
+<!-- resources/views/layouts/admin-navbar.blade.php -->
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 
 <!-- NAVBAR -->

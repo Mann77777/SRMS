@@ -149,7 +149,6 @@ Route::post('/reset-password', function (Request $request) {
 })->middleware('guest')->name('password.update');
 
 
-
 // Admin Verification Routes
 Route::get('/admin/student/{id}/details', [UserController::class, 'getStudentDetails'])
     ->middleware(['auth', 'admin'])

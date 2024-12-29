@@ -31,6 +31,16 @@
                 <label for="password">Password</label>
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
             </div>
+
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-6 text-right">
+                        <a href="{{ route('password.request') }}" class="text-primary">Forgot Password?</a>
+                    </div>
+                </div>
+            </div>
+
             <button type="submit" class="login-btn btn-primary btn-block">Sign In</button>
          
         </form>
@@ -53,5 +63,9 @@
             <a href="{{ route('register') }}" class="bold-text">Sign up</a>
         </div>
     </div>
+
+
+</div>
+
 </body>
 </html>

@@ -58,11 +58,12 @@
                 <span class="user-data">{{ Auth::user()->email }}</span>
             </p>
 
-            <p>
-                <span class="label">Student ID:</span>
-                <span class="user-data">{{ Auth::user()->student_id }}</span>
-            </p>
-
+            @if(Auth::user()->role === 'Student')
+                <p>
+                    <span class="label">Student ID:</span>
+                    <span class="user-data">{{ Auth::user()->student_id }}</span>
+                </p>
+                @endif
             <p>
                 <span class="label">Role:</span>
                 <span class="user-data">{{ Auth::user()->role }}</span>

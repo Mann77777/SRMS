@@ -49,6 +49,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/student/details', [StudentController::class, 'submitDetails'])->name('student.details.submit');
 });
 
+//Route::get('/student/details', [StudentController::class, 'showDetailsForm'])->name('student.details.form')->middleware(['auth', 'verified']);
+//Route::post('/student/details', [StudentController::class, 'saveDetails'])>name('student.details.save')->middleware(['auth', 'verified']);
 //Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
 //Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('removeProfileImage');
 
@@ -88,13 +90,20 @@ Route::get('/email/verify', function () {
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
 
-    // Redirect to details form only for students
+    // Redirect based on role
     if (Auth::user()->role === 'Student') {
-        return redirect()->route('student.details.form')->with('message', 'Email verified! Please complete your student details.');
+        return redirect()->route('student.details.form')
+            ->with('message', 'Email verified! Please complete your student details.');
     }
 
-    // For other roles, redirect to dashboard
-    return redirect()->route('users.dashboard')->with('message', 'Email verified!');
+    if (Auth::user()->role === 'Faculty & Staff') {
+        return redirect()->route('users.dashboard')
+            ->with('message', 'Email verified! Welcome to your dashboard.');
+    }
+
+    // Fallback for other roles
+    return redirect()->route('login')
+        ->with('status', 'Email verified successfully! Please log in.');
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {

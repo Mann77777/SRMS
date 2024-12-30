@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    font-family: "Montserrat", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+   background: linear-gradient(to bottom, #f7d1d1, #e28989); /* Replicated red gradient */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333; /* Adjusted default text color */
+}
+
+.verify-container {
+    max-width: 500px; 
+    width: 500px; /* Added fixed width */
+    padding: 40px; /* Increased padding */
+    min-height: 500px; /* Added minimum height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertically center content */
+    margin: 0 auto; /* Center the container */
+    background-color: rgba(60, 30, 30, 0.8); /* Dark, semi-transparent background */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Reduced card box shadow */
+    border-radius: 10px;
+    text-align: left; /* Left align content within the container */
+    color: #eee; /* Set card text color to off-white */
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tuplogo {
+    width: 130px; /* Slightly smaller logo width */
+    height: auto;
+    margin: 0 auto 25px;
+    display: block;
+}
+.alert {
+    margin-bottom: 20px;
+}
+
+
+.btn-resend {
+    background-color: #C4203C;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 20px;
+}
+.btn-resend:hover {
+    background-color: #a01830;
+    color: white;
+}

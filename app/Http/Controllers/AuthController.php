@@ -58,30 +58,31 @@ class AuthController extends Controller
     // Handle the registration process
     public function register(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'username' => 'required|string|max:255|unique:users|alpha_dash',
+            'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:Student,Faculty & Staff,Admin,Technician',
+            'role' => 'required|in:Student,Faculty & Staff', // Add role selection
         ]);
-
+    
         $user = User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'name' => $validatedData['name'],
+            'username' => $validatedData['username'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+            'role' => $validatedData['role'],
         ]);
-
-        Auth::login($user);
-        return redirect()->intended('dashboard')->with('success', 'Registration successful!');
-
-        /* Send verification email
+    
+        // Send verification email
         $user->sendEmailVerificationNotification();
-        
+    
+        // Log the user in
+        Auth::login($user);
+    
+        // Redirect to verification notice
         return redirect()->route('verification.notice')
-            ->with('success', 'Registration successful! Please verify your email.'); */
+            ->with('message', 'Registration successful! Please verify your email.');
     }
 
     // Redirect to Google for authentication

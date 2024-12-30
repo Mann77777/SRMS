@@ -10,6 +10,11 @@ class StudentController extends Controller
 {
     public function showDetailsForm()
     {
+        // Only allow students to access this form
+        if (Auth::user()->role !== 'Student') {
+            return redirect()->route('users.dashboard');
+        }
+
         return view('auth.details-form');
     }
 

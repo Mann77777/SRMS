@@ -1,51 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
-    <title>Reset Password - SRMS</title>
-    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet" />    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .details-container {
-            width: 40%;
-            margin: 20px;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        .tuplogo {
-            width: 150px;
-            height: auto;
-            margin-bottom: 20px;
-        }
-        .alert {
-            margin-bottom: 20px;
-        }
-        .btn-submit {
-            background-color: #C4203C;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .btn-submit:hover {
-            background-color: #a01830;
-            color: white;
-        }
-    </style>
+    <link href="{{ asset('css/reset-password.css') }}" rel="stylesheet">
+    <title>Reset Password - SRMS</title>
+
 </head>
 <body>
     <div class="details-container">

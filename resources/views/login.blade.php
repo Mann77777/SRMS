@@ -32,11 +32,10 @@
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
             </div>
 
-
             <div class="form-group">
                 <div class="row">
-                    <div class="col-6 text-right">
-                        <a href="{{ route('password.request') }}" class="text-primary">Forgot Password?</a>
+                    <div class="col-12 text-right">
+                        <a href="{{ route('password.request') }}" class="text-white">Forgot Password?</a>
                     </div>
                 </div>
             </div>

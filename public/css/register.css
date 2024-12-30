@@ -8,17 +8,24 @@
 }
 
 body {
-    background-color: #f8f9fa;
-     min-height: 100vh; /* Ensure full viewport height */
-    display: flex; /* For centering content */
-    align-items: center; /* For vertical centering */
-    justify-content: center; /* For horizontal centering */
-    color: #343a40;
+    background: linear-gradient(to bottom, #f7d1d1, #e28989); /* Replicated red gradient */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333; /* Adjusted default text color */
 }
 
 .register-container {
-    max-width: 450px;
+    margin-top: 50px;
+    max-width: 500px; /* Adjust width for the login box */
+    width: 450px; /* Added fixed width */
     padding: 40px;
+    min-height: 500px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertically center content */
+    margin: 0 auto; /* Center the container */
     background-color: rgba(60, 30, 30, 0.8); /* Dark, semi-transparent background */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Reduced card box shadow */
     border-radius: 10px;

@@ -14,15 +14,15 @@
                 </div>
                 <div class="verification-action">
                     <label>Verification Decision:</label>
-                    <select id="verification-decision">
+                    <select id="verification-decision-faculty">
                         <option value="approve">Approve</option>
                         <option value="reject">Reject</option>
                     </select>
-                    <div id="rejection-notes" style="display: none;">
+                    <div id="rejection-notes-faculty" style="display: none;">
                         <label>Rejection Notes:</label>
-                        <textarea id="admin-notes" rows="3"></textarea>
+                        <textarea id="admin-notes-faculty" rows="3"></textarea>
                     </div>
-                </div>
+            </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

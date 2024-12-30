@@ -362,55 +362,59 @@ class UserController extends Controller
     }
     
 
-    public function verifyFacultyStaff($id, Request $request)
+    public function verifyFacultyStaff(Request $request, $userId)
     {
+        \Log::info('Verification Request Data:', [
+            'userId' => $userId,
+            'decision' => $request->input('decision'),
+            'notes' => $request->input('notes')
+        ]);
+    
         try {
-            $user = User::findOrFail($id);
-
-            // Verify only Faculty & Staff users
+            $user = User::findOrFail($userId);
+            
+            // Ensure only Faculty & Staff can be verified
             if ($user->role !== 'Faculty & Staff') {
                 return response()->json([
                     'success' => false, 
-                    'message' => 'Only Faculty & Staff can be verified through this method'
+                    'error' => 'Only Faculty & Staff can be verified'
                 ], 400);
             }
-
-            // Handle verification decision
-            $decision = $request->input('decision', 'approve');
-            $notes = $request->input('notes', '');
-
-            if ($decision === 'approve') {
-                // Mark the user as verified
-                $user->admin_verified = true;
-                $user->verification_notes = $notes;
-                $user->save();
-
+    
+            $decision = $request->input('decision');
+            $notes = $request->input('notes', null);
+        
+            if ($decision === 'reject' && empty($notes)) {
                 return response()->json([
-                    'success' => true, 
-                    'message' => 'Faculty/Staff user verified successfully',
-                    'user' => $user
-                ]);
-            } else {
-                // Rejection logic
-                $user->admin_verified = false;
-                $user->verification_notes = $notes;
-                $user->save();
-
-                return response()->json([
-                    'success' => true, 
-                    'message' => 'Faculty/Staff user verification rejected',
-                    'user' => $user
-                ]);
+                    'success' => false, 
+                    'error' => 'Rejection notes are required'
+                ], 400);
             }
-        } catch (\Exception $e) {
-            \Log::error('Faculty/Staff Verification Error: ' . $e->getMessage());
+        
+            if ($decision === 'approve') {
+                $user->admin_verified = 1;
+                $user->verification_status = 'verified';
+                $user->admin_verification_notes = 'Account verified by admin';
+            } else {
+                $user->admin_verified = 0;
+                $user->verification_status = 'rejected';
+                $user->admin_verification_notes = $notes;
+            }
+            
+            $user->save();
+        
             return response()->json([
-                'success' => false, 
-                'message' => 'Error processing Faculty/Staff user verification: ' . $e->getMessage()
+                'success' => true,
+                'message' => 'Faculty & Staff verification updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Verification Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
             ], 500);
         }
     }
-
     public function getFacultyStaffDetails($id)
     {
         try {

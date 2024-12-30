@@ -394,12 +394,12 @@ $(document).on('click', '.btn-verify', function() {
 });
 
 // Show/hide notes field based on decision
-$('#verification-decision').on('change', function() {
+$('#verification-decision, #verification-decision-faculty').on('change', function() {
     if ($(this).val() === 'reject') {
-        $('#rejection-notes').show();
+        $(this).closest('.verification-action').find('[id^=rejection-notes]').show();
     } else {
-        $('#rejection-notes').hide();
-        $('#admin-notes').val(''); // Clear notes when switching back to approve
+        $(this).closest('.verification-action').find('[id^=rejection-notes]').hide();
+        $(this).closest('.verification-action').find('textarea[id^=admin-notes]').val(''); // Clear notes
     }
 });
 
@@ -441,40 +441,81 @@ $('#submit-verification').click(function() {
     });
 });
 
-    // Faculty/Staff Verification Button Handler
-    $(document).on('click', '.btn-verify-faculty', function() {
-        var $row = $(this).closest('tr');
-        var userId = $(this).data('id');
-        var $statusCell = $row.find('td:nth-child(7)');
+// Faculty/Staff Verification Submission
+$('#submit-facultystaff-verification').click(function() {
+    const userId = $('#verifyFacultyStaffModal').data('user-id');
+    const decision = $('#verification-decision-faculty').val();
+    const notes = $('#admin-notes').val();
 
-        // Reset modal state
-        $('#verification-decision').val('approve');
-        $('#rejection-notes').hide();
-        $('#admin-notes').val('');
-
-        // Fetch user details
-        $.ajax({
-            url: '/admin/get-facultystaff-details/' + userId,
-            method: 'GET',
-            success: function(response) {
-                if (response.success) {
-                    // Populate modal with user details
-                    $('#facultystaff-name').text(response.user.name);
-                    $('#facultystaff-email').text(response.user.email);
-                    $('#facultystaff-username').text(response.user.username);
-                    $('#facultystaff-verification-status').text('pending_admin');
-
-                    // Set data attribute for user ID
-                    $('#submit-facultystaff-verification').data('user-id', userId);
-
-                    // Show the verification modal
-                    $('#verifyFacultyStaffModal').modal('show');
-                } else {
-                    Swal.fire('Error', response.message, 'error');
-                }
-            },
-            error: function(xhr) {
-                Swal.fire('Error', 'Could not fetch user details. Please try again.', 'error');
-            }
-        });
+    console.log('Verification Data:', {
+        userId: userId,
+        decision: decision,
+        notes: notes
     });
+
+    // Validate rejection notes
+    if (decision === 'reject' && !notes.trim()) {
+        alert('Please provide rejection notes');
+        return;
+    }
+
+    $.ajax({
+        url: `/admin/facultystaff/${userId}/verify`,  
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            decision: decision,
+            notes: notes
+        },
+        success: function(response) {
+            console.log('Verification Success:', response);
+            if (response.success) {
+                alert(response.message);
+                $('#verifyFacultyStaffModal').modal('hide');
+                location.reload();
+            } else {
+                alert(response.error || 'Error processing verification');
+            }
+        },
+        error: function(xhr) {
+            console.error('Verification Error:', xhr);
+            console.error('Response Text:', xhr.responseText);
+            console.error('Status:', xhr.status);
+            console.error('Response JSON:', xhr.responseJSON);
+            
+            let errorMessage = 'Unknown error';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message;
+            } else if (xhr.statusText) {
+                errorMessage = xhr.statusText;
+            }
+            
+            alert('Error processing verification: ' + errorMessage);
+        }
+    });
+});
+
+$(document).on('click', '.btn-verify-faculty', function() {
+    var $row = $(this).closest('tr');
+    var userId = $(this).data('id');
+    
+    // Set user ID on modal
+    $('#verifyFacultyStaffModal').data('user-id', userId);
+
+    // Populate modal details
+    $('#facultystaff-name').text($row.find('td:nth-child(2)').text());
+    $('#facultystaff-email').text($row.find('td:nth-child(3)').text());
+    $('#facultystaff-username').text($row.find('td:nth-child(4)').text());
+    $('#facultystaff-verification-status').text($row.find('td:nth-child(7)').text());
+
+    // Reset modal state
+    $('#verification-decision-faculty').val('approve');
+    $('#rejection-notes').hide();
+    $('#admin-notes').val('');
+
+    $('#verifyFacultyStaffModal').modal('show');
+});

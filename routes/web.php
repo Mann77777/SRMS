@@ -239,6 +239,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/student/{id}/verify', [UserController::class, 'verifyStudent'])->name('admin.student.verify');
     Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifications'])->name('admin.verify.students');
 
+    // Faculty & Staff Verification 
+    Route::post('/admin/facultystaff/{id}/verify', [UserController::class, 'verifyFacultyStaff'])->middleware(['auth', 'admin'])->name('admin.facultystaff.verify');
     // Services Management
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/list', [ServiceController::class, 'getServices'])->name('services.list');

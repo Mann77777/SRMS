@@ -360,4 +360,53 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         return response()->json($user);
     }
+
+    public function verifyFacultyStaff($id, Request $request)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            // Verify only Faculty & Staff users
+            if ($user->role !== 'Faculty & Staff') {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Only Faculty & Staff can be verified through this method'
+                ], 400);
+            }
+
+            // Handle verification decision
+            $decision = $request->input('decision', 'approve');
+            $notes = $request->input('notes', '');
+
+            if ($decision === 'approve') {
+                // Mark the user as verified
+                $user->admin_verified = true;
+                $user->verification_notes = $notes;
+                $user->save();
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Faculty/Staff user verified successfully',
+                    'user' => $user
+                ]);
+            } else {
+                // Rejection logic
+                $user->admin_verified = false;
+                $user->verification_notes = $notes;
+                $user->save();
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Faculty/Staff user verification rejected',
+                    'user' => $user
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Faculty/Staff Verification Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error processing Faculty/Staff user verification: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

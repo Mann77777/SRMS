@@ -440,3 +440,83 @@ $('#submit-verification').click(function() {
         }
     });
 });
+
+
+    // Faculty/Staff Verification Button Handler
+    $(document).on('click', '.btn-verify-faculty', function(e) {
+        e.preventDefault();
+        var userId = $(this).data('id');
+        var $row = $(this).closest('tr');
+        
+        // Extract details from the row
+        var userDataCell = $row.find('td:nth-child(3)');
+        var name = userDataCell.find('strong:contains("Name:")').next().text().trim();
+        var email = userDataCell.find('strong:contains("Email:")').next().text().trim();
+        var username = userDataCell.find('strong:contains("Username:")').next().text().trim();
+        var role = $row.find('td:nth-child(4)').text().trim();
+        
+        // Populate modal with user details
+        $('#facultystaff-name').text(name);
+        $('#facultystaff-email').text(email);
+        $('#facultystaff-username').text(username);
+        $('#facultystaff-department').text('Not Specified'); // Update this with actual department if available
+        $('#facultystaff-designation').text(role);
+        $('#facultystaff-verification-status').text('Pending Verification');
+        
+        // Reset verification decision
+        $('#verification-decision').val('approve');
+        $('#rejection-notes').hide();
+        $('#admin-notes').val('');
+        
+        // Set data attribute for user ID
+        $('#submit-facultystaff-verification').data('user-id', userId);
+        
+        // Show the modal
+        $('#verifyFacultyStaffModal').modal('show');
+    });
+
+    // Verification Decision Change Handler
+    $('#verification-decision').change(function() {
+        if ($(this).val() === 'reject') {
+            $('#rejection-notes').show();
+        } else {
+            $('#rejection-notes').hide();
+        }
+    });
+
+    // Submit Faculty/Staff Verification
+    $(document).on('click', '#submit-facultystaff-verification', function() {
+        var userId = $(this).data('user-id');
+        var decision = $('#verification-decision').val();
+        var notes = $('#admin-notes').val();
+        var $statusCell = $('.btn-verify-faculty[data-id="' + userId + '"]').closest('td');
+
+        $.ajax({
+            url: '/admin/facultystaff/' + userId + '/verify',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                decision: decision,
+                notes: notes
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire('Verified!', 'Faculty/Staff user verification processed.', 'success');
+                    
+                    // Update the status cell
+                    $statusCell.html('<span class="status-badge verified">Verified</span>');
+                    
+                    // Close the modal
+                    $('#verifyFacultyStaffModal').modal('hide');
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function(xhr) {
+                Swal.fire('Error', 'Could not process verification. Please try again.', 'error');
+            }
+        });
+    });

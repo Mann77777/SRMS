@@ -120,6 +120,15 @@
                                     @else
                                         <span class="status-badge verified">Verified</span>
                                     @endif
+                                @elseif($user->role === 'Faculty & Staff')
+                                    @if(!$user->email_verified_at)
+                                        <span class="status-badge pending">Email Unverified</span>
+                                    @elseif(!$user->admin_verified)
+                                        <span class="status-badge pending">Pending Verification</span>
+                                        <button class="btn-verify-faculty" title="Verify Faculty/Staff" data-id="{{ $user->id }}">Verify</button>
+                                    @else
+                                        <span class="status-badge verified">Verified</span>
+                                    @endif
                                 @else
                                     <span class="status-badge">N/A</span>
                                 @endif
@@ -142,7 +151,7 @@
     <!-- Include the modal from the admin > modal -->
     @include('admin.modal.usermanagement-modal')
     @include('admin.modal.verify-student')
-
+    @include('admin.modal.verify-facultystaff')
     <!-- Add jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

@@ -360,6 +360,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         return response()->json($user);
     }
+    
 
     public function verifyFacultyStaff($id, Request $request)
     {
@@ -407,6 +408,30 @@ class UserController extends Controller
                 'success' => false, 
                 'message' => 'Error processing Faculty/Staff user verification: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function getFacultyStaffDetails($id)
+    {
+        try {
+            $user = User::where('role', 'Faculty & Staff')
+                        ->where('id', $id)
+                        ->firstOrFail();
+            
+            return response()->json([
+                'success' => true,
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'username' => $user->username,
+                    'verification_status' => $user->verification_status ?? 'Pending'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Faculty/Staff user not found.'
+            ], 404);
         }
     }
 }

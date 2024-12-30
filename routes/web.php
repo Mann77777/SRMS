@@ -171,7 +171,8 @@ Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifica
     ->middleware(['auth', 'admin'])
     ->name('admin.verify.students');
 
-
+// Route to get faculty/staff user details for verification
+Route::get('/admin/get-facultystaff-details/{id}', [UserController::class, 'getFacultyStaffDetails'])->name('admin.get-facultystaff-details');
 Route::get('/request-history', function () {
     return view('users.request-history');
 })->name('request-history');

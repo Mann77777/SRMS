@@ -211,86 +211,85 @@
     </div>
     <!-- JavaScript -->
     <script>
-   
-// Make showFormFields a global function
-function showFormFields() {
-    var serviceCategory = document.getElementById('serviceCategory').value;
-    document.getElementById('selectedServiceCategory').value = serviceCategory;
-    
-    // Hide all additional form sections first
-    document.getElementById('personalInfoForm').style.display = 'none';
-    document.getElementById('resetForm').style.display = 'none';
-    document.getElementById('changeOfDataForm').style.display = 'none';
-    document.getElementById('useled').style.display = 'none';
-    document.getElementById('otherServicesForm').style.display = 'none';
+        // Make showFormFields a global function
+        function showFormFields() {
+            var serviceCategory = document.getElementById('serviceCategory').value;
+            document.getElementById('selectedServiceCategory').value = serviceCategory;
+            
+            // Hide all additional form sections first
+            document.getElementById('personalInfoForm').style.display = 'none';
+            document.getElementById('resetForm').style.display = 'none';
+            document.getElementById('changeOfDataForm').style.display = 'none';
+            document.getElementById('useled').style.display = 'none';
+            document.getElementById('otherServicesForm').style.display = 'none';
 
-    // Remove required attribute from all optional fields
-    var optionalFields = [
-        'account_email', 
-        'data_type', 
-        'new_data', 
-        'supporting_document', 
-        'preferred_date', 
-        'preferred_time', 
-        'description'
-    ];
+            // Remove required attribute from all optional fields
+            var optionalFields = [
+                'account_email', 
+                'data_type', 
+                'new_data', 
+                'supporting_document', 
+                'preferred_date', 
+                'preferred_time', 
+                'description'
+            ];
 
-    optionalFields.forEach(function(fieldName) {
-        var field = document.querySelector(`[name="${fieldName}"]`);
-        if (field) {
-            field.removeAttribute('required');
+            optionalFields.forEach(function(fieldName) {
+                var field = document.querySelector(`[name="${fieldName}"]`);
+                if (field) {
+                    field.removeAttribute('required');
+                }
+            });
+
+            // Show appropriate form sections based on selected category
+            switch(serviceCategory) {
+                case 'create':
+                    document.getElementById('personalInfoForm').style.display = 'block';
+                    break;
+                case 'reset_email_password':
+                case 'reset_tup_web_password':
+                    document.getElementById('personalInfoForm').style.display = 'block';
+                    document.getElementById('resetForm').style.display = 'block';
+                    
+                    // Add required to specific fields
+                    document.querySelector('[name="account_email"]').setAttribute('required', 'required');
+                    break;
+                case 'change_of_data_ms':
+                case 'change_of_data_portal':
+                    document.getElementById('personalInfoForm').style.display = 'block';
+                    document.getElementById('changeOfDataForm').style.display = 'block';
+                    
+                    // Add required to specific fields
+                    document.querySelector('[name="data_type"]').setAttribute('required', 'required');
+                    document.querySelector('[name="new_data"]').setAttribute('required', 'required');
+                    document.querySelector('[name="supporting_document"]').setAttribute('required', 'required');
+                    break;
+                case 'request_led_screen':
+                    document.getElementById('personalInfoForm').style.display = 'block';
+                    document.getElementById('useled').style.display = 'block';
+                    
+                    // Add required to specific fields
+                    document.querySelector('[name="preferred_date"]').setAttribute('required', 'required');
+                    document.querySelector('[name="preferred_time"]').setAttribute('required', 'required');
+                    break;
+                case 'others':
+                    document.getElementById('personalInfoForm').style.display = 'block';
+                    document.getElementById('otherServicesForm').style.display = 'block';
+                    
+                    // Add required to specific fields
+                    document.querySelector('[name="description"]').setAttribute('required', 'required');
+                    break;
+            }
         }
-    });
 
-    // Show appropriate form sections based on selected category
-    switch(serviceCategory) {
-        case 'create':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            break;
-        case 'reset_email_password':
-        case 'reset_tup_web_password':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('resetForm').style.display = 'block';
-            
-            // Add required to specific fields
-            document.querySelector('[name="account_email"]').setAttribute('required', 'required');
-            break;
-        case 'change_of_data_ms':
-        case 'change_of_data_portal':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('changeOfDataForm').style.display = 'block';
-            
-            // Add required to specific fields
-            document.querySelector('[name="data_type"]').setAttribute('required', 'required');
-            document.querySelector('[name="new_data"]').setAttribute('required', 'required');
-            document.querySelector('[name="supporting_document"]').setAttribute('required', 'required');
-            break;
-        case 'request_led_screen':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('useled').style.display = 'block';
-            
-            // Add required to specific fields
-            document.querySelector('[name="preferred_date"]').setAttribute('required', 'required');
-            document.querySelector('[name="preferred_time"]').setAttribute('required', 'required');
-            break;
-        case 'others':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('otherServicesForm').style.display = 'block';
-            
-            // Add required to specific fields
-            document.querySelector('[name="description"]').setAttribute('required', 'required');
-            break;
-    }
-}
+        document.addEventListener("DOMContentLoaded", function() {
+            var serviceCategoryDropdown = document.getElementById('serviceCategory');
+            serviceCategoryDropdown.addEventListener('change', showFormFields);
 
-document.addEventListener("DOMContentLoaded", function() {
-    var serviceCategoryDropdown = document.getElementById('serviceCategory');
-    serviceCategoryDropdown.addEventListener('change', showFormFields);
-
-    // Trigger initial form setup
-    showFormFields();
-});
-</script>
+            // Trigger initial form setup
+            showFormFields();
+        });
+    </script>
 
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>

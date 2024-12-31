@@ -25,355 +25,351 @@
 
         <!-- Form -->
         <div class="container">
-            <div class="form-section">
-                <h5>Select Service Category</h5>
-                <select id="serviceCategory" class="form-control" required onchange="showFormFields()">
-                    <option value="">Select a Service Category</option>
-                        <!-- Dynamically generated options -->
-                        <optgroup label="MS Office 365, MS Teams, TUP Email">
-                            <option value="create">Create MS Office/TUP Email Account</option>
-                            <option value="reset_email_password">Reset MS Office/TUP Email Password</option>
-                            <option value="change_of_data_ms">Change of Data</option>
-                        </optgroup>
-                        <optgroup label="Attendance Record">
-                            <option value="dtr">Daily Time Record</option>
-                            <option value="biometric_record">Biometric Record</option>
-                        </optgroup>
-                        <optgroup label="Biometrics Enrollment and Employee ID">
-                            <option value="biometrics_enrollement">Biometrics Enrollment and Employee ID</option>
-                        </optgroup>
-                        <optgroup label="TUP Web ERS, ERS, and TUP Portal">
-                            <option value="reset_tup_web_password">Reset TUP Web Password</option>
-                            <option value="reset_ers_password">Reset ERS Password</option>
-                            <option value="change_of_data_portal">Change of Data</option>
-                        </optgroup>
-                        <optgroup label="Internet and Telephone Management">
-                            <option value="new_internet">New Internet Connection</option>
-                            <option value="new_telephone">New Telephone Connection</option>
-                            <option value="repair_and_maintenance">Internet/Telephone Repair and Maintenance</option>
-                        </optgroup>
-                        <optgroup label="ICT Equipment Management">
-                            <option value="computer_repair_maintenance">Computer Repair and Maintenance</option>
-                            <option value="printer_repair_maintenance">Printer Repair and Maintenance</option>
-                            <option value="request_led_screen">Request to use LED Screen</option>
-                        </optgroup>
-                        <optgroup label="Software and Website Management">
-                            <option value="install">Install Application/Information System/Software</option>
-                            <option value="post_publication">Post Publication/Update of Information in Website</option>
-                        </optgroup>
-                        <optgroup label="Data, Documents and Reports Handled by the UITC">
-                            <option value="data_handling">Data Handling</option>
-                            <option value="document_handling">Document Handling</option>
-                            <option value="reports_handling">Reports Handling</option>
-                        </optgroup>
-                        <!-- Other Services -->
-                        <optgroup label="Other Services">
-                            <option value="others">Others</option>
-                        </optgroup>
-                    </select>
-            </div>
-
-            <!-- Personal Information Form Template -->
-            <div id="personalInfoForm" style="display: none;">
+            <form id="facultyServiceForm" method="POST" action="{{ route('faculty.request.submit') }}" enctype="multipart/form-data">
+                @csrf
                 <div class="form-section">
-                    <h5>Personal Information</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>First Name</label>
-                            <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Last Name</label>
-                            <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                    <h5>Select Service Category</h5>
+                    <select id="serviceCategory" class="form-control" required onchange="showFormFields()">
+                        <option value="">Select a Service Category</option>
+                            <!-- Dynamically generated options -->
+                            <optgroup label="MS Office 365, MS Teams, TUP Email">
+                                <option value="create">Create MS Office/TUP Email Account</option>
+                                <option value="reset_email_password">Reset MS Office/TUP Email Password</option>
+                                <option value="change_of_data_ms">Change of Data</option>
+                            </optgroup>
+                            <optgroup label="Attendance Record">
+                                <option value="dtr">Daily Time Record</option>
+                                <option value="biometric_record">Biometric Record</option>
+                            </optgroup>
+                            <optgroup label="Biometrics Enrollment and Employee ID">
+                                <option value="biometrics_enrollement">Biometrics Enrollment and Employee ID</option>
+                            </optgroup>
+                            <optgroup label="TUP Web ERS, ERS, and TUP Portal">
+                                <option value="reset_tup_web_password">Reset TUP Web Password</option>
+                                <option value="reset_ers_password">Reset ERS Password</option>
+                                <option value="change_of_data_portal">Change of Data</option>
+                            </optgroup>
+                            <optgroup label="Internet and Telephone Management">
+                                <option value="new_internet">New Internet Connection</option>
+                                <option value="new_telephone">New Telephone Connection</option>
+                                <option value="repair_and_maintenance">Internet/Telephone Repair and Maintenance</option>
+                            </optgroup>
+                            <optgroup label="ICT Equipment Management">
+                                <option value="computer_repair_maintenance">Computer Repair and Maintenance</option>
+                                <option value="printer_repair_maintenance">Printer Repair and Maintenance</option>
+                                <option value="request_led_screen">Request to use LED Screen</option>
+                            </optgroup>
+                            <optgroup label="Software and Website Management">
+                                <option value="install">Install Application/Information System/Software</option>
+                                <option value="post_publication">Post Publication/Update of Information in Website</option>
+                            </optgroup>
+                            <optgroup label="Data, Documents and Reports Handled by the UITC">
+                                <option value="data_handling">Data Handling</option>
+                                <option value="document_handling">Document Handling</option>
+                                <option value="reports_handling">Reports Handling</option>
+                            </optgroup>
+                            <!-- Other Services -->
+                            <optgroup label="Other Services">
+                                <option value="others">Others</option>
+                            </optgroup>
+                        </select>
+                </div>
+
+                <!-- Personal Information Form Template -->
+                <div id="personalInfoForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>First Name</label>
+                                <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Last Name</label>
+                                <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                            </div>
                         </div>
                     </div>
+                </div>
+
                 
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label>Employee ID</label>
-                            <input type="text" class="form-control" name="text" placeholder="Employee ID" required>
+                <!-- Additional Forms for Each Option -->
+                <div id="resetForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Reset Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Email Address</label>
+                                <input type="email" class="form-control" name="account_email" placeholder="Email Address" required>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
+
+                <div id="changeOfDataForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Change of Data</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Type of Data to Change</label>
+                                <select class="form-control" name="data_type" required>
+                                    <option value="">Select Data Type</option>
+                                    <option value="name">Name</option>
+                                    <option value="email">Email Address</option>
+                                    <option value="contact_number">Contact Number</option>
+                                    <option value="address">Address</option>
+                                    <option value="others">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Specify New Information</label>
+                                <input type="text" class="form-control" name="new_data" placeholder="Enter New Information" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label>Upload Supporting Document</label>
+                                <input type="file" class="form-control" name="supporting_document" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label>Additional Notes (Optional)</label>
+                                <textarea class="form-control" name="additional_notes" rows="3" placeholder="Provide any additional details..."></textarea>
+                            </div>
+                        </div>
+                
+                    </div>
+                </div>
+
+
+                <!-- Attendance Record Form -->
+                <div id="attendancerecordForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Select Details</h5>
+
+                        <!-- Select Months -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="months">Select Months</label>
+                                <select id="months" class="form-control" name="months[]" multiple required>
+                                    <!-- Dynamically generated months -->
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Select Year -->
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="year">Select Year</label>
+                                <select id="year" class="form-control" name="year" required>
+                                    <!-- Dynamically generated years (for example 2020 - current year) -->
+                                    <option value="">Select Year</option>
+                                    <?php
+                                    $currentYear = date("Y");
+                                    for ($i = $currentYear; $i >= 2000; $i--) {
+                                        echo "<option value='$i'>$i</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Biometrics Enrollment Form -->
+                <div id="biometricsEnrollmentForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Biometrics Enrollment and Employee ID</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>Last Name</label>
+                                <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label>First Name</label>
+                                <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Middle Name</label>
+                                <input type="text" class="form-control" name="middle_name" placeholder="Middle Name" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>College/Department/Unit</label>
+                                <input type="text" class="form-control" name="college_department_unit" placeholder="College/Department/Unit" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Plantilla Position</label>
+                                <input type="text" class="form-control" name="plantilla_position" placeholder="Plantilla Position" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Date of Birth</label>
+                                <input type="date" class="form-control" name="date_of_birth" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Phone Number</label>
+                                <input type="number" class="form-control" name="phone_number" placeholder="Phone Number" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label>Address</label>
+                                <input type="text" class="form-control" name="address" placeholder="Address" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Blood Type</label>
+                                <input type="text" class="form-control" name="blood_type" placeholder="Blood Type" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>In Case of Emergency Contact</label>
+                                <input type="text" class="form-control" name="emergency_contact" placeholder="Emergency Contact" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Location Form (Initially Hidden) -->
+                <div id="locationForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Location Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="location" id="location" placeholder="Enter Location" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="problemsForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Problem/s Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="problem_encountered" id="problem_encountered" placeholder="Enter Problem/s Encountered" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="add_info" style="display: none;">
+                    <div class="form-section">
+                        <!-- <h5>Request Information</h5> -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="repair_maintenance" id="repair_maintenance" placeholder="Please specify">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="useled" style="display: none;">
+                    <div class="form-section">
+                        <h5>Request to use LED Screen</h5>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Preferred Date</label>
+                                <input type="date" class="form-control" name="preferred_date" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Preferred Time</label>
+                                <input type="time" class="form-control" name="preferred_time" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             
-            <!-- Additional Forms for Each Option -->
-            <div id="resetForm" style="display: none;">
-                <div class="form-section">
-                    <h5>Reset Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Email Address</label>
-                            <input type="email" class="form-control" name="account_email" placeholder="Email Address" required>
+                <div id="post_pub"> 
+                    <div class="form-section">
+                        <h5>Post Publication Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="">Author</label>
+                                <input type="text" class="form-control" name="author" id="author" placeholder="Author">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="">Editor</label>
+                                <input type="text" class="form-control" name="Editor" id="editor" placeholder="Editor">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="">Date of Publication</label>
+                                <input type="date" class="form-control" name="date_of_pub" id="date_of_pub" placeholder="Date of Publication">
+                            </div>
+
+
+                            <div class="col-md-6">
+                                <label for="">End of Publication</label>
+                                <input type="date" class="form-control" name="end_of_pub" id="end_of_pub" placeholder="End of Publication">
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
+                <div id="otherServicesForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Other Services</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Describe Your Request</label>
+                                <textarea class="form-control" name="description" placeholder="Describe Your Request" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div id="changeOfDataForm" style="display: none;">
+                <!-- Terms and Conditions with Submit Button -->
                 <div class="form-section">
-                    <h5>Change of Data</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Type of Data to Change</label>
-                            <select class="form-control" name="data_type" required>
-                                <option value="">Select Data Type</option>
-                                <option value="name">Name</option>
-                                <option value="email">Email Address</option>
-                                <option value="contact_number">Contact Number</option>
-                                <option value="address">Address</option>
-                                <option value="others">Other</option>
-                            </select>
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 text-center">
+                                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                                    <label for="agreeTerms">
+                                        I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms and Conditions</a>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label>Specify New Information</label>
-                            <input type="text" class="form-control" name="new_data" placeholder="Enter New Information" required>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <label>Upload Supporting Document</label>
-                            <input type="file" class="form-control" name="supporting_document" required>
+
+                        <!-- Submit Button -->
+                        <div class="form-section">
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 text-center">
+                                    <button type="submit" class="submitbtn">Submit</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <label>Additional Notes (Optional)</label>
-                            <textarea class="form-control" name="additional_notes" rows="3" placeholder="Provide any additional details..."></textarea>
-                        </div>
-                    </div>
+                </form>
             
-                </div>
-            </div>
-
-
-            <!-- Attendance Record Form -->
-            <div id="attendancerecordForm" style="display: none;">
-                <div class="form-section">
-                    <h5>Select Details</h5>
-
-                    <!-- Select Months -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="months">Select Months</label>
-                            <select id="months" class="form-control" name="months[]" multiple required>
-                                <!-- Dynamically generated months -->
-                                <option value="January">January</option>
-                                <option value="February">February</option>
-                                <option value="March">March</option>
-                                <option value="April">April</option>
-                                <option value="May">May</option>
-                                <option value="June">June</option>
-                                <option value="July">July</option>
-                                <option value="August">August</option>
-                                <option value="September">September</option>
-                                <option value="October">October</option>
-                                <option value="November">November</option>
-                                <option value="December">December</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Select Year -->
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label for="year">Select Year</label>
-                            <select id="year" class="form-control" name="year" required>
-                                <!-- Dynamically generated years (for example 2020 - current year) -->
-                                <option value="">Select Year</option>
-                                <?php
-                                $currentYear = date("Y");
-                                for ($i = $currentYear; $i >= 2000; $i--) {
-                                    echo "<option value='$i'>$i</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Biometrics Enrollment Form -->
-            <div id="biometricsEnrollmentForm" style="display: none;">
-                <div class="form-section">
-                    <h5>Biometrics Enrollment and Employee ID</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>Last Name</label>
-                            <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label>First Name</label>
-                            <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Middle Name</label>
-                            <input type="text" class="form-control" name="middle_name" placeholder="Middle Name" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label>College/Department/Unit</label>
-                            <input type="text" class="form-control" name="college_department_unit" placeholder="College/Department/Unit" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Plantilla Position</label>
-                            <input type="text" class="form-control" name="plantilla_position" placeholder="Plantilla Position" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label>Date of Birth</label>
-                            <input type="date" class="form-control" name="date_of_birth" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Phone Number</label>
-                            <input type="number" class="form-control" name="phone_number" placeholder="Phone Number" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <label>Address</label>
-                            <input type="text" class="form-control" name="address" placeholder="Address" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label>Blood Type</label>
-                            <input type="text" class="form-control" name="blood_type" placeholder="Blood Type" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>In Case of Emergency Contact</label>
-                            <input type="text" class="form-control" name="emergency_contact" placeholder="Emergency Contact" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Location Form (Initially Hidden) -->
-            <div id="locationForm" style="display: none;">
-                <div class="form-section">
-                    <h5>Location Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" name="location" id="location" placeholder="Enter Location" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="problemsForm" style="display: none;">
-                <div class="form-section">
-                    <h5>Problem/s Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" name="problem_encountered" id="problem_encountered" placeholder="Enter Problem/s Encountered" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="repair_maintenance" style="display: none;">
-                <div class="form-section">
-                    <!-- <h5>Request Information</h5> -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" name="repair_maintenance" id="repair_maintenance" placeholder="Please specify">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="useled" style="display: none;">
-                <div class="form-section">
-                    <h5>Request to use LED Screen</h5>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label>Preferred Date</label>
-                            <input type="date" class="form-control" name="preferred_date" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label>Preferred Time</label>
-                            <input type="time" class="form-control" name="preferred_time" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        
-            <div id="post_pub"> 
-                <div class="form-section">
-                    <h5>Post Publication Details</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="">Author</label>
-                            <input type="text" class="form-control" name="author" id="author" placeholder="Author">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="">Editor</label>
-                            <input type="text" class="form-control" name="Editor" id="editor" placeholder="Editor">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="">Date of Publication</label>
-                            <input type="date" class="form-control" name="date_of_pub" id="date_of_pub" placeholder="Date of Publication">
-                        </div>
-
-
-                        <div class="col-md-6">
-                            <label for="">End of Publication</label>
-                            <input type="date" class="form-control" name="end_of_pub" id="end_of_pub" placeholder="End of Publication">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="otherServicesForm" style="display: none;">
-                <div class="form-section">
-                    <h5>Other Services</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Describe Your Request</label>
-                            <textarea class="form-control" name="description" placeholder="Describe Your Request" required></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-      <!-- Terms and Conditions with Submit Button -->
-      <div class="form-section">
-                <div class="row justify-content-center">
-                    <div class="col-md-6 text-center">
-                        <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                        <label for="agreeTerms">
-                            I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms and Conditions</a>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="form-section">
-                <div class="row justify-content-center">
-                    <div class="col-md-6 text-center">
-                        <button type="submit" class="submitbtn">Submit</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-            <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
+            
+                <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
+                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
@@ -398,11 +394,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        
-    </script>
-
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/faculty-service.js') }}"></script>

@@ -49,11 +49,43 @@
                         </thead>
                         <tbody>
                             @foreach ($requests as $request)
-                                <tr>
-                                    <td>{{ $request->id }}</td>
-                                    <td>{{ $request->service_category }}</td>
-                                   
-                                    <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y H:i') }}</td>
+                            <tr>
+                                <td>{{ $request->id }}</td>
+                                <td>
+                                @switch($request->service_category)
+                                    @case('create')
+                                        @if($request->service_category == 'create')
+                                            Create MS Office/TUP Email Account
+                                        @endif
+                                    @case('reset_email_password')
+                                        @if($request->service_category == 'reset_email_password')
+                                            Reset MS Office/TUP Email Password
+                                        @endif
+                                    @case('change_of_data_ms')
+                                        @if($request->service_category == 'change_of_data_ms')
+                                            Change of Data (MS Office)
+                                        @endif
+                                    @case('reset_tup_web_password')
+                                        @if($request->service_category == 'reset_tup_web_password')
+                                            Reset TUP Web Password
+                                        @endif
+                                    @case('change_of_data_portal')
+                                        @if($request->service_category == 'change_of_data_portal')
+                                            Change of Data (Portal)
+                                        @endif
+                                    @case('request_led_screen')
+                                        @if($request->service_category == 'request_led_screen')
+                                            LED Screen Request
+                                        @endif
+                                    @case('others')
+                                        @if($request->service_category == 'others')
+                                            {{ $request->description }}
+                                        @endif
+                                    @default
+                                        {{ $request->service_category }}
+                                @endswitch
+                                </td>
+                                    <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</td>
                                     <td>
                                         <span class="badge 
                                             @if($request->status == 'Pending') badge-warning

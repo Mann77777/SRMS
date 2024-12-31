@@ -74,20 +74,13 @@ class StudentServiceRequestController extends Controller
     // New method to show student's requests
     public function myRequests()
     {
-                // Fetch only the necessary columns for the current user
-                $requests = DB::table('student_service_requests')
-                ->select('id', 'service_category', 'status', 'created_at')
-                ->where('user_id', Auth::id())
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-        
-                // Debug: Log the number of requests and the current user ID
-                \Log::info('My Requests Debug', [
-                    'user_id' => Auth::id(),
-                    'request_count' => $requests->count(),
-                    'total_requests' => $requests->total()
-                ]);
-        
-            return view('users.myrequests', compact('requests'));
+        // Fetch requests with description for 'others' category
+        $requests = DB::table('student_service_requests')
+        ->select('id', 'service_category', 'status', 'created_at', 'description')
+        ->where('user_id', Auth::id())
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+        return view('users.myrequests', compact('requests'));
     }
 }

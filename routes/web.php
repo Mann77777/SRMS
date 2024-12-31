@@ -23,6 +23,7 @@ use App\Http\Controllers\AdminServiceRequestController;
 use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\TechnicianDashboardController;
 use App\Http\Controllers\RequestFormController;
+use App\Http\Controllers\StudentServiceRequestController;
 
 
 Route::get('/', function () {
@@ -65,6 +66,11 @@ Route::get('/faculty-service', [FacultyRequestController::class, 'showForm'])->n
 Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
 Route::get('/myrequests', [FacultyRequestController::class, 'myRequests'])->name('myrequests');
 
+// Add this with the other routes
+Route::get('/myrequests', [StudentServiceRequestController::class, 'myRequests'])
+->name('users.myrequests')
+->middleware('auth');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/chat-history', [BotManController::class, 'getChatHistoryApi']);
     Route::post('/botman/save-message', [BotManController::class, 'saveChatMessageApi']);
@@ -75,6 +81,12 @@ Route::middleware(['auth'])->group(function () {
 //student request
 Route::get('/student-request', [StudentRequestController::class, 'showForm'])->name('student.request.form');
 Route::post('/student-request-submit', [StudentRequestController::class, 'submitRequest'])->name('student.request.submit');
+
+Route::post('/student/service-request', [StudentServiceRequestController::class, 'store'])
+    ->name('student.service.request.submit')
+    ->middleware('auth');
+
+
 
 // Login Form Route
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

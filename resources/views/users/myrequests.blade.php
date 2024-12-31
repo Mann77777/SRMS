@@ -50,18 +50,27 @@
                         <tbody>
                             @foreach ($requests as $request)
                                 <tr>
-                                    <td>{{ $request['id'] }}</td>
-                                    <td>{{ $request['service'] }}</td>
-                                    <td>{{ $request['date'] }}</td>
-                                    <td>{{ $request['status'] }}</td>
+                                    <td>{{ $request->id }}</td>
+                                    <td>{{ $request->service_category }}</td>
+                                   
+                                    <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y H:i') }}</td>
                                     <td>
-                                        <button class="btn-edit" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">Edit</button>
-                                        <button class="btn-view" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">View</button>
-                                        <button class="btn-delete" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">Delete</button>
+                                        <span class="badge 
+                                            @if($request->status == 'Pending') badge-warning
+                                            @elseif($request->status == 'Approved') badge-success
+                                            @elseif($request->status == 'Rejected') badge-danger
+                                            @else badge-secondary
+                                            @endif">
+                                        {{ $request->status }}
+                                            </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn-edit">Edit</button>
+                                        <button class="btn-view">View</button>
+                                        <button class="btn-delete">Delete</button>
                                     </td>
                                 </tr>
                             @endforeach
-
                         </tbody>
                     </table>
                 </form>

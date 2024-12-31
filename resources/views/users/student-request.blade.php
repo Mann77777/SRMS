@@ -24,157 +24,162 @@
         </div>
         <!-- Form -->
          <div class="container">
+            <form action="{{ route('student.service.request.submit') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <!-- Add hidden input for service category -->
+                <input type="hidden" id="selectedServiceCategory" name="service_category" value="">
 
-            <div class="form-section">
-                <h5>Select Service Category</h5>
-                <select id="serviceCategory" class="form-control" required onchange="showFormFields()">
-                    <option value="">Select a Service Category</option>
-                    <!-- Dynamically generated options -->
-                    <optgroup label="MS Office 365, MS Teams, TUP Email">
-                        <option value="create">Create MS Office/TUP Email Account</option>
-                        <option value="reset_email_password">Reset MS Office/TUP Email Password</option>
-                        <option value="change_of_data_ms">Change of Data</option>
-                    </optgroup>
-                    <optgroup label="TUP Web ERS, ERS, and TUP Portal">
-                        <option value="reset_tup_web_password">Reset TUP Web Password</option>
-                        <option value="reset_ers_password">Reset ERS Password</option>
-                        <option value="change_of_data_portal">Change of Data</option>
-                    </optgroup>
-                    <optgroup label="ICT Equipment Management">
-                        <option value="request_led_screen">Request to use LED Screen</option>
-                    </optgroup>
-                    <!-- Other Services -->
-                    <optgroup label="Other Services">
-                        <option value="others">Others</option>
-                    </optgroup>
-                </select>
-
-            </div>
-
-            <!-- Personal Information Form Template -->
-            <div id="personalInfoForm" style="display: none;">
                 <div class="form-section">
-                    <h5>Personal Information</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>First Name</label>
-                            <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                    <h5>Select Service Category</h5>
+                    <select id="serviceCategory" class="form-control" required onchange="showFormFields()">
+                        <option value="">Select a Service Category</option>
+                        <!-- Dynamically generated options -->
+                        <optgroup label="MS Office 365, MS Teams, TUP Email">
+                            <option value="create">Create MS Office/TUP Email Account</option>
+                            <option value="reset_email_password">Reset MS Office/TUP Email Password</option>
+                            <option value="change_of_data_ms">Change of Data</option>
+                        </optgroup>
+                        <optgroup label="TUP Web ERS, ERS, and TUP Portal">
+                            <option value="reset_tup_web_password">Reset TUP Web Password</option>
+                            <option value="reset_ers_password">Reset ERS Password</option>
+                            <option value="change_of_data_portal">Change of Data</option>
+                        </optgroup>
+                        <optgroup label="ICT Equipment Management">
+                            <option value="request_led_screen">Request to use LED Screen</option>
+                        </optgroup>
+                        <!-- Other Services -->
+                        <optgroup label="Other Services">
+                            <option value="others">Others</option>
+                        </optgroup>
+                    </select>
+
+                </div>
+
+                <!-- Personal Information Form Template -->
+                <div id="personalInfoForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>First Name</label>
+                                <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Last Name</label>
+                                <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label>Last Name</label>
-                            <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                    
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Student ID</label>
+                                <input type="text" class="form-control" name="student_id" placeholder="Student ID" required>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Additional Forms for Each Option -->
+                <div id="resetForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Reset Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Account Email</label>
+                                <input type="email" class="form-control" name="account_email" placeholder="Account Email" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="changeOfDataForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Change of Data</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Type of Data to Change</label>
+                                <select class="form-control" name="data_type" required>
+                                    <option value="">Select Data Type</option>
+                                    <option value="name">Name</option>
+                                    <option value="email">Email Address</option>
+                                    <option value="contact_number">Contact Number</option>
+                                    <option value="address">Address</option>
+                                    <option value="others">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Specify New Information</label>
+                                <input type="text" class="form-control" name="new_data" placeholder="Enter New Information" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label>Upload Supporting Document</label>
+                                <input type="file" class="form-control" name="supporting_document" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label>Additional Notes (Optional)</label>
+                                <textarea class="form-control" name="additional_notes" rows="3" placeholder="Provide any additional details..."></textarea>
+                            </div>
+                        </div>
                 
+                    </div>
+                </div>
 
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label>Student ID</label>
-                            <input type="text" class="form-control" name="text" placeholder="Student ID" required>
+                <div id="useled" style="display: none;">
+                    <div class="form-section">
+                        <h5>Request to use LED Screen</h5>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Preferred Date</label>
+                                <input type="date" class="form-control" name="preferred_date" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Preferred Time</label>
+                                <input type="time" class="form-control" name="preferred_time" required>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                <div id="otherServicesForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Other Services</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Describe Your Request</label>
+                                <textarea class="form-control" name="description" placeholder="Describe Your Request" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Additional Forms for Each Option -->
-            <div id="resetForm" style="display: none;">
+
+                <!-- Terms and Conditions with Submit Button -->
                 <div class="form-section">
-                    <h5>Reset Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Account Email</label>
-                            <input type="email" class="form-control" name="account_email" placeholder="Account Email" required>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 text-center">
+                            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                            <label for="agreeTerms">
+                                I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms and Conditions</a>
+                            </label>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="changeOfDataForm" style="display: none;">
+
+                <!-- Submit Button -->
                 <div class="form-section">
-                    <h5>Change of Data</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Type of Data to Change</label>
-                            <select class="form-control" name="data_type" required>
-                                <option value="">Select Data Type</option>
-                                <option value="name">Name</option>
-                                <option value="email">Email Address</option>
-                                <option value="contact_number">Contact Number</option>
-                                <option value="address">Address</option>
-                                <option value="others">Other</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Specify New Information</label>
-                            <input type="text" class="form-control" name="new_data" placeholder="Enter New Information" required>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <label>Upload Supporting Document</label>
-                            <input type="file" class="form-control" name="supporting_document" required>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <label>Additional Notes (Optional)</label>
-                            <textarea class="form-control" name="additional_notes" rows="3" placeholder="Provide any additional details..."></textarea>
-                        </div>
-                    </div>
-            
-                </div>
-            </div>
-
-            <div id="useled" style="display: none;">
-                <div class="form-section">
-                    <h5>Request to use LED Screen</h5>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label>Preferred Date</label>
-                            <input type="date" class="form-control" name="preferred_date" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label>Preferred Time</label>
-                            <input type="time" class="form-control" name="preferred_time" required>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 text-center">
+                            <button type="submit" class="submitbtn">Submit</button>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div id="otherServicesForm" style="display: none;">
-                <div class="form-section">
-                    <h5>Other Services</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Describe Your Request</label>
-                            <textarea class="form-control" name="description" placeholder="Describe Your Request" required></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Terms and Conditions with Submit Button -->
-            <div class="form-section">
-                <div class="row justify-content-center">
-                    <div class="col-md-6 text-center">
-                        <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                        <label for="agreeTerms">
-                            I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms and Conditions</a>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Submit Button -->
-            <div class="form-section">
-                <div class="row justify-content-center">
-                    <div class="col-md-6 text-center">
-                        <button type="submit" class="submitbtn">Submit</button>
-                    </div>
-                </div>
-            </div>
+            </form>
         </div>
 
 
@@ -206,54 +211,85 @@
     </div>
     <!-- JavaScript -->
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Add event listener to the dropdown
-        const serviceCategoryDropdown = document.getElementById("serviceCategory");
+   
+// Make showFormFields a global function
+function showFormFields() {
+    var serviceCategory = document.getElementById('serviceCategory').value;
+    document.getElementById('selectedServiceCategory').value = serviceCategory;
+    
+    // Hide all additional form sections first
+    document.getElementById('personalInfoForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = 'none';
+    document.getElementById('changeOfDataForm').style.display = 'none';
+    document.getElementById('useled').style.display = 'none';
+    document.getElementById('otherServicesForm').style.display = 'none';
 
-        serviceCategoryDropdown.addEventListener("change", showFormFields);
+    // Remove required attribute from all optional fields
+    var optionalFields = [
+        'account_email', 
+        'data_type', 
+        'new_data', 
+        'supporting_document', 
+        'preferred_date', 
+        'preferred_time', 
+        'description'
+    ];
 
-        function showFormFields() {
-            // Hide all forms by default
-            document.getElementById("personalInfoForm").style.display = "none";
-            document.getElementById("resetForm").style.display = "none";
-            document.getElementById("changeOfDataForm").style.display = "none";
-            document.getElementById("useled").style.display = "none";
-            document.getElementById("otherServicesForm").style.display = "none";
-
-            // Get the selected value
-            const selectedOption = serviceCategoryDropdown.value;
-
-            // Display the appropriate form based on the selected option
-            switch (selectedOption) {
-                case "create":
-                case "change_of_data_email":
-                    //document.getElementById("personalInfoForm").style.display = "block";
-                    break;
-                case "reset_email_password":
-                case "reset_tup_web_password":
-                case "reset_ers_password":
-                    //document.getElementById("personalInfoForm").style.display = "block";
-                    document.getElementById("resetForm").style.display = "block";
-                    break;
-                case "change_of_data_ms":
-                case "change_of_data_portal":
-                    //document.getElementById("personalInfoForm").style.display = "block";
-                    document.getElementById("changeOfDataForm").style.display = "block";
-                    break;
-                case "request_led_screen":
-                    //document.getElementById("personalInfoForm").style.display = "block";
-                    document.getElementById("useled").style.display = "block";
-                    break;
-                case "others":
-                    //document.getElementById("personalInfoForm").style.display = "block";
-                    document.getElementById("otherServicesForm").style.display = "block";
-                    break;
-                default:
-                    // No action needed for default
-                    break;
-            }
+    optionalFields.forEach(function(fieldName) {
+        var field = document.querySelector(`[name="${fieldName}"]`);
+        if (field) {
+            field.removeAttribute('required');
         }
     });
+
+    // Show appropriate form sections based on selected category
+    switch(serviceCategory) {
+        case 'create':
+            document.getElementById('personalInfoForm').style.display = 'block';
+            break;
+        case 'reset_email_password':
+        case 'reset_tup_web_password':
+            document.getElementById('personalInfoForm').style.display = 'block';
+            document.getElementById('resetForm').style.display = 'block';
+            
+            // Add required to specific fields
+            document.querySelector('[name="account_email"]').setAttribute('required', 'required');
+            break;
+        case 'change_of_data_ms':
+        case 'change_of_data_portal':
+            document.getElementById('personalInfoForm').style.display = 'block';
+            document.getElementById('changeOfDataForm').style.display = 'block';
+            
+            // Add required to specific fields
+            document.querySelector('[name="data_type"]').setAttribute('required', 'required');
+            document.querySelector('[name="new_data"]').setAttribute('required', 'required');
+            document.querySelector('[name="supporting_document"]').setAttribute('required', 'required');
+            break;
+        case 'request_led_screen':
+            document.getElementById('personalInfoForm').style.display = 'block';
+            document.getElementById('useled').style.display = 'block';
+            
+            // Add required to specific fields
+            document.querySelector('[name="preferred_date"]').setAttribute('required', 'required');
+            document.querySelector('[name="preferred_time"]').setAttribute('required', 'required');
+            break;
+        case 'others':
+            document.getElementById('personalInfoForm').style.display = 'block';
+            document.getElementById('otherServicesForm').style.display = 'block';
+            
+            // Add required to specific fields
+            document.querySelector('[name="description"]').setAttribute('required', 'required');
+            break;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    var serviceCategoryDropdown = document.getElementById('serviceCategory');
+    serviceCategoryDropdown.addEventListener('change', showFormFields);
+
+    // Trigger initial form setup
+    showFormFields();
+});
 </script>
 
 

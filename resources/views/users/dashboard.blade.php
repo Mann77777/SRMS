@@ -137,39 +137,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                         @forelse($recentRequests->take(3) ?? [] as $request)
-                        <tr>
-                            <td><strong>#{{ $request['id'] }}</strong></td>
-                            <td>{{ $request['service_type'] }}</td>
-                            <td>{{ $request['created_at']->format('M d, Y') }}</td>
-                            <td>{{ $request['updated_at']->diffForHumans() }}</td>
-                             <td>
-                                 <span class="status-badge {{ strtolower($request['status']) }}">
-                                    {{ $request['status'] }}
-                                </span>
-                            </td>
-                             <td>
-                                <div class="action-buttons">
-                                    <a href="{{ url('/request/'.$request['id']) }}" class="btn-view" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                   @if($request['status'] === 'Pending')
-                                     <button class="btn-edit" title="Edit Request" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">
-                                         <i class="fas fa-edit"></i>
-                                     </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                         <tr>
-                            <td colspan="6" class="empty-state">
-                                <i class="fas fa-inbox fa-3x"></i>
-                                <p>No recent requests found</p>
-                                <button class="btn-primary" onclick="window.location.href='{{ url('/student-request') }}'">Submit Request</button>
-                                </td>
-                        </tr>
-                        @endforelse
+                       
+                           
                     </tbody>
                 </table>
             </div>

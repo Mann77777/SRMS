@@ -27,6 +27,9 @@
         <div class="container">
             <form id="facultyServiceForm" method="POST" action="{{ route('faculty.request.submit') }}" enctype="multipart/form-data">
                 @csrf
+                <!-- Add hidden input for service category -->
+                <input type="hidden" id="selectedServiceCategory" name="service_category" value="">
+                
                 <div class="form-section">
                     <h5>Select Service Category</h5>
                     <select id="serviceCategory" class="form-control" required onchange="showFormFields()">
@@ -212,28 +215,34 @@
 
                         <div class="row mt-3">
                             <div class="col-md-6">
-                                <label>College/Department/Unit</label>
-                                <input type="text" class="form-control" name="college_department_unit" placeholder="College/Department/Unit" required>
+                                <label>College</label>
+                                <input type="text" class="form-control" name="college" placeholder="College" required>
                             </div>
+
                             <div class="col-md-6">
-                                <label>Plantilla Position</label>
-                                <input type="text" class="form-control" name="plantilla_position" placeholder="Plantilla Position" required>
+                                <label>Department</label>
+                                <input type="text" class="form-control" name="department" placeholder="Department" required>
                             </div>
+                           
                         </div>
 
                         <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Position</label>
+                                <input type="text" class="form-control" name="position" placeholder="Position" required>
+                            </div>
                             <div class="col-md-6">
                                 <label>Date of Birth</label>
                                 <input type="date" class="form-control" name="date_of_birth" required>
                             </div>
+                        </div>
+
+                        <div class="row mt-3">
                             <div class="col-md-6">
                                 <label>Phone Number</label>
                                 <input type="number" class="form-control" name="phone_number" placeholder="Phone Number" required>
                             </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label>Address</label>
                                 <input type="text" class="form-control" name="address" placeholder="Address" required>
                             </div>
@@ -320,13 +329,13 @@
 
                             <div class="col-md-6">
                                 <label for="">Date of Publication</label>
-                                <input type="date" class="form-control" name="date_of_pub" id="date_of_pub" placeholder="Date of Publication">
+                                <input type="date" class="form-control" name="publication_date" id="publication_date" placeholder="Date of Publication">
                             </div>
 
 
                             <div class="col-md-6">
                                 <label for="">End of Publication</label>
-                                <input type="date" class="form-control" name="end_of_pub" id="end_of_pub" placeholder="End of Publication">
+                                <input type="date" class="form-control" name="end_publication" id="end_publication" placeholder="End of Publication">
                             </div>
                         </div>
                     </div>
@@ -365,8 +374,7 @@
                             </div>
                         </div>
                     </div>
-                </form>
-            
+            </form>
             
                 <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
                  <div class="modal-dialog modal-lg" role="document">

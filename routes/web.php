@@ -18,7 +18,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\StudentRequestController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FacultyRequestController;
+use App\Http\Controllers\FacultyServiceRequestController;
 use App\Http\Controllers\AdminServiceRequestController;
 use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\TechnicianDashboardController;
@@ -62,9 +62,13 @@ Route::post('/remove-profile-image', [ProfileController::class, 'removeProfileIm
 
 Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword'])->name('myprofile.setPassword');
 
-Route::get('/faculty-service', [FacultyRequestController::class, 'showForm'])->name('faculty.request.form');
-Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
-Route::get('/myrequests', [FacultyRequestController::class, 'myRequests'])->name('myrequests');
+//Route::get('/faculty-service', [FacultyRequestController::class, 'showForm'])->name('faculty.request.form');
+//Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
+
+Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'submitRequest'])->name('faculty.request.submit');
+Route::get('/myrequests', [FacultyServiceRequestController::class, 'myRequests'])->name('myrequests');
+
+//Route::get('/myrequests', [FacultyRequestController::class, 'myRequests'])->name('myrequests');
 
 // Add this with the other routes
 Route::get('/myrequests', [StudentServiceRequestController::class, 'myRequests'])

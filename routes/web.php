@@ -24,6 +24,7 @@ use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\TechnicianDashboardController;
 use App\Http\Controllers\RequestFormController;
 use App\Http\Controllers\StudentServiceRequestController;
+use App\Http\Controllers\BotManController;
 
 
 Route::get('/', function () {
@@ -66,14 +67,17 @@ Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword']
 //Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
 
 Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'submitRequest'])->name('faculty.request.submit');
-Route::get('/myrequests', [FacultyServiceRequestController::class, 'myRequests'])->name('myrequests');
+Route::get('/faculty/myrequests', [FacultyServiceRequestController::class, 'myRequests'])->name('faculty.myrequests');
+Route::get('/faculty/myrequests/{id}', [FacultyServiceRequestController::class, 'show'])->name('faculty.myrequests.show');
 
-//Route::get('/myrequests', [FacultyRequestController::class, 'myRequests'])->name('myrequests');
 
 // Add this with the other routes
 Route::get('/myrequests', [StudentServiceRequestController::class, 'myRequests'])
-->name('users.myrequests')
+->name('myrequests')
 ->middleware('auth');
+
+Route::get('/student/myrequests/{id}', [StudentServiceRequestController::class, 'show'])->name('student.myrequests.show');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/chat-history', [BotManController::class, 'getChatHistoryApi']);
@@ -113,7 +117,7 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
     }
 
     if (Auth::user()->role === 'Faculty & Staff') {
-        return redirect()->route('users.dashboard')
+        return redirect()->route('dashboard')
             ->with('message', 'Email verified! Welcome to your dashboard.');
     }
 
@@ -256,9 +260,9 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/student/{id}/verify', [UserController::class, 'verifyStudent'])->name('admin.student.verify');
     Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifications'])->name('admin.verify.students');
 
-    // Faculty & Staff Verification 
+    // Faculty & Staff Verification
    // Route::post('/admin/facultystaff/{id}/verify', [UserController::class, 'verifyFacultyStaff'])->middleware(['auth', 'admin'])->name('admin.facultystaff.verify');
-    
+
     Route::post('/admin/facultystaff/{userId}/verify', [UserController::class, 'verifyFacultyStaff']);
     // Services Management
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
@@ -275,12 +279,12 @@ Route::middleware(['auth:admin'])->group(function () {
     })->name('admin.request-form-management');
 
     Route::post('/save-request-form', [RequestFormController::class, 'saveRequestForm']);
-Route::get('/get-request-forms', [RequestFormController::class, 'getRequestForms']);
-// Add these routes
-Route::post('/update-request-form', [RequestFormController::class, 'updateRequestForm']);
-Route::post('/delete-request-form', [RequestFormController::class, 'deleteRequestForm']);
+    Route::get('/get-request-forms', [RequestFormController::class, 'getRequestForms']);
+    // Add these routes
+    Route::post('/update-request-form', [RequestFormController::class, 'updateRequestForm']);
+    Route::post('/delete-request-form', [RequestFormController::class, 'deleteRequestForm']);
 
-Route::get('/debug-storage-path', [RequestFormController::class, 'debugStoragePath']);
+    Route::get('/debug-storage-path', [RequestFormController::class, 'debugStoragePath']);
 
 
     Route::get('/service-management', function () {

@@ -25,7 +25,7 @@
 
         <!-- Form -->
         <div class="container">
-            <form id="facultyServiceForm" method="POST" action="{{ route('faculty.request.submit') }}" enctype="multipart/form-data">
+            <form id="facultyServiceForm" method="POST" action="{{ route('student.service.request.submit') }}" enctype="multipart/form-data">
                 @csrf
                 <!-- Add hidden input for service category -->
                 <input type="hidden" id="selectedServiceCategory" name="service_category" value="">
@@ -220,7 +220,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label>Department</label>
+                            <label>Department</label>
                                 <input type="text" class="form-control" name="department" placeholder="Department" required>
                             </div>
                            
@@ -353,7 +353,114 @@
                     </div>
                 </div>
 
-                <!-- Terms and Conditions with Submit Button -->
+                  <!-- MS Options -->
+                <div id="ms_options_form" style="display: none;">
+                    <div class="form-section">
+                         <h5>MS Options</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="ms_options[]" value="MS Office 365">
+                                    <label class="form-check-label">MS Office 365</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="ms_options[]" value="MS Teams">
+                                    <label class="form-check-label">MS Teams</label>
+                                </div>
+                                 <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="ms_options[]" value="TUP Email">
+                                     <label class="form-check-label">TUP Email</label>
+                                </div>
+                            </div>
+                         </div>
+                     </div>
+                </div>
+                 <!-- TUP Web Options -->
+                <div id="tup_web_options_form" style="display: none;">
+                    <div class="form-section">
+                         <h5>TUP Web Options</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="tup_web_options[]" value="TUP Web ERS">
+                                    <label class="form-check-label">TUP Web ERS</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="tup_web_options[]" value="ERS">
+                                    <label class="form-check-label">ERS</label>
+                                </div>
+                                  <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="tup_web_options[]" value="TUP Portal">
+                                     <label class="form-check-label">TUP Portal</label>
+                                </div>
+                            </div>
+                         </div>
+                     </div>
+                </div>
+                <!-- Internet and Telephone Options -->
+                <div id="internet_telephone_form" style="display: none;">
+                    <div class="form-section">
+                        <h5>Internet and Telephone Options</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="internet_telephone[]" value="New Internet Connection">
+                                    <label class="form-check-label">New Internet Connection</label>
+                                </div>
+                                 <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="internet_telephone[]" value="New Telephone Connection">
+                                    <label class="form-check-label">New Telephone Connection</label>
+                                </div>
+                                 <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="internet_telephone[]" value="Internet/Telephone Repair and Maintenance">
+                                    <label class="form-check-label">Internet/Telephone Repair and Maintenance</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <!-- ICT Equipment Options -->
+                <div id="ict_equip_options_form" style="display: none;">
+                    <div class="form-section">
+                        <h5>ICT Equipment Options</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                 <div class="form-check">
+                                     <input type="checkbox" class="form-check-input" name="ict_equip_options[]" value="Computer Repair and Maintenance">
+                                     <label class="form-check-label">Computer Repair and Maintenance</label>
+                                </div>
+                                 <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="ict_equip_options[]" value="Printer Repair and Maintenance">
+                                    <label class="form-check-label">Printer Repair and Maintenance</label>
+                                </div>
+                                 <div class="form-check">
+                                     <input type="checkbox" class="form-check-input" name="ict_equip_options[]" value="Request to use LED Screen">
+                                     <label class="form-check-label">Request to use LED Screen</label>
+                                </div>
+                            </div>
+                         </div>
+                     </div>
+                 </div>
+                  <!-- Attendance Options -->
+                <div id="attendance_option_form" style="display: none;">
+                    <div class="form-section">
+                        <h5>Attendance Options</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                 <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="attendance_option[]" value="Daily Time Record">
+                                    <label class="form-check-label">Daily Time Record</label>
+                                 </div>
+                                  <div class="form-check">
+                                      <input type="checkbox" class="form-check-input" name="attendance_option[]" value="Biometric Record">
+                                      <label class="form-check-label">Biometric Record</label>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Terms and Conditions with Submit Button -->
                 <div class="form-section">
                             <div class="row justify-content-center">
                                 <div class="col-md-6 text-center">
@@ -382,7 +489,7 @@
                         <div class="modal-header">
                             <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
+                                <span aria-hidden="true">×</span>
                             </button>
                         </div>
                         <div class="modal-body">

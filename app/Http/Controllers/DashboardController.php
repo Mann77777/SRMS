@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\ServiceRequest;
+use App\Models\StudentServiceRequest;
 use App\Models\FacultyServiceRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -22,21 +22,21 @@ class DashboardController extends Controller
 
         try {
             // Fetch total request counts for the user
-            $totalRequests = ServiceRequest::where('user_id', $user->id)->count() +
+            $totalRequests = StudentServiceRequest::where('user_id', $user->id)->count() +
                              FacultyServiceRequest::where('user_id', $user->id)->count();
 
             // Fetch status counts for the user
-            $pendingRequests = ServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count() +
+            $pendingRequests = StudentServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count() +
                               FacultyServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count();
-            $processingRequests = ServiceRequest::where('status', 'Processing')->where('user_id', $user->id)->count() +
+            $processingRequests = StudentServiceRequest::where('status', 'Processing')->where('user_id', $user->id)->count() +
                                  FacultyServiceRequest::where('status', 'Processing')->where('user_id', $user->id)->count();
-            $completedRequests = ServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count() +
+            $completedRequests = StudentServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count() +
                                  FacultyServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count();
 
 
-            // Fetch recent requests and transform them
-            $studentRequests = ServiceRequest::where('user_id', $user->id)->latest()->take(3)->get();
-            $facultyRequests = FacultyServiceRequest::where('user_id', $user->id)->latest()->take(3)->get();
+           // Fetch recent requests and transform them
+            $studentRequests = StudentServiceRequest::where('user_id', $user->id)->latest()->take(3)->get();
+             $facultyRequests = [];
 
 
            $transformedStudentRequests = $studentRequests->map(function ($request) {
@@ -49,21 +49,15 @@ class DashboardController extends Controller
                        'type' => 'student',
                    ];
                });
-           $transformedFacultyRequests = $facultyRequests->map(function ($request) {
-                   return [
-                       'id' => $request->id,
-                       'service_type' => $this->getServiceName($request, 'faculty'),
-                       'created_at' => $request->created_at,
-                        'updated_at' => $request->updated_at,
-                       'status' => $request->status,
-                       'type' => 'faculty',
-                   ];
-              });
+           $transformedFacultyRequests = collect();
+
 
           // Merge and sort requests by created_at
-          $recentRequests = collect(array_merge($transformedStudentRequests->toArray(), $transformedFacultyRequests->toArray()))
-            ->sortByDesc('created_at')
-            ->take(3);
+            $recentRequests = collect(array_merge($transformedStudentRequests->toArray(), $transformedFacultyRequests->toArray()))
+                ->sortByDesc(function ($request) {
+                    return $request['created_at'];
+                })
+                ->take(3);
 
         } catch (\Exception $e) {
             Log::error('Error fetching dashboard data: ' . $e->getMessage());
@@ -87,81 +81,41 @@ class DashboardController extends Controller
         ]);
     }
 
-     private function getServiceName($request, $type)
+ private function getServiceName($request, $type)
     {
         $services = [];
 
         if ($type === 'student') {
-           if ($request->ms_options) {
-                $ms_options = json_decode($request->ms_options, true);
-                if(is_array($ms_options)){
-                   foreach ($ms_options as $option) {
-                      $services[] = "MS Office 365, MS Teams, TUP Email - " . $option;
-                   }
-                }
-            }
-            if ($request->tup_web_options) {
-              $tup_web_options = json_decode($request->tup_web_options, true);
-                 if(is_array($tup_web_options)){
-                   foreach ($tup_web_options as $option) {
-                       $services[] = "TUP Web ERS, ERS, and TUP Portal - " . $option;
-                  }
-              }
-           }
-            if ($request->ict_equip_options) {
-               $ict_equip_options = json_decode($request->ict_equip_options, true);
-                if(is_array($ict_equip_options)){
-                 foreach ($ict_equip_options as $option) {
-                    $services[] = "ICT Equipment Management - " . $option;
-                 }
-             }
-            }
+
+
         } elseif ($type === 'faculty') {
-           if ($request->ms_options) {
-                $ms_options = json_decode($request->ms_options, true);
-                 if(is_array($ms_options)){
-                   foreach ($ms_options as $option) {
-                        $services[] = "MS Office 365, MS Teams, TUP Email - " . $option;
-                    }
+            if ($request->ms_options && is_array($request->ms_options)) {
+                foreach ($request->ms_options as $option) {
+                    $services[] = "MS Office 365, MS Teams, TUP Email - " . $option;
                 }
-           }
-          if ($request->attendance_option) {
-              $attendance_option = json_decode($request->attendance_option, true);
-               if(is_array($attendance_option)){
-                 foreach ($attendance_option as $option) {
-                      $services[] = "Attendance Record - " . $option;
-                    }
-               }
-          }
-
-            if ($request->tup_web_options) {
-                $tup_web_options = json_decode($request->tup_web_options, true);
-                if(is_array($tup_web_options)){
-                  foreach ($tup_web_options as $option) {
+            }
+            if ($request->attendance_option && is_array($request->attendance_option)) {
+                foreach ($request->attendance_option as $option) {
+                    $services[] = "Attendance Record - " . $option;
+                }
+            }
+            if ($request->tup_web_options && is_array($request->tup_web_options)) {
+                foreach ($request->tup_web_options as $option) {
                     $services[] = "TUP Web ERS, ERS, and TUP Portal - " . $option;
-                    }
                 }
-           }
-
-            if ($request->internet_telephone) {
-                $internet_telephone = json_decode($request->internet_telephone, true);
-                 if(is_array($internet_telephone)){
-                    foreach ($internet_telephone as $option) {
-                      $services[] = "Internet and Telephone Management - " . $option;
-                    }
-                 }
-           }
-
-            if ($request->ict_equip_options) {
-              $ict_equip_options = json_decode($request->ict_equip_options, true);
-                if(is_array($ict_equip_options)){
-                    foreach ($ict_equip_options as $option) {
-                       $services[] = "ICT Equipment Management - " . $option;
-                    }
-               }
-           }
+            }
+            if ($request->internet_telephone && is_array($request->internet_telephone)) {
+                foreach ($request->internet_telephone as $option) {
+                    $services[] = "Internet and Telephone Management - " . $option;
+                }
+            }
+            if ($request->ict_equip_options && is_array($request->ict_equip_options)) {
+                foreach ($request->ict_equip_options as $option) {
+                    $services[] = "ICT Equipment Management - " . $option;
+                }
+            }
         }
 
-      return implode(', ', $services) ?: 'No service selected';
+       return implode(', ', $services) ?: 'No service selected';
     }
 }

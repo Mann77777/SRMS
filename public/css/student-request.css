@@ -91,4 +91,7 @@ body {
     .form-section h5 {
         font-size: 1rem;
     }
+    .row {
+        font-size: 0.9rem;
+    }
 }

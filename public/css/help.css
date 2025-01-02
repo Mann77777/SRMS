@@ -86,3 +86,17 @@ a {
 a:hover {
     text-decoration: underline; /* Underline on hover for links */
 }
+
+
+@media (max-width: 480px) {
+    .help {
+        margin-top: 25%;
+        margin-left: 2%;
+    }  
+    .help h1 {
+        font-size: 1.5rem;
+    }  
+    .help h2 {
+        font-size: 1rem;
+    }
+}

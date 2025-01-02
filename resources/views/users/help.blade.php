@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -29,7 +29,7 @@
                     Q: How do I submit a service request?
                 </div>
                 <div class="faq-answer">
-                    A: Click on the "Submit Request" button in the main menu, fill out the form, and click "Submit."
+                    A: Click on the "Submit Request", fill out the form, and click "Submit."
                 </div>
             </div>
             <div class="faq-item">
@@ -55,7 +55,7 @@
                     Q: How will I be notified about updates on my request?
                 </div>
                 <div class="faq-answer">
-                A: You will receive a notification any updates or changes to the status of your request. Make sure to check your account for updates.
+                A: You will receive a notification for any updates or changes to the status of your request. Make sure to check your account for updates.
                 </div>
             </div>
 

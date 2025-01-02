@@ -25,7 +25,7 @@
 
         <!-- Form -->
         <div class="container">
-            <form id="facultyServiceForm" method="POST" action="{{ route('student.service.request.submit') }}" enctype="multipart/form-data">
+            <form id="facultyServiceForm" method="POST" action="{{ route('faculty.service.request.submit') }}" enctype="multipart/form-data">
                 @csrf
                 <!-- Add hidden input for service category -->
                 <input type="hidden" id="selectedServiceCategory" name="service_category" value="">
@@ -85,11 +85,11 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <label>First Name</label>
-                                <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                                <input type="text" class="form-control" name="first_name" placeholder="First Name">
                             </div>
                             <div class="col-md-4">
                                 <label>Last Name</label>
-                                <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                                <input type="text" class="form-control" name="last_name" placeholder="Last Name">
                             </div>
                         </div>
                     </div>
@@ -156,7 +156,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label for="months">Select Months</label>
-                                <select id="months" class="form-control" name="months[]" multiple required>
+                                <select id="months" class="form-control" name="months[]">
                                     <!-- Dynamically generated months -->
                                     <option value="January">January</option>
                                     <option value="February">February</option>
@@ -178,7 +178,7 @@
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <label for="year">Select Year</label>
-                                <select id="year" class="form-control" name="year" required>
+                                <select id="year" class="form-control" name="year">
                                     <!-- Dynamically generated years (for example 2020 - current year) -->
                                     <option value="">Select Year</option>
                                     <?php
@@ -201,27 +201,27 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <label>Last Name</label>
-                                <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                                <input type="text" class="form-control" name="last_name" placeholder="Last Name">
                             </div>
                             <div class="col-md-4">
                                 <label>First Name</label>
-                                <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                                <input type="text" class="form-control" name="first_name" placeholder="First Name">
                             </div>
                             <div class="col-md-4">
                                 <label>Middle Name</label>
-                                <input type="text" class="form-control" name="middle_name" placeholder="Middle Name" required>
+                                <input type="text" class="form-control" name="middle_name" placeholder="Middle Name">
                             </div>
                         </div>
 
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <label>College</label>
-                                <input type="text" class="form-control" name="college" placeholder="College" required>
+                                <input type="text" class="form-control" name="college" placeholder="College">
                             </div>
 
                             <div class="col-md-6">
                             <label>Department</label>
-                                <input type="text" class="form-control" name="department" placeholder="Department" required>
+                                <input type="text" class="form-control" name="department" placeholder="Department">
                             </div>
                            
                         </div>
@@ -229,33 +229,33 @@
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <label>Position</label>
-                                <input type="text" class="form-control" name="position" placeholder="Position" required>
+                                <input type="text" class="form-control" name="position" placeholder="Position">
                             </div>
                             <div class="col-md-6">
                                 <label>Date of Birth</label>
-                                <input type="date" class="form-control" name="date_of_birth" required>
+                                <input type="date" class="form-control" name="date_of_birth">
                             </div>
                         </div>
 
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <label>Phone Number</label>
-                                <input type="number" class="form-control" name="phone_number" placeholder="Phone Number" required>
+                                <input type="number" class="form-control" name="phone_number" placeholder="Phone Number">
                             </div>
                             <div class="col-md-6">
                                 <label>Address</label>
-                                <input type="text" class="form-control" name="address" placeholder="Address" required>
+                                <input type="text" class="form-control" name="address" placeholder="Address">
                             </div>
                         </div>
 
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <label>Blood Type</label>
-                                <input type="text" class="form-control" name="blood_type" placeholder="Blood Type" required>
+                                <input type="text" class="form-control" name="blood_type" placeholder="Blood Type">
                             </div>
                             <div class="col-md-6">
                                 <label>In Case of Emergency Contact</label>
-                                <input type="text" class="form-control" name="emergency_contact" placeholder="Emergency Contact" required>
+                                <input type="text" class="form-control" name="emergency_contact" placeholder="Emergency Contact">
                             </div>
                         </div>
                     </div>
@@ -268,7 +268,7 @@
                         <h5>Location Information</h5>
                         <div class="row">
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="location" id="location" placeholder="Enter Location" required>
+                                <input type="text" class="form-control" name="location" id="location" placeholder="Enter Location">
                             </div>
                         </div>
                     </div>
@@ -279,7 +279,7 @@
                         <h5>Problem/s Information</h5>
                         <div class="row">
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="problem_encountered" id="problem_encountered" placeholder="Enter Problem/s Encountered" required>
+                                <input type="text" class="form-control" name="problem_encountered" id="problem_encountered" placeholder="Enter Problem/s Encountered">
                             </div>
                         </div>
                     </div>

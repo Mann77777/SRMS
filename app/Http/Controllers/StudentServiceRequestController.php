@@ -75,7 +75,7 @@ class StudentServiceRequestController extends Controller
                return view('users.myrequests', compact('requests'));
          }
 
-           $requests = FacultyServiceRequest::where('user_id', Auth::id())
+           $requests = StudentServiceRequest::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
           return view('users.myrequests', compact('requests'));

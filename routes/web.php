@@ -66,10 +66,13 @@ Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword']
 //Route::get('/faculty-service', [FacultyRequestController::class, 'showForm'])->name('faculty.request.form');
 //Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
 
-Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'submitRequest'])->name('faculty.request.submit');
+//Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'submitRequest'])->name('faculty.request.submit');
 Route::get('/faculty/myrequests', [FacultyServiceRequestController::class, 'myRequests'])->name('faculty.myrequests');
 Route::get('/faculty/myrequests/{id}', [FacultyServiceRequestController::class, 'show'])->name('faculty.myrequests.show');
 
+Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'store'])
+    ->name('faculty.service.request.submit')
+    ->middleware('auth');
 
 // Add this with the other routes
 Route::get('/myrequests', [StudentServiceRequestController::class, 'myRequests'])

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">  <!-- Add this line -->
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -15,7 +15,7 @@
 <body class="{{ Auth::check() ? 'user-authenticated' : '' }}">
     <!-- Include Navbar -->
     @include('layouts.navbar')
-        
+
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
@@ -27,7 +27,7 @@
                     <?php
                     date_default_timezone_set('Asia/Manila');
                     $hour = date('H');
-                    $greeting = ($hour >= 5 && $hour < 12) ? "Good Morning" : 
+                    $greeting = ($hour >= 5 && $hour < 12) ? "Good Morning" :
                                (($hour >= 12 && $hour < 18) ? "Good Afternoon" : "Good Evening");
                     echo $greeting . ", " . Auth::user()->username . "!";
                     ?>
@@ -52,7 +52,7 @@
                     <span>New Faculty Request</span>
                 </a>
               @endif
-                 
+
                 <a href="{{ url('/myrequests') }}" class="action-button">
                     <i class="fas fa-list-alt"></i>
                     <span>My Requests</span>
@@ -128,17 +128,41 @@
                 <table class="request-table">
                     <thead>
                         <tr>
-                            <th>Request ID</th>
-                            <th>Service Type</th>
+                             <th>Request ID</th>
+                             <th>Service Type</th>
                             <th>Date Submitted</th>
                             <th>Last Update</th>
                             <th>Status</th>
-                            <th>Action</th>
+                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                       
-                           
+                    @forelse($recentRequests as $request)
+                        <tr>
+                             <td>{{ $request['id'] }}</td>
+                             <td>{{ $request['service_type'] }}</td>
+                            <td>{{ \Carbon\Carbon::parse($request['created_at'])->format('M d, Y h:i A') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($request['updated_at'])->format('M d, Y h:i A') }}</td>
+                            <td>
+                                <span class="badge
+                                    @if($request['status'] == 'Pending') badge-warning
+                                    @elseif($request['status'] == 'Processing') badge-info
+                                    @elseif($request['status'] == 'Approved') badge-success
+                                     @elseif($request['status'] == 'Rejected') badge-danger
+                                    @else badge-secondary
+                                    @endif">
+                                    {{ $request['status'] }}
+                                </span>
+                            </td>
+                             <td>
+                                 <a href="@if($request['type'] === 'student') {{ route('student.myrequests.show', $request['id']) }} @else {{ route('faculty.myrequests.show', $request['id']) }} @endif" class="btn-view">View</a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                          <td colspan="5" class="text-center"> No recent requests found</td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>
@@ -164,7 +188,7 @@
             </div>
         </div>
     </section>
-   
+
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/chatbot.js') }}"></script>
@@ -173,7 +197,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-   
+
     <script src="https://cdn.jsdelivr.net/npm/botman-web-widget@0/build/js/widget.js"></script>
 </body>
 </html>

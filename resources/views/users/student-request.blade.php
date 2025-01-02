@@ -248,6 +248,7 @@
                     break;
                 case 'reset_email_password':
                 case 'reset_tup_web_password':
+                case 'reset_ers_password':
                     document.getElementById('personalInfoForm').style.display = 'block';
                     document.getElementById('resetForm').style.display = 'block';
                     

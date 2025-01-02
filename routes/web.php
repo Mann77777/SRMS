@@ -249,7 +249,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/user-management', [UserController::class, 'index'])->name('admin.user-management');
     Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
     Route::get('/admin/users/{id}', [UserController::class, 'getUser']);
-    Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
+    //Route::put('/admin/users/{id}', [UserController::class, 'updateUser']);
+    Route::post('/update-user/{id}', [UserController::class, 'updateUser'])->name('user.update');
     Route::delete('/admin/users/{id}', [UserController::class, 'deleteUser']);
     Route::post('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword']);
     Route::put('/admin/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);

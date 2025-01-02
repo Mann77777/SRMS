@@ -53,8 +53,10 @@ class UserController extends Controller
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
                 'role' => 'required|string|in:Student,Faculty & Staff',
-                'college' => 'required|string',
-                'course' => 'required|string',
+                'college' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
+                'course' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
+                'student_id' => $request->role === 'Student' ? 'required|string|unique:users' : 'nullable|string',
+                'year_level' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
             ]);
 
             $user = User::create([
@@ -67,8 +69,11 @@ class UserController extends Controller
                 'email_verified_at' => now(), // Since admin is creating the account
                 'verification_status' => 'verified',
                 'admin_verified' => true,
-                'college' => $request->college,  
-                'course' => $request->course   
+                'college' => $request->role === 'Student' ? $request->college : null,
+                'course' => $request->role === 'Student' ? $request->course : null,
+                'student_id' => $request->role === 'Student' ? $request->student_id : null,
+                'year_level' => $request->role === 'Student' ? $request->year_level : null,
+                'admin_verification_notes' => 'User created directly by admin ',
             ]);
 
             return response()->json([
@@ -160,36 +165,36 @@ class UserController extends Controller
 
     public function updateUser(Request $request, $id)
     {
-        $request->validate([
+        $user = User::findOrFail($id);
+
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'role' => 'required|string'
+            'username' => 'required|string|max:255|unique:users,username,'.$user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'role' => 'required|string|in:Student,Faculty & Staff',
+            'college' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
+            'course' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
+            'student_id' => $request->role === 'Student' ? 'required|string|unique:users,student_id,'.$user->id : 'nullable|string',
+            'year_level' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
         ]);
-
-        // Try to find user in Users table
-        $user = User::find($id);
-        $isAdmin = false;
-        
-        // If not found in Users table, check Admins table
-        if (!$user) {
-            $user = Admin::find($id);
-            $isAdmin = true;
-        }
-        
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        $user->name = $request->name;
-        if ($isAdmin) {
-            $user->username = $request->email;
-        } else {
-            $user->email = $request->email;
-        }
-        $user->role = $request->role;
-        $user->save();
-
-        return response()->json(['message' => 'User updated successfully', 'user' => $user]);
+    
+        $user->update([
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'role' => $request->role,
+            'college' => $request->role === 'Student' ? $request->college : null,
+            'course' => $request->role === 'Student' ? $request->course : null,
+            'student_id' => $request->role === 'Student' ? $request->student_id : null,
+            'year_level' => $request->role === 'Student' ? $request->year_level : null,
+            'admin_verification_notes' => 'User updated by admin',
+        ]);
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'User updated successfully',
+            'user' => $user
+        ]);
     }
 
     public function toggleStatus($id)

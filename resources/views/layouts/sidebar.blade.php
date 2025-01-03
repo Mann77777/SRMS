@@ -1,5 +1,5 @@
 <!-- resources/views/layouts/sidebar.blade.php -->
-<nav class="sidebar">
+<aside class="sidebar">
     <div class="logo_item">
         <a href="{{ url('/admin_dashboard') }}">
             <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
@@ -79,7 +79,5 @@
                 </a>
             </li>
         </ul>
-
-
     </div>
-</nav>
+</aside>

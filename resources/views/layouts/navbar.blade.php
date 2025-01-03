@@ -2,13 +2,17 @@
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 
 <!-- NAVBAR -->
-
 <nav class="navbar">    
     <div class="logo_item">
         <i class="bx bx-menu" id="sidebarOpen"></i>
         <a href="{{ url('/dashboard') }}">
             <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
         </a>      
+    </div>
+    
+    <!-- Mobile Menu Icon -->
+    <div class="mobile-menu-icon  id="mobileSidebarToggle">
+        <i class="bx bx-menu" id="mobileSidebarOpen"></i>
     </div>
     
     <div class="navbar-content">

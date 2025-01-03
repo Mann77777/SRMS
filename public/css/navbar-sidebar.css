@@ -335,45 +335,6 @@ body{
     display: none;
 }
 
-/* Submenu Styles */
-.has-submenu {
-    position: relative;
-}
-
-.has-submenu .arrow_icon {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    transition: transform 0.3s ease;
-}
-
-.has-submenu.active .arrow_icon {
-    transform: translateY(-50%) rotate(180deg);
-}
-
-.submenu {
-    display: none;
-    list-style: none;
-    padding-left: 20px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-}
-
-.has-submenu.active .submenu {
-    display: block;
-}
-
-.submenu .nav_link {
-    padding: 10px 15px;
-    display: block;
-    color: #333;
-    text-decoration: none;
-}
-
-.submenu .nav_link:hover {
-    background-color: #f0f0f0;
-}
 
 @media screen and (max-width: 768px) {
     .navbar .logo_item img {

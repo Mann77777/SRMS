@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('department')->nullable();
             $table->string('college')->nullable();
             $table->string('position')->nullable();
-            $table->date('date_of_brith')->nullable();
+            $table->date('date_of_birth')->nullable();
             $table->string('phone_number')->nullable();
             $table->string('address')->nullable();
             $table->string('blood_type')->nullable();

@@ -46,7 +46,7 @@
                 <label for="role">Select Role</label>
                 <select class="form-control" id="role" name="role" required>
                     <option value="Admin">Admin</option>
-                    <option value="Technician">Technician</option>
+                    <option value="UITC Staff">UITC Staff</option>
                 </select>
             </div>
             <button type="submit" class="register-btn btn-primary btn-block">Sign Up</button>

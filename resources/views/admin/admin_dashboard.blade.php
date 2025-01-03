@@ -181,7 +181,7 @@
         </div>
     </section>
 
-    @elseif(Auth::guard('admin')->user()->role === 'Technician')
+    @elseif(Auth::guard('admin')->user()->role === 'UITC Staff')
     <!-- TECHNICIAN STATUS OVERVIEW -->
     <section class="status-overview">
         <div class="container">

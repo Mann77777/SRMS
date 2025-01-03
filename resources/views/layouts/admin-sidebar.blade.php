@@ -81,7 +81,7 @@
                         <span class="navlink">Settings</span>
                     </a>
                 </li>
-            @elseif(Auth::guard('admin')->user()->role === 'Technician')
+            @elseif(Auth::guard('admin')->user()->role === 'UITC Staff')
                 <!-- Technician Status Overview -->
                 <li class="item">
                     <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('admin_dashboard') ? 'active' : '' }}">

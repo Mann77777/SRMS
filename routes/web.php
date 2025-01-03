@@ -295,9 +295,9 @@ Route::middleware(['auth:admin'])->group(function () {
         return view('admin.service-management');
     })->name('admin.service-management');
     Route::get('/staff-management', [StaffManagementController::class, 'index'])->name('admin.staff-management');
-      Route::post('/admin/staff', [StaffManagementController::class, 'saveNewStaff'])->name('staff.store');
-        Route::post('/admin/staff/{id}/update', [StaffManagementController::class, 'saveEditedStaff'])->name('staff.update');
-       Route::delete('/admin/staff/{id}', [StaffManagementController::class, 'deleteStaff'])->name('staff.delete');
+    Route::post('/admin/staff', [StaffManagementController::class, 'saveNewStaff'])->name('staff.store');
+    Route::match(['PUT', 'POST'], '/admin/staff/{id}/update', [StaffManagementController::class, 'saveEditedStaff'])->name('staff.update');
+    Route::delete('/admin/staff/{id}', [StaffManagementController::class, 'deleteStaff'])->name('staff.delete');
 
     Route::get('/admin-messages', function () {
         return view('admin.admin-messages');

@@ -146,7 +146,7 @@ body{
 }
 
 .sidebar.close {
-    padding: 100px 20px;
+    padding: 60px 0;
     width: 80px;
 }
   
@@ -236,7 +236,7 @@ body{
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 20px 15px;
+    padding: 4px 15px;
     border-radius: 8px;
     text-decoration: none;
     color: var(--grey-color);

@@ -464,22 +464,60 @@ $(document).ready(function() {
                             { value: 'BSEsE', label: 'Bachelor of Science in Electronics Engineering' }
                         ],
                         'CIT': [
-                            { value: 'BSIT', label: 'Bachelor of Science in Information Technology' },
-                            { value: 'BSIE', label: 'Bachelor of Science in Industrial Engineering' }
+                            { value: 'BSFT', label: 'Bachelor of Science in Food Technology' },
+                            { value: 'BSET-CET', label: 'Bachelor of Science in Engineering Technology Major in Computer Engineering Technology' },
+                            { value: 'BSET-CT', label: 'Bachelor of Science in Engineering Technology Major in Civil Technology' },
+                            { value: 'BSET-ET', label: 'Bachelor of Science in Engineering Technology Major in Electrical Technology' },
+                            { value: 'BSET-ECT', label: 'Bachelor of Science in Engineering Technology Major in Electronics Communications Technology' },
+                            { value: 'BSET', label: 'Bachelor of Science in Engineering Technology Major in Electronics Technology' },
+                            { value: 'BSET-ICT', label: 'Bachelor of Science in Engineering Technology Major in Instrumentation and Control Technology' },
+                            { value: 'BSET-MT', label: 'Bachelor of Science in Engineering Technology Major in Mechanical Technology' },
+                            { value: 'BSET-MsT', label: 'Bachelor of Science in Engineering Technology Major in Mechatronics Technology' },
+                            { value: 'BSET-RT', label: 'Bachelor of Science in Engineering Technology Major in Railway Technology' },
+                            { value: 'BSET-CET-Auto', label: 'Bachelor of Science in Engineering Technology Major in Mechanical Technology option in Automotive Technology' },
+                            { value: 'BSET-CET-Foundry', label: 'Bachelor of Science in Engineering Technology Major in Mechanical Technology option in Foundry Technology' },
+                            { value: 'BSET-CET-HVAC', label: 'Bachelor of Science in Engineering Technology Major in Mechanical Technology option in Heating Ventilating & Air-Conditioning/Refrigeration Technology' },
+                            { value: 'BSET-CET-PowerPlant', label: 'Bachelor of Science in Engineering Technology Major in Mechanical Technology option in Power Plant Technology' },
+                            { value: 'BSET-CET-Welding', label: 'Bachelor of Science in Engineering Technology Major in Mechanical Technology option in Welding Technology' },
+                            { value: 'BSET-CET-DiesMoulds', label: 'Bachelor of Science in Engineering Technology Major in Mechanical Technology option in Dies and Moulds Technology' },
+                            { value: 'BTAF', label: 'Bachelor of Technology in Apparel and Fashion' },
+                            { value: 'BTNFT', label: 'Bachelor of Technology in Nutrition and Food Technology' },
+                            { value: 'BTPMT', label: 'Bachelor of Technology in Print Media Technology' }
+                    
                         ],
                         'CIE': [
-                            { value: 'BSED', label: 'Bachelor of Science in Education' }
+                            { value: 'BTA-ICT', label: 'Bachelor of Technology and Livelihood Education Major in Information and Communication Technology' },
+                            { value: 'BTA-HE', label: 'Bachelor of Technology and Livelihood Education Major in Home Economics' },
+                            { value: 'BTA-IA', label: 'Bachelor of Technology and Livelihood Education Major in Industrial Arts' },
+                            { value: 'BTVTE-Animation', label: 'Bachelor of Technical Vocational Teachers Education Major in Animation' },
+                            { value: 'BTVTE-BeautyCare', label: 'Bachelor of Technical Vocational Teachers Education Major in Beauty Care and Wellness' },
+                            { value: 'BTVTE-ComputerProgramming', label: 'Bachelor of Technical Vocational Teachers Education Major in Computer Programming' },
+                            { value: 'BTVTE-Electrical', label: 'Bachelor of Technical Vocational Teachers Education Major in Electrical' },
+                            { value: 'BTVTE-Electronics', label: 'Bachelor of Technical Vocational Teachers Education Major in Electronics' },
+                            { value: 'BTVTE-FoodService', label: 'Bachelor of Technical Vocational Teachers Education Major in Food Service Management' },
+                            { value: 'BTVTE-FashionGarment', label: 'Bachelor of Technical Vocational Teachers Education Major in Fashion and Garment' },
+                            { value: 'BTVTE-HVAC', label: 'Bachelor of Technical Vocational Teachers Education Major in Heat Ventilation & Air Conditioning' },
+                            { value: 'BTTT', label: 'Bachelor of Technical Teacher Education' }
                         ],
                         'CAFA': [
                             { value: 'BSA-Arch', label: 'Bachelor of Science in Architecture' },
-                            { value: 'BFA', label: 'Bachelor of Fine Arts' }
+                            { value: 'BFA', label: 'Bachelor of Fine Arts' },
+                            { value: 'BGTech-ArchTech', label: 'Bachelor of Graphics Technology Major in Architecture Technology' },
+                            { value: 'BGTech-IndDesign', label: 'Bachelor of Graphics Technology Major in Industrial Design' },
+                            { value: 'BGTech-MechanicalDraft', label: 'Bachelor of Graphics Technology Major in Mechanical Drafting Technology' },
                         ],
                         'COS': [
+                            { value: 'BSALT', label: 'Bachelor of Applied Science in Laboratory Technology' },
                             { value: 'BSCS', label: 'Bachelor of Science in Computer Science' },
-                            { value: 'BSIS', label: 'Bachelor of Science in Information System' }
+                            { value: 'BSES', label: 'Bachelor of Science in Environmental Science' },
+                            { value: 'BSIS', label: 'Bachelor of Science in Information System' },
+                            { value: 'BSIT', label: 'Bachelor of Science in Information Technology'}
                         ],
+                    
                         'CLA': [
-                            { value: 'BA', label: 'Bachelor of Arts' }
+                            { value: 'BSES', label: 'Bachelor of Arts in Management Major in Industrial Management' },
+                            { value: 'BSES', label: 'Bachelor of Science in Entrepreneurship Management' },
+                            { value: 'BSES', label: 'Bachelor of Science in Hospitality Management' },
                         ]
                     };
                     

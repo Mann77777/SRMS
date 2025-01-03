@@ -9,12 +9,7 @@
             <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
         </a>      
     </div>
-    
-    <!-- Mobile Menu Icon -->
-    <div class="mobile-menu-icon  id="mobileSidebarToggle">
-        <i class="bx bx-menu" id="mobileSidebarOpen"></i>
-    </div>
-    
+
     <div class="navbar-content">
         <a href="{{ url('/notifications') }}" class="notification-icon"><i class="bx bx-bell"></i></a>
             <li class="dropdown">

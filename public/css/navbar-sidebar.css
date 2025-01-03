@@ -47,15 +47,6 @@ body{
     object-fit: cover;
     border-radius: 50%;
   }
-
-  /* Mobile Menu Icon Styles */
-.mobile-menu-icon {
-    display: none;
-    cursor: pointer;
-    font-size: 2rem;
-    color: #333;
-    
-}
   
 .navbar-content {
     display: flex;
@@ -385,18 +376,9 @@ body{
 }
 
 @media screen and (max-width: 768px) {
-    .navbar .logo_item {
+    .navbar .logo_item img {
         display: none; 
     } 
-    .mobile-menu-icon {
-        display: block;
-        z-index: 1100;
-    }
-    .navbar-content {
-        display: flex;
-        align-items: center;
-        column-gap: 15px;
-    }
     .sidebar .logo_item {
         display: flex;
         justify-content: center;

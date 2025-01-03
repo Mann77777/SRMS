@@ -68,11 +68,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-document.addEventListener('DOMContentLoaded', function() {
-  const mobileSidebarOpen = document.getElementById('mobileSidebarOpen');
+document.addEventListener('DOMContentLoaded', () => {
+  const mobileMenuToggle = document.getElementById('mobileSidebarToggle');
   const sidebar = document.querySelector('.sidebar');
 
-  mobileSidebarOpen.addEventListener('click', function() {
-      sidebar.classList.toggle('close');
+  mobileMenuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
   });
 });

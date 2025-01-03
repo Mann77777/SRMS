@@ -131,15 +131,5 @@
                 
             @endif
         </ul>
-
-        <!-- Sidebar Open / Close -->
-        <div class="bottom_content">
-            <div class="bottom expand_sidebar">
-                <i class='bx bx-log-in'></i>
-            </div>
-            <div class="bottom collapse_sidebar">
-                <i class='bx bx-log-out'></i>
-            </div>
-        </div>
     </div>
 </nav>

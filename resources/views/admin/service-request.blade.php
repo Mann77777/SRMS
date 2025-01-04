@@ -46,7 +46,7 @@
                             <th class="left"><input type="checkbox" id="select-all"></th>
                             <th>Request ID</th>
                             <th>Request Data</th>
-                            <th>Services</th>
+                            <th>Role</th>
                             <th>Request Date & Time</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -61,13 +61,22 @@
                                       {!!  $request['request_data'] !!}
                                 </td>
                                 <td>
-                                    <strong>Service: </strong>{{ $request['service'] }}
+                                    {{ $request['role'] }}
                                 </td>
                                 <td>
                                     <strong>Date: </strong><span>{{ $request['date']->format('Y-m-d') }}</span><br>
                                     <strong>Time: </strong><span>{{ $request['date']->format('g:i A') }}</span>
                                 </td>
-                                 <td>{{ $request['status'] }}</td>
+                                 <td>
+                                    <span class="badge 
+                                        @if($request['status'] == 'Pending') badge-warning
+                                        @elseif($request['status'] == 'Approved') badge-success
+                                        @elseif($request['status'] == 'Rejected') badge-danger
+                                        @else badge-secondary
+                                        @endif">
+                                    {{ $request['status'] }}
+                                    </span>
+                                 </td>
                                  <td class="btns"> 
                                   <button class="btn-approve" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">Approve</button>
                                   <button class="btn-reject" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}">Reject</button>

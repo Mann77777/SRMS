@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ServiceRequest;
 use App\Models\FacultyServiceRequest;
+use App\Models\StudentServiceRequest;
 use Illuminate\Support\Facades\Log;
 
 class AdminServiceRequestController extends Controller
 {
+ 
     public function index()
     {
         $requests = [];
@@ -16,132 +18,141 @@ class AdminServiceRequestController extends Controller
         try {
             // Fetch all student requests
             $studentRequests = ServiceRequest::all();
-             foreach($studentRequests as $request){
-                 $requests[] = [
-                  'id' => $request->id,
-                  'user_id' => $request->user_id,
-                  'service' => $this->getServiceName($request, 'student'),
-                  'request_data' => $this->getRequestData($request),
-                  'date' => $request->created_at,
-                  'status' => $request->status,
-                  'type' => 'student',
+            foreach($studentRequests as $request){
+                $requests[] = [
+                    'id' => $request->id,
+                    'user_id' => $request->user_id,
+                    'role' => $request->user ? $request->user->role : 'Unknown', // Fetch user role
+                    'service' => $this->getServiceName($request, 'student'),
+                    'request_data' => $this->getRequestData($request),
+                    'date' => $request->created_at,
+                    'status' => $request->status,
+                    'type' => 'student',
                 ];
-             }
+            }
 
+            // Fetch all new student service requests
+            $newStudentRequests = StudentServiceRequest::all();
+            foreach($newStudentRequests as $request){
+                $requests[] = [
+                    'id' => $request->id,
+                    'user_id' => $request->user_id,
+                    'role' => $request->user ? $request->user->role : 'Student', // Default to 'Student' if no user found
+                    'service' => $request->service_category,
+                    'request_data' => $this->formatStudentServiceRequestData($request),
+                    'date' => $request->created_at,
+                    'status' => $request->status ?? 'Pending',
+                    'type' => 'new_student_service',
+                ];
+            }
 
             // Fetch all faculty requests
             $facultyRequests = FacultyServiceRequest::all();
-             foreach($facultyRequests as $request){
-               $requests[] = [
+            foreach($facultyRequests as $request){
+                $requests[] = [
                     'id' => $request->id,
                     'user_id' => $request->user_id,
                     'service' => $this->getServiceName($request, 'faculty'),
-                     'request_data' => $this->getRequestData($request),
+                    'request_data' => $this->getRequestData($request),
                     'date' => $request->created_at,
                     'status' => $request->status,
-                   'type' => 'faculty',
+                    'type' => 'faculty',
                 ];
             }
 
-
         } catch (\Exception $e) {
             Log::error('Error fetching service requests: ' . $e->getMessage());
-            // You might want to handle the error more gracefully (e.g., redirect with an error message)
         }
 
-          //Sort by date
+        // Sort by date
         $allRequests = collect($requests)->sortByDesc('date');
 
-          return view('admin.service-request', ['requests' => $allRequests]);
+        return view('admin.service-request', ['requests' => $allRequests]);
     }
 
-    private function getServiceName($request, $type)
+
+    /**
+     * Format student service request data for display
+     * 
+     * @param StudentServiceRequest $request
+     * @return string
+     */
+    private function formatStudentServiceRequestData($request)
     {
-       $services = [];
+        $data = [
+            'Name' => $request->first_name . ' ' . $request->last_name,
+            'Student ID' => $request->student_id,
+            'Service' => $request->service_category,
 
-       if($type === 'student'){
-           if ($request->ms_options) {
-                $ms_options = json_decode($request->ms_options, true);
-                $services = array_merge($services, array_map(function($option){
-                    return "MS Office 365, MS Teams, TUP Email - " . $option;
-                }, $ms_options));
-            }
-
-            if ($request->tup_web_options) {
-                $tup_web_options = json_decode($request->tup_web_options, true);
-                $services = array_merge($services, array_map(function($option){
-                    return "TUP Web ERS, ERS, and TUP Portal - " . $option;
-                }, $tup_web_options));
-            }
-
-            if ($request->ict_equip_options) {
-                $ict_equip_options = json_decode($request->ict_equip_options, true);
-                $services = array_merge($services, array_map(function($option){
-                return "ICT Equipment Management - " . $option;
-                }, $ict_equip_options));
-            }
-        }else if($type === 'faculty'){
-           if ($request->ms_options) {
-                $ms_options = json_decode($request->ms_options, true);
-               $services = array_merge($services, array_map(function($option){
-                   return "MS Office 365, MS Teams, TUP Email - " . $option;
-               }, $ms_options));
-           }
-
-           if ($request->attendance_option) {
-                $attendance_option = json_decode($request->attendance_option, true);
-                $services = array_merge($services, array_map(function($option){
-                    return "Attendance Record - " . $option;
-               }, $attendance_option));
-           }
-
-
-           if ($request->tup_web_options) {
-                $tup_web_options = json_decode($request->tup_web_options, true);
-                 $services = array_merge($services, array_map(function($option){
-                     return "TUP Web ERS, ERS, and TUP Portal - " . $option;
-                 }, $tup_web_options));
-            }
-
-             if ($request->internet_telephone) {
-                $internet_telephone = json_decode($request->internet_telephone, true);
-                $services = array_merge($services, array_map(function($option){
-                    return "Internet and Telephone Management - " . $option;
-                }, $internet_telephone));
-            }
-
-           if ($request->ict_equip_options) {
-             $ict_equip_options = json_decode($request->ict_equip_options, true);
-             $services = array_merge($services, array_map(function($option){
-                 return "ICT Equipment Management - " . $option;
-               }, $ict_equip_options));
+        ];
+    
+        // Add additional details based on service category
+        switch($request->service_category) {
+            case 'reset_email_password':
+            case 'reset_tup_web_password':
+                $data['Account Email'] = $request->account_email ?? 'N/A';
+                break;
+            
+            case 'change_of_data_ms':
+            case 'change_of_data_portal':
+                $data['Data to be updated'] = $request->data_type ?? 'N/A';
+                $data['New Data'] = $request->new_data ?? 'N/A';
+    
+                // Add supporting document link if exists
+                if ($request->supporting_document) {
+                    $data['Supporting Document'] = 'Available';
+                }
+                break;
+            
+            case 'request_led_screen':
+                $data['Preferred Date'] = $request->preferred_date ?? 'N/A';
+                $data['Preferred Time'] = $request->preferred_time ?? 'N/A';
+                break;
+            
+            case 'others':
+                $data['Description'] = $request->description ?? 'N/A';
+                break;
+        }
+    
+        // Convert data to HTML format
+        $output = [];
+        foreach($data as $key => $value){
+            if ($key === 'Supporting Document' && $value === 'Available') {
+                $output[] = '<strong>Supporting Document:</strong> ' . 
+                    sprintf('<a href="%s" target="_blank" class="document-link">View Document</a>', 
+                    route('admin.view-supporting-document', ['requestId' => $request->id])) . '<br>';
+            } else {
+                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
             }
         }
-       return implode(', ', $services) ?: 'No service selected';
+        return implode('', $output);
     }
-       private function getRequestData($request)
+    
+    public function viewSupportingDocument($requestId)
     {
-        $data = [];
-
-        if($request instanceof ServiceRequest){
-            // Extract data for student requests
-           $user = $request->user;
-           $data['Username'] = $user->username;
-           $data['Email'] = $user->email;
-
-
-        } else if($request instanceof FacultyServiceRequest){
-            // Extract data for faculty requests
-             $user = $request->user;
-              $data['Username'] = $user->username;
-             $data['Email'] = $user->email;
+        // Find the student service request
+        $request = StudentServiceRequest::findOrFail($requestId);
+    
+        // Check if supporting document exists
+        if (!$request->supporting_document) {
+            return back()->with('error', 'No supporting document found.');
         }
-
-         $output = [];
-       foreach($data as $key => $value){
-        $output[] = '<strong>' . $key . ':</strong><span>' . $value . '</span><br>';
+    
+        // Get the full path to the file
+        $filePath = storage_path('app/public/' . $request->supporting_document);
+    
+        // Check if file exists
+        if (!file_exists($filePath)) {
+            return back()->with('error', 'Supporting document file not found.');
         }
-       return implode('', $output);
+    
+        // Determine file type
+        $mimeType = mime_content_type($filePath);
+    
+        // Return file for download or preview
+        return response()->file($filePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
+        ]);
     }
-
 }

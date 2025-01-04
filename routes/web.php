@@ -338,6 +338,10 @@ Route::post('/admin/assign-uitc-staff', [AdminServiceRequestController::class, '
      ->name('admin.assign.uitc.staff')
      ->middleware(['auth:admin']);
 
+// Route to assign UITC Staff to student service request
+Route::post('/admin/assign-student-uitc-staff', [AdminServiceRequestController::class, 'assignStudentUITCStaff'])
+->name('admin.assign.student.uitc.staff')
+->middleware(['auth:admin']);
 // TECHNICIAN/UITC STAFF ROUTES
 Route::middleware(['auth:staff'])->group(function () {
      Route::get('/assign-request', [TechnicianDashboardController::class, 'index'])->name('uitc_staff.assign-request');

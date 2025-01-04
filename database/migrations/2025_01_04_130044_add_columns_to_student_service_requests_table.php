@@ -20,7 +20,7 @@ return new class extends Migration
                   ->onDelete('set null');
 
             // Add transaction type
-            $table->enum('transaction_type', ['simple', 'complex', 'highly_technical'])
+            $table->enum('transaction_type', ['Simple Transaction', 'Complex Transaction', 'Highly Technical Transaction'])
                   ->nullable();
 
             // Add admin notes
@@ -29,13 +29,13 @@ return new class extends Migration
             // Modify existing status column or add if not exists
             if (!Schema::hasColumn('student_service_requests', 'status')) {
                 $table->enum('status', [
-                    'pending', 
-                    'assigned', 
-                    'in_progress', 
-                    'resolved', 
+                    'Pending', 
+                    'Assigned', 
+                    'In Progress', 
+                    'Resolved', 
                     'on_hold', 
-                    'rejected'
-                ])->default('pending');
+                    'Rejected'
+                ])->default('Pending');
             }
         });
     }

@@ -25,5 +25,15 @@ class StudentServiceRequest extends Model
      'description',
      'additional_notes',
      'status',
+
+     'assigned_uitc_staff_id',
+        'transaction_type',
+        'admin_notes'
      ];
+
+       // Relationship with Admin (UITC Staff)
+    public function assignedUITCStaff()
+    {
+        return $this->belongsTo(Admin::class, 'assigned_uitc_staff_id');
+    }
 }

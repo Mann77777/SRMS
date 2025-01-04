@@ -171,42 +171,46 @@ class AdminServiceRequestController extends Controller
       }
 
 
-        // Method to assign UITC Staff to a service request
-  public function assignUITCStaff(Request $request)
-  {
-      $validatedData = $request->validate([
-          'request_id' => 'required|exists:service_requests,id',
-          'uitcstaff_id' => 'required|exists:admins,id',
-          'transaction_type' => 'required|in:simple,complex,highly_technical',
-          'notes' => 'nullable|string'
-      ]);
-
-      try {
-          // Find the service request
-          $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
-
-          // Update service request with assigned UITC Staff
-          $serviceRequest->update([
-              'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-              'transaction_type' => $validatedData['transaction_type'],
-              'admin_notes' => $validatedData['notes'] ?? null,
-              'status' => 'assigned' // Update status to assigned
-          ]);
-
-          // Update staff availability
-          $uitcStaff = Admin::findOrFail($validatedData['uitcstaff_id']);
-          $uitcStaff->update(['availability_status' => 'busy']);
-
-          return response()->json([
-              'success' => true, 
-              'message' => 'UITC Staff assigned successfully'
-          ]);
-
-      } catch (\Exception $e) {
-          return response()->json([
-              'success' => false, 
-              'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
-          ], 500);
-      }
-  }
+   // Method to assign UITC Staff to a student service request
+   public function assignUITCStaff(Request $request)
+   {
+       // Validate the request
+       $validatedData = $request->validate([
+           'request_id' => 'required|exists:student_service_requests,id',
+           'uitcstaff_id' => 'required|exists:admins,id',
+           'transaction_type' => 'required|in:simple,complex,highly_technical',
+           'notes' => 'nullable|string'
+       ]);
+ 
+       try {
+           // Find the student service request
+           $studentServiceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
+ 
+           // Update student service request with assigned UITC Staff
+           $studentServiceRequest->update([
+               'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+               'transaction_type' => $validatedData['transaction_type'],
+               'admin_notes' => $validatedData['notes'] ?? null,
+               'status' => 'Assigned' // Change status to assigned
+           ]);
+ 
+           // Update staff availability
+           $uitcStaff = Admin::findOrFail($validatedData['uitcstaff_id']);
+           $uitcStaff->update(['availability_status' => 'busy']);
+ 
+           return response()->json([
+               'success' => true, 
+               'message' => 'UITC Staff assigned to student service request successfully'
+           ]);
+ 
+       } catch (\Exception $e) {
+           // Log the error for debugging
+           Log::error('UITC Staff Assignment Error: ' . $e->getMessage());
+ 
+           return response()->json([
+               'success' => false, 
+               'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
+           ], 500);
+       }
+   }
 }

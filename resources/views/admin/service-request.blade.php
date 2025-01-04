@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -207,100 +208,145 @@
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 
     <script>
-   // Function to fetch and populate available UITC Staff
-   function fetchAvailableUITCStaff() {
-        return $.ajax({
-            url: '{{ route("get.available.technicians") }}',
-            method: 'GET',
-            success: function(uitcStaff) {
-                const uitcStaffSelect = $('select[name="uitcstaff_id"]');
-                uitcStaffSelect.empty();
-                uitcStaffSelect.append('<option value="">Choose Available UITC Staff</option>');
-                
-                // Only append available UITC Staff
-                if (uitcStaff.length === 0) {
-                    uitcStaffSelect.append('<option value="">No available UITC Staff</option>');
-                } else {
-                    uitcStaff.forEach(function(staff) {
-                        uitcStaffSelect.append(
-                            `<option value="${staff.id}">
-                                ${staff.name}
-                            </option>`
-                        );
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Failed to fetch available UITC Staff:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Fetch Error',
-                    text: 'Failed to fetch available UITC Staff. ' + error,
-                    confirmButtonText: 'OK'
-                });
-            }
-        });
-    }
-
-    // Event listener for approve button to trigger UITC Staff selection
-    $('.btn-approve').on('click', function(e) {
-        e.preventDefault(); // Prevent any default action
-        
-        const requestId = $(this).data('id');
-        const services = $(this).closest('tr').find('.service-details').text().trim();
-        
-        // Populate modal details
-        $('#requestIdInput').val(requestId);
-        $('#modalRequestId').text(requestId);
-        $('#modalRequestServices').text(services);
-        
-        // Fetch and populate available UITC Staff
-        fetchAvailableUITCStaff().always(function() {
-            // Ensure modal is shown after AJAX call completes
-            $('#assignStaffModal').modal('show');
-        });
-    });
-
-      // Function to save UITC Staff assignment
-      function saveAssignStaff() {
-        const formData = $('#assignStaffForm').serialize();
-        
-        $.ajax({
-            url: '{{ route("admin.assign.uitc.staff") }}',
-            method: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'UITC Staff Assigned',
-                        text: 'UITC Staff assigned successfully',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        $('#assignStaffModal').modal('hide');
-                        location.reload();
-                    });
-                } else {
+        // Function to fetch and populate available UITC Staff
+        function fetchAvailableUITCStaff() {
+            return $.ajax({
+                url: '{{ route("get.available.technicians") }}',
+                method: 'GET',
+                success: function(uitcStaff) {
+                    const uitcStaffSelect = $('select[name="uitcstaff_id"]');
+                    uitcStaffSelect.empty();
+                    uitcStaffSelect.append('<option value="">Choose Available UITC Staff</option>');
+                    
+                    // Only append available UITC Staff
+                    if (uitcStaff.length === 0) {
+                        uitcStaffSelect.append('<option value="">No available UITC Staff</option>');
+                    } else {
+                        uitcStaff.forEach(function(staff) {
+                            uitcStaffSelect.append(
+                                `<option value="${staff.id}">
+                                    ${staff.name}
+                                </option>`
+                            );
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to fetch available UITC Staff:', error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'Assignment Failed',
-                        text: response.message,
-                        confirmButtonText: 'Try Again'
+                        title: 'Fetch Error',
+                        text: 'Failed to fetch available UITC Staff. ' + error,
+                        confirmButtonText: 'OK'
                     });
                 }
-            },
-            error: function(xhr) {
+            });
+        }
+
+        // Event listener for approve button to trigger UITC Staff selection
+        $('.btn-approve').on('click', function(e) {
+            e.preventDefault(); // Prevent any default action
+            
+            const requestId = $(this).data('id');
+            const services = $(this).closest('tr').find('.service-details').text().trim();
+            
+            // Populate modal details
+            $('#requestIdInput').val(requestId);
+            $('#modalRequestId').text(requestId);
+            $('#modalRequestServices').text(services);
+            
+            // Fetch and populate available UITC Staff
+            fetchAvailableUITCStaff().always(function() {
+                // Ensure modal is shown after AJAX call completes
+                $('#assignStaffModal').modal('show');
+            });
+        });
+
+
+        function saveAssignStaff() {
+            // Validate form inputs
+            const uitcStaffId = $('select[name="uitcstaff_id"]').val();
+            const transactionType = $('select[name="transaction_type"]').val();
+            const requestId = $('#requestIdInput').val();
+            const notes = $('textarea[name="notes"]').val();
+            const requestType = $('#requestTypeInput').val(); // Add this hidden input to track request type
+
+            // Basic client-side validation
+            if (!uitcStaffId) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error assigning UITC Staff. Please try again.',
+                    icon: 'warning',
+                    title: 'Select UITC Staff',
+                    text: 'Please choose an available UITC Staff',
                     confirmButtonText: 'OK'
                 });
+                return;
             }
-        });
-    }
-        
-    document.querySelectorAll('.btn-reject').forEach(function(button) {
+
+            if (!transactionType) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Select Transaction Type',
+                    text: 'Please select a transaction type',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Prepare form data based on request type
+            const formData = {
+                request_id: requestId,
+                uitcstaff_id: uitcStaffId,
+                transaction_type: transactionType,
+                notes: notes || '' // Optional notes
+            };
+
+            // Determine the appropriate route based on request type
+            const assignmentRoute = requestType === 'student' 
+                ? '{{ route("admin.assign.student.uitc.staff") }}' 
+                : '{{ route("admin.assign.uitc.staff") }}';
+
+            // Send AJAX request to assign UITC Staff
+            $.ajax({
+                url: assignmentRoute,
+                method: 'POST',
+                data: formData,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'UITC Staff Assigned',
+                            text: 'Request successfully assigned to UITC Staff',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            $('#assignStaffModal').modal('hide');
+                            location.reload(); // Refresh page to show updated status
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Assignment Failed',
+                            text: response.message || 'Unable to assign UITC Staff',
+                            confirmButtonText: 'Try Again'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    // Handle network or server errors
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while assigning UITC Staff. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                    console.error('Assignment error:', xhr.responseText);
+                }
+            });
+        }
+
+        document.querySelectorAll('.btn-reject').forEach(function(button) {
             button.addEventListener('click', function(event) {
                 event.preventDefault(); // Prevent the form from submitting
                 var row = this.closest('tr');

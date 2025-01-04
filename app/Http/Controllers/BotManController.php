@@ -143,6 +143,8 @@ class BotManController extends Controller
             'service_info' => [
                 'patterns' => [
                     'what services' => 1.0,
+                    'what is your services' => 1.0,
+                    'Information about our services' => 1.0,
                     'available services' => 1.0,
                     'services offered' => 0.9,
                     'list of services' => 0.9,
@@ -220,130 +222,121 @@ class BotManController extends Controller
      */
     private function handleUnknownQuery($botman, $message)
     {
-        // Log unknown queries for improvement
         Log::info('Unknown query received: ' . $message);
-        
-        $unknownMessage = "I'm not quite sure what you're asking about. Here are some things I can help you with:
-        1. Information about our services
-        2. Submitting a service request
-        3. Tracking your request status
-        4. Technical support
-
-        Please let me know which one you'd like to know more about!";
-
-        $botman->reply($unknownMessage);
+    
+        $unknownMessage = "I'm not quite sure what you're asking about. Here are some things I can help you with:\n\n" .
+            "1. Information about our services\n" .
+            "2. Submitting a service request\n" .
+            "3. Tracking your request status\n" .
+            "4. Technical support\n\n" .
+            "Please let me know which one you'd like to learn more about!";
+    
+        $botman->reply(nl2br($unknownMessage));
         return $unknownMessage;
     }
-
-    /**
-     * Handle greeting messages
-     */
+    
     private function handleGreeting($botman)
     {
         $responses = [
             "Hello! Welcome to the Service Request Management System support. How can I assist you today?",
-            "Hi there! Welcome to the Service Request Management System support. What can I help you with?",
-            "Greetings! Welcome to the Service Request Management System. How may I help you?",
-            "Hello! Welcome to the Service Request Management System I'm here to help. What do you need?"
+            "Hi there! How can I help you with your service request?",
+            "Greetings! How may I assist you with your inquiry?",
+            "Hello! Let me know how I can assist you today!"
         ];
-        
+    
         $response = $responses[array_rand($responses)];
         $botman->reply($response);
         return $response;
     }
-
-    /**
-     * Handle service information requests
-     */
+    
     private function handleServiceInfo($botman)
     {
-        $serviceInfo = "Here are the services we offer:
-
-        1. Account Management:
-           • MS Office 365, MS Teams, TUP Email
-           • Password Reset and Account Updates
-
-        2. Technical Support:
-           • Computer and Printer Issues
-           • Internet Connectivity
-           • Software Installation
-
-        3. Equipment Services:
-           • Hardware Repairs
-           • Printer Support
-           • Network Setup
-
-        Would you like more details about any specific service?";
-
-        $botman->reply($serviceInfo);
-        return $serviceInfo; // Return the response string
-    }
-
-    /**
-     * Handle service request guidance
-     */
+        $serviceInfo = "Here are the services we offer:\n\n" .
+            "1. **MS Office 365, MS Teams, TUP Email**:\n" .
+            "   - Create MS Office/TUP Email Account\n" .
+            "   - Reset MS Office/TUP Email Password\n" .
+            "   - Change of Data\n\n" .
+            "2. **Attendance Record**:\n" .
+            "   - Daily Time Record\n" .
+            "   - Biometric Enrollment and Employee ID\n\n" .
+            "3. **TUP Web ERS, ERS, and TUP Portal**:\n" .
+            "   - Reset TUP Web Password\n" .
+            "   - Reset ERS Password\n" .
+            "   - Change of Data\n\n" .
+            "4. **Internet and Telephone Management**:\n" .
+            "   - New Internet Connection\n" .
+            "   - New Telephone Connection\n" .
+            "   - Internet/Telephone Repair and Maintenance\n\n" .
+            "5. **ICT Equipment Management**:\n" .
+            "   - Computer Repair and Maintenance\n" .
+            "   - Printer Repair and Maintenance\n" .
+            "   - Request to use LED Screen\n\n" .
+            "6. **Software and Website Management**:\n" .
+            "   - Install Application/Information System/Software\n" .
+            "   - Post Publication/Update of Information in Website\n\n" .
+            "7. **Data, Documents, and Reports Handled by the UITC**:\n" .
+            "   - Data Handled by the UITC\n" .
+            "   - Documents Handled by the UITC\n" .
+            "   - Reports Handled by the UITC\n\n" .
+            "Would you like more details about any specific service?";
+        
+        $botman->reply(nl2br($serviceInfo));
+        return $serviceInfo;
+    }    
+    
     private function handleRequestService($botman)
     {
-        $requestMessage ="To submit a service request, please follow these steps:
-        1. Log into your account
-        2. Go to the 'Submit Request' section
-        3. Fill out the service request form
-        4. Provide all necessary details
-        5. Submit your request
-
-        Would you like me to guide you to the request form?";
-
-        $botman->reply($requestMessage);
+        $requestMessage = "To submit a service request, please follow these steps:\n\n" .
+            "1. Log into your account.\n" .
+            "2. Go to the **'Submit Request'** section.\n" .
+            "3. Fill out the service request form with all necessary details.\n" .
+            "4. Submit your request.\n\n" .
+            "Would you like me to guide you to the request form?";
+    
+        $botman->reply(nl2br($requestMessage));
         return $requestMessage;
     }
-
-    /**
-     * Handle status tracking queries
-     */
+    
     private function handleTrackStatus($botman)
     {
-        $statusMessage = "You can track your service request status by:
-        1. Logging into your account
-        2. Going to 'My Requests' section
-        3. Finding your request using the ID or date
-        
-        Do you need help finding your request?";
-
-        $botman->reply($statusMessage);
+        $statusMessage = "You can track your service request status by:\n\n" .
+            "1. Logging into your account.\n" .
+            "2. Navigating to the **'My Requests'** section.\n" .
+            "3. Searching for your request using the request ID or date.\n\n" .
+            "Do you need further assistance with tracking your request?";
+    
+        $botman->reply(nl2br($statusMessage));
         return $statusMessage;
     }
-
+    
     /**
      * Handle technical support queries
      */
     private function handleTechnicalSupport($botman, $message)
     {
         $supportMessage = "";
-        
+    
         if (strpos($message, 'internet') !== false) {
-            $supportMessage = "For internet issues, try these steps:
-            1. Restart your router
-            2. Check cable connections
-            3. Run network diagnostics
-            
-            If the problem persists, please submit a service request.";
+            $supportMessage = "For internet issues, try these steps:\n\n" .
+                "1. Restart your router\n" .
+                "2. Check cable connections\n" .
+                "3. Run network diagnostics\n\n" .
+                "If the problem persists, please submit a service request.";
         } elseif (strpos($message, 'printer') !== false) {
-            $supportMessage = "For printer issues:
-            1. Check if the printer is powered on
-            2. Verify paper and ink levels
-            3. Ensure printer is connected to network
-            
-            Need more help? Submit a service request.";
+            $supportMessage = "For printer issues:\n\n" .
+                "1. Check if the printer is powered on\n" .
+                "2. Verify paper and ink levels\n" .
+                "3. Ensure printer is connected to the network\n\n" .
+                "Need more help? Submit a service request.";
         } else {
-            $supportMessage = "For technical support, please:
-            1. Describe your issue in detail
-            2. Submit a service request
-            3. Our team will respond promptly
-            
-            Would you like to submit a request now?";
+            $supportMessage = "For technical support, please:\n\n" .
+                "1. Describe your issue in detail\n" .
+                "2. Submit a service request\n" .
+                "3. Our team will respond promptly\n\n" .
+                "Would you like to submit a request now?";
         }
     
-        $botman->reply($supportMessage);
+        $botman->reply(nl2br($supportMessage));
         return $supportMessage;
     }
     

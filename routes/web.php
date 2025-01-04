@@ -323,6 +323,11 @@ Route::middleware(['auth:admin'])->group(function () {
     })->name('admin.logout');
 });
 
+Route::get('/admin/view-supporting-document/{requestId}', 
+    [AdminServiceRequestController::class, 'viewSupportingDocument'])
+    ->name('admin.view-supporting-document')
+    ->middleware(['auth:admin']);
+
 // TECHNICIAN/UITC STAFF ROUTES
 Route::middleware(['auth:staff'])->group(function () {
      Route::get('/assign-request', [TechnicianDashboardController::class, 'index'])->name('uitc_staff.assign-request');

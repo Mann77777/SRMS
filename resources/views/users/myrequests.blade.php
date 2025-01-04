@@ -97,9 +97,9 @@
                                             </span>
                                     </td>
                                     <td>
-                                        <button class="btn-edit">Edit</button>
-                                        <button class="btn-view">View</button>
-                                        <button class="btn-delete">Delete</button>
+                                    <button type="button" class="btn-edit" data-id="{{ $request->id }}">Edit</button>
+                                    <button type="button" class="btn-view" data-id="{{ $request->id }}">View</button>
+                                    <button type="button" class="btn-delete" data-id="{{ $request->id }}">Delete</button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -240,7 +240,41 @@
             $('#editServiceModal').on('click', '.btn-primary', saveEditedService);
             $('#deleteServiceModal').on('click', '.btn-danger', confirmDeleteService);
         });
+        
+        $(document).ready(function() {
+        // Filter by Status (Dropdown)
+        $('select').on('change', function() {
+            const selectedStatus = $(this).val().toLowerCase();
+            $('.request-table tbody tr').each(function() {
+                const rowStatus = $(this).find('td:nth-child(4)').text().toLowerCase();
+                if (rowStatus.includes(selectedStatus) || selectedStatus === '') {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
 
+        // Search by Service Name
+        $('.search-btn').on('click', function() {
+            const searchTerm = $('input[type="text"]').val().toLowerCase();
+            $('.request-table tbody tr').each(function() {
+                const serviceName = $(this).find('td:nth-child(2)').text().toLowerCase();
+                if (serviceName.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Optional: Add "Enter" key functionality for the search bar
+        $('input[type="text"]').on('keypress', function(e) {
+            if (e.which === 13) {
+                $('.search-btn').click();
+            }
+        });
+    });
     </script>
 </body>
 </html>

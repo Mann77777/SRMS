@@ -7,7 +7,8 @@
         <i class="bx bx-menu" id="sidebarOpen"></i>
         <a href="{{ url('/dashboard') }}">
             <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
-        </a>      
+        </a>  
+        <span class="navbar-title">TUP-UITC Service Request Management</span>    
     </div>
 
     <div class="navbar-content">

@@ -97,18 +97,18 @@
 
     </div>
 
-    <!-- Assign Technician Modal -->
-    <div class="modal fade" id="assignTechnicianModal" tabindex="-1" role="dialog">
+    <!-- Assign UITC Staff Modal -->
+    <div class="modal fade" id="assignStaffModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Assign Technician</h5>
+                    <h5 class="modal-title">Assign UITC Staff</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>×</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="assignTechnicianForm">
+                    <form id="assignStaffForm">
                         @csrf
                         <input type="hidden" id="requestIdInput" name="request_id">
                         
@@ -121,13 +121,10 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Select Technician</label>
-                            <select class="form-control" name="technician_id" required>
-                                <option value="">Choose Technician</option>
-                                <!--{{-- Populate technicians dynamically --}}
-                                {{-- @foreach($technicians as $technician)
-                                    <option value="{{ $technician->id }}">{{ $technician->name }}</option>
-                                @endforeach --}} -->
+                            <label>Select UITC Staff</label>
+                            <select class="form-control" name="uitcstaff_id" required>
+                                <option value="">Choose UITC Staff</option>
+                               
                             </select>
                         </div>
                         
@@ -143,13 +140,13 @@
                         
                         <div class="form-group">
                             <label>Notes (Optional)</label>
-                            <textarea class="form-control" name="notes" rows="3" placeholder="Additional notes for the technician"></textarea>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="Additional notes for the UITC Staff"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveAssignTechnician()">Assign Technician</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAssignStaff()">Assign UITC Staff</button>
                 </div>
             </div>
         </div>
@@ -206,27 +203,104 @@
 
     <!-- Add Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 
     <script>
-        document.querySelectorAll('.btn-approve').forEach(function(button) {
-            button.addEventListener('click', function(event) {
-                event.preventDefault(); // Prevent the form from submitting
+   // Function to fetch and populate available UITC Staff
+   function fetchAvailableUITCStaff() {
+        return $.ajax({
+            url: '{{ route("get.available.technicians") }}',
+            method: 'GET',
+            success: function(uitcStaff) {
+                const uitcStaffSelect = $('select[name="uitcstaff_id"]');
+                uitcStaffSelect.empty();
+                uitcStaffSelect.append('<option value="">Choose Available UITC Staff</option>');
                 
-                var row = this.closest('tr');
-                var requestId = row.querySelector('td:nth-child(2)').textContent;
-                var services = row.querySelector('td:nth-child(4)').textContent;
-                
-                // Populate modal with request details
-                document.getElementById('modalRequestId').textContent = requestId;
-                document.getElementById('modalRequestServices').textContent = services;
-                
-                // Show the modal
-                $('#assignTechnicianModal').modal('show');
-            });
+                // Only append available UITC Staff
+                if (uitcStaff.length === 0) {
+                    uitcStaffSelect.append('<option value="">No available UITC Staff</option>');
+                } else {
+                    uitcStaff.forEach(function(staff) {
+                        uitcStaffSelect.append(
+                            `<option value="${staff.id}">
+                                ${staff.name}
+                            </option>`
+                        );
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to fetch available UITC Staff:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Fetch Error',
+                    text: 'Failed to fetch available UITC Staff. ' + error,
+                    confirmButtonText: 'OK'
+                });
+            }
         });
+    }
+
+    // Event listener for approve button to trigger UITC Staff selection
+    $('.btn-approve').on('click', function(e) {
+        e.preventDefault(); // Prevent any default action
         
-        document.querySelectorAll('.btn-reject').forEach(function(button) {
+        const requestId = $(this).data('id');
+        const services = $(this).closest('tr').find('.service-details').text().trim();
+        
+        // Populate modal details
+        $('#requestIdInput').val(requestId);
+        $('#modalRequestId').text(requestId);
+        $('#modalRequestServices').text(services);
+        
+        // Fetch and populate available UITC Staff
+        fetchAvailableUITCStaff().always(function() {
+            // Ensure modal is shown after AJAX call completes
+            $('#assignStaffModal').modal('show');
+        });
+    });
+
+      // Function to save UITC Staff assignment
+      function saveAssignStaff() {
+        const formData = $('#assignStaffForm').serialize();
+        
+        $.ajax({
+            url: '{{ route("admin.assign.uitc.staff") }}',
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'UITC Staff Assigned',
+                        text: 'UITC Staff assigned successfully',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        $('#assignStaffModal').modal('hide');
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Assignment Failed',
+                        text: response.message,
+                        confirmButtonText: 'Try Again'
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error assigning UITC Staff. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+        
+    document.querySelectorAll('.btn-reject').forEach(function(button) {
             button.addEventListener('click', function(event) {
                 event.preventDefault(); // Prevent the form from submitting
                 var row = this.closest('tr');

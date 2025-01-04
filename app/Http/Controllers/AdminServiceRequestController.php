@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ServiceRequest;
+use App\Models\Admin;
 use App\Models\FacultyServiceRequest;
 use App\Models\StudentServiceRequest;
 use Illuminate\Support\Facades\Log;
@@ -155,4 +156,57 @@ class AdminServiceRequestController extends Controller
             'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
         ]);
     }
+
+
+      // Method to fetch available UITC Staff
+      public function getAvailableTechnicians()
+      {
+          // Fetch only UITC Staff from admins table who are available
+          $availableUITCStaff = Admin::where('role', 'UITC Staff')
+                ->where('availability_status', 'available') 
+                ->select('id', 'name')
+                ->get();
+    
+          return response()->json($availableUITCStaff);
+      }
+
+
+        // Method to assign UITC Staff to a service request
+  public function assignUITCStaff(Request $request)
+  {
+      $validatedData = $request->validate([
+          'request_id' => 'required|exists:service_requests,id',
+          'uitcstaff_id' => 'required|exists:admins,id',
+          'transaction_type' => 'required|in:simple,complex,highly_technical',
+          'notes' => 'nullable|string'
+      ]);
+
+      try {
+          // Find the service request
+          $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
+
+          // Update service request with assigned UITC Staff
+          $serviceRequest->update([
+              'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+              'transaction_type' => $validatedData['transaction_type'],
+              'admin_notes' => $validatedData['notes'] ?? null,
+              'status' => 'assigned' // Update status to assigned
+          ]);
+
+          // Update staff availability
+          $uitcStaff = Admin::findOrFail($validatedData['uitcstaff_id']);
+          $uitcStaff->update(['availability_status' => 'busy']);
+
+          return response()->json([
+              'success' => true, 
+              'message' => 'UITC Staff assigned successfully'
+          ]);
+
+      } catch (\Exception $e) {
+          return response()->json([
+              'success' => false, 
+              'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
+          ], 500);
+      }
+  }
 }

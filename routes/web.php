@@ -328,6 +328,16 @@ Route::get('/admin/view-supporting-document/{requestId}',
     ->name('admin.view-supporting-document')
     ->middleware(['auth:admin']);
 
+// Route to get available UITC Staff
+Route::get('/admin/available-technicians', [AdminServiceRequestController::class, 'getAvailableTechnicians'])
+     ->name('get.available.technicians')
+     ->middleware(['auth:admin']);
+
+// Route to assign UITC Staff to service request
+Route::post('/admin/assign-uitc-staff', [AdminServiceRequestController::class, 'assignUITCStaff'])
+     ->name('admin.assign.uitc.staff')
+     ->middleware(['auth:admin']);
+
 // TECHNICIAN/UITC STAFF ROUTES
 Route::middleware(['auth:staff'])->group(function () {
      Route::get('/assign-request', [TechnicianDashboardController::class, 'index'])->name('uitc_staff.assign-request');

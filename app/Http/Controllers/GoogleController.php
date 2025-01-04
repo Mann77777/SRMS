@@ -37,6 +37,23 @@ class GoogleController extends Controller
                 return redirect()->route('login')
                     ->with('error', 'Invalid email format.');
             }
+
+            // Generate username based on first initial and last name
+            $nameParts = explode(' ', $user->getName());
+            $firstName = $nameParts[0] ?? '';
+            $lastName = end($nameParts) ?? '';
+                        
+            // Generate username: first initial of first name + last name (lowercase)
+            $generatedUsername = strtolower(substr($firstName, 0, 1) . $lastName);
+                        
+            // Ensure username is unique
+            $baseUsername = $generatedUsername;
+            $counter = 1;
+                while (User::where('username', $generatedUsername)->exists()) {
+                    $generatedUsername = $baseUsername . $counter;
+                    $counter++;
+            }
+            
     
             // Find or create user
             $existingUser = User::where('email', $email)->first();
@@ -46,7 +63,7 @@ class GoogleController extends Controller
                 $existingUser->update([
                     'google_id' => $user->getId(),
                     'name' => $user->getName(),
-                    'username' => $user->getName(),
+                    'username' => $generatedUsername,
                 ]);
                 $user = $existingUser;
             } else {
@@ -54,7 +71,7 @@ class GoogleController extends Controller
                 $user = User::create([
                     'email' => $email,
                     'name' => $user->getName(),
-                    'username' => $user->getName(),
+                    'username' => $generatedUsername,
                     'google_id' => $user->getId(),
                     'role' => $role,
                     'password' => Hash::make(Str::random(16)),

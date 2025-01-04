@@ -8,6 +8,7 @@
         <a href="{{ url('/admin_dashboard') }}">
             <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
         </a>      
+        <span class="navbar-title">TUP-UITC Service Request Management</span>    
     </div>
     
     <div class="navbar-content">

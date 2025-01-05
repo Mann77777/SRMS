@@ -64,49 +64,51 @@
                     </thead>
                     <tbody>
                         @forelse($assignedRequests as $request)
-                            <tr>
-                                <td>{{ $request->id }}</td>
-                                <td>
-                                    {!! 
-                                    '<strong>Name:</strong> ' . $request->first_name . ' ' . $request->last_name . '<br>' .
-                                    '<strong>Student ID:</strong> ' . $request->student_id . '<br>' .
-                                    '<strong>Service:</strong> ' . $request->service_category 
-                                    !!}
-                                </td>
-                                <td>{{ $request->data_type }}</td>
-                                <td>
-                                    <strong>Date:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('Y-m-d') }}<br>
-                                    <strong>Time:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('g:i A') }}
-                                </td>
-
-                                <span class="badge 
-                                    @if($request->status == 'Pending') badge-warning
-                                    @elseif($request->status == 'In Progress') badge-info
-                                    @elseif($request->status == 'Completed') badge-success
-                                    @else badge-secondary
-                                    @endif">
-                                    {{ $request->status }}
-                                </span>
-                                <td class="btns">
-                                    <button class="btn-view" onclick="viewRequestDetails({{ $request->id }})">View</button>
-                                    <button class="btn-complete" onclick="completeRequest({{ $request->id }})">Complete</button>
-                                </td>
-                            </tr>
-                        @empty
                         <tr>
-                            <td colspan="6" class="empty-state">
-                                <i class="fas fa-inbox fa-3x"></i>
-                                <p>No assigned requests found</p>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                            <td>{{ $request->id }}</td>
+                            <td>
+                            {!! 
+                            '<strong>Name:</strong> ' . $request->first_name . ' ' . $request->last_name . '<br>' .
+                            '<strong>Student ID:</strong> ' . $request->student_id . '<br>' .
+                            '<strong>Service:</strong> ' . $request->service_category 
+                            !!}
+                        </td>
+                        <td>{{ $request->data_type }}</td>
+                        <td>
+                            <strong>Date:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('Y-m-d') }}<br>
+                            <strong>Time:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('g:i A') }}
+                        </td>
+                     <td>
+
+                    <span class="badge 
+                        @if($request->status == 'Pending') badge-warning
+                        @elseif($request->status == 'In Progress') badge-info
+                        @elseif($request->status == 'Completed') badge-success
+                        @else badge-secondary
+                        @endif">
+                        {{ $request->status }}
+                    </span>
+                </td>
+                <td class="btns">
+                    <button class="btn-view" onclick="viewRequestDetails({{ $request->id }})">View</button>
+                    <button class="btn-complete" onclick="completeRequest({{ $request->id }})">Complete</button>
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="6" class="empty-state">
+                    <i class="fas fa-inbox fa-3x"></i>
+                    <p>No assigned requests found</p>
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+</table>
             </div>
-        </div>    
+        </div>
+        
     </div>
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
 
 </body>
-</html>

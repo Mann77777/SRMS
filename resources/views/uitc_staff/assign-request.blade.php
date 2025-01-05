@@ -57,8 +57,8 @@
                             <th>Request ID</th>
                             <th>Request Details</th>
                             <th>Role</th>
+                            <th>Date Submitted</th>
                             <th>Status</th>
-                            <th>Transaction Type</th>
                             <th>Actions</th>
                         </tr>
                     </thead>

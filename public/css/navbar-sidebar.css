@@ -32,6 +32,15 @@ body{
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for visibility */
 }
+
+.navbar-title {
+    font-size: 18px; /* Adjust font size */
+    font-weight: 600; /* Make it slightly bolder */
+    color: #333; /* Darker color for better readability */
+    max-width: 300px; /* Limit width */
+    white-space: nowrap; /* Prevent wrapping */
+
+}
   
 .logo_item {
     display: flex;
@@ -340,6 +349,9 @@ body{
     .navbar .logo_item img {
         display: none; 
     } 
+    .navbar-title {
+        display: none;
+    }
     .sidebar .logo_item {
         display: flex;
         justify-content: center;

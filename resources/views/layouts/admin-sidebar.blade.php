@@ -120,14 +120,14 @@
                 </li> -->
 
 
-                <li class="item">
+                <!--<li class="item">
                     <a href="{{ url('/technician-report') }}" class="nav_link {{ request()->is('technician-report') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-chat"></i>
                         </span>
                         <span class="navlink">Report</span>
                     </a>
-                </li>
+                </li> -->
                 
             @endif
         </ul>

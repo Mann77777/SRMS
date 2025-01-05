@@ -46,7 +46,7 @@
                         <tr>
                             <th class="left"><input type="checkbox" id="select-all"></th>
                             <th>Request ID</th>
-                            <th>Request Data</th>
+                            <th>Request Details</th>
                             <th>Role</th>
                             <th>Request Date & Time</th>
                             <th>Status</th>

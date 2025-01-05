@@ -25,6 +25,7 @@ use App\Http\Controllers\TechnicianDashboardController;
 use App\Http\Controllers\RequestFormController;
 use App\Http\Controllers\StudentServiceRequestController;
 use App\Http\Controllers\BotManController;
+use App\Http\Controllers\UITCStaffController;
 
 
 Route::get('/', function () {
@@ -342,16 +343,34 @@ Route::post('/admin/assign-uitc-staff', [AdminServiceRequestController::class, '
 Route::post('/admin/assign-student-uitc-staff', [AdminServiceRequestController::class, 'assignStudentUITCStaff'])
 ->name('admin.assign.student.uitc.staff')
 ->middleware(['auth:admin']);
+
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+    ->name('admin.dashboard')
+    ->middleware(['auth:admin']);
+    
 // TECHNICIAN/UITC STAFF ROUTES
-Route::middleware(['auth:staff'])->group(function () {
-     Route::get('/assign-request', [TechnicianDashboardController::class, 'index'])->name('uitc_staff.assign-request');
+Route::get('/assign-history', function () {
+    return view('uitc_staff.assign-history');
+})->name('uitc_staff.assign-history');
 
-    Route::get('/assign-history', function () {
-        return view('uitc_staff.assign-history');
-    })->name('uitc_staff.assign-history');
 
-     Route::get('/technician-report', function () {
-        return view('uitc_staff.technician-report');
-    })->name('uitc_staff.technician-report');
-});
+Route::get('/assign-request', function () {
+    return view('uitc_staff.assign-request');
+})->name('uitc_staff.assign-request');
+
+Route::get('/technician-report', function () {
+    return view('uitc_staff.technician-report');
+})->name('uitc_staff.technician-report');
+
+
+//Route::get('/uitc-staff/assigned-request', [UITCStaffController::class, 'getAssignedRequests'])->name('uitc.assigned.requests');
+Route::get('/assign-request', [UITCStaffController::class, 'getAssignedRequests'])
+    ->middleware('auth:admin') // Ensure admin authentication
+    ->name('uitc.assigned.requests');
+
+
+Route::post('/uitc-staff/complete-request', [UITCStaffController::class, 'completeRequest'])
+    ->name('uitc.complete.request')
+    ->middleware('auth:admin');
+
 Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');

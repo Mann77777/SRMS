@@ -44,13 +44,12 @@ class ServiceRequestReceived extends Notification
 
         return (new MailMessage)
             ->subject('TUP SRMS - Service Request Received')
-            ->greeting('Hello ' . $this->studentName . '!')
-            ->line('Your service request has been received.')
+            ->greeting('Dear, ' . $this->studentName . '!')
+            ->line('Thank you for submitting your request. We have received it and will process it as soon as possible.')
             ->line('Request ID: ' . $this->requestId)
-            ->line('Service Category: ' . $serviceCategoryTitle)
-            ->line('Status: Pending')
+            ->line('Service: ' . $serviceCategoryTitle)
+            ->line('Current Status: Pending')
            // ->action('View Request', url('/student/requests/' . $this->requestId))
-            ->line('Thank you for using our application!')
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
     }

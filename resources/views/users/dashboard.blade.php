@@ -97,8 +97,8 @@
                             <i class="fas fa-cog"></i>
                         </div>
                         <div class="status-details">
-                            <h3>{{ $processingRequests ?? 0 }}</h3>
-                            <p>Processing</p>
+                            <h3>{{ $inprogressRequests ?? 0 }}</h3>
+                            <p>In Progress</p>
                         </div>
                     </div>
                 </div>
@@ -146,7 +146,7 @@
                             <td>
                                 <span class="badge
                                     @if($request['status'] == 'Pending') badge-warning
-                                    @elseif($request['status'] == 'Processing') badge-info
+                                    @elseif($request['status'] == 'In Progress') badge-info
                                     @elseif($request['status'] == 'Approved') badge-success
                                      @elseif($request['status'] == 'Rejected') badge-danger
                                     @else badge-secondary

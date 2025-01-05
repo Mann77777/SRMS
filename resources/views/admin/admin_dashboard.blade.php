@@ -86,7 +86,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+               <!-- <div class="col-md-3">
                     <div class="status-card services">
                         <div class="icon-wrapper">
                             <i class="fas fa-cogs"></i>
@@ -96,7 +96,7 @@
                             <p>Available Services</p>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </section>
@@ -105,10 +105,10 @@
     <section class="quick-actions">
         <div class="container">
             <div class="action-buttons">
-                <a href="{{ url('/admin/requests/new') }}" class="action-button">
+               <!-- <a href="{{ url('/admin/requests/new') }}" class="action-button">
                     <i class="fas fa-plus-circle"></i>
                     <span>Process Requests</span>
-                </a>
+                </a> -->
                 <a href="{{ url('/assign-management') }}" class="action-button">
                     <i class="fas fa-user-plus"></i>
                     <span>Assign Staff</span>

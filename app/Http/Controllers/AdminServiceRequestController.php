@@ -196,7 +196,7 @@ class AdminServiceRequestController extends Controller
  
            // Update staff availability
            $uitcStaff = Admin::findOrFail($validatedData['uitcstaff_id']);
-           $uitcStaff->update(['availability_status' => 'busy']);
+           $uitcStaff->update(['availability_status' => 'available']);
  
            return response()->json([
                'success' => true, 

@@ -8,30 +8,34 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudentServiceRequest extends Model
 {
- use HasFactory; //removed SoftDeletes trait
+    use HasFactory; //removed SoftDeletes trait
 
- protected $fillable = [
-     'user_id',
-     'service_category',
-     'first_name',
-     'last_name',
-     'student_id',
-     'account_email',
-      'data_type',
-     'new_data',
-     'supporting_document',
-     'preferred_date',
-     'preferred_time',
-     'description',
-     'additional_notes',
-     'status',
+    protected $table = 'student_service_requests';
 
-     'assigned_uitc_staff_id',
+    protected $fillable = [
+        'user_id',
+        'service_category',
+        'first_name',
+        'last_name',
+        'student_id',
+        'account_email',
+        'data_type',
+        'new_data',
+        'supporting_document',
+        'preferred_date',
+        'preferred_time',
+        'description',
+        'additional_notes',
+        'status',
+        'assigned_uitc_staff_id',
         'transaction_type',
-        'admin_notes'
+        'admin_notes',
+        'actions_taken',
+        'completion_report',
+        'completion_status'    
      ];
 
-       // Relationship with Admin (UITC Staff)
+    // Relationship with Admin (UITC Staff)
     public function assignedUITCStaff()
     {
         return $this->belongsTo(Admin::class, 'assigned_uitc_staff_id');

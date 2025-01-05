@@ -17,7 +17,7 @@
     @include('layouts.admin-navbar')
     
     <!-- Include Sidebar -->
-
+    @include('layouts.admin-sidebar')
 
     <div class="content">
         <h1>Assigned Requests</h1>
@@ -205,43 +205,42 @@
         $('#completeRequestModal').modal('show');
     }
 
-        $(document).ready(function() {
-        $('#completeRequestForm').on('submit', function(e) {
-            e.preventDefault();
-            
-            // Validate form
-            if (this.checkValidity() === false) {
-                e.stopPropagation();
-                $(this).addClass('was-validated');
-                return;
+    $(document).ready(function() {
+    $('#completeRequestForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate form
+        if (this.checkValidity() === false) {
+            e.stopPropagation();
+            $(this).addClass('was-validated');
+            return;
+        }
+
+        // Get form data
+        const formData = $(this).serialize();
+
+        // AJAX call to complete the request
+        $.ajax({
+            url: '{{ route("uitc.complete.request") }}',
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                // Close the complete request modal
+                $('#completeRequestModal').modal('hide');
+                
+                // Show success modal
+                $('#requestCompletedSuccessModal').modal('show');
+            },
+            error: function(xhr) {
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to complete the request.'
+                });
             }
-
-            // Get form data
-            const formData = $(this).serialize();
-
-            // AJAX call to complete the request
-            $.ajax({
-                url: '{{ route("uitc.complete.request") }}',
-                method: 'POST',
-                data: formData,
-                success: function(response) {
-                    // Close the complete request modal
-                    $('#completeRequestModal').modal('hide');
-                    
-                    // Show success modal
-                    $('#requestCompletedSuccessModal').modal('show');
-                },
-                error: function(xhr) {
-                    // Show error message
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message || 'Failed to complete the request.'
-                    });
-                }
-            });
         });
-
+    });
 
         // Add click event listener to Complete buttons
         $('.btn-complete').on('click', function() {

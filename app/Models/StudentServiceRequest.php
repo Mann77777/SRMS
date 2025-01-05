@@ -33,7 +33,19 @@ class StudentServiceRequest extends Model
         'actions_taken',
         'completion_report',
         'completion_status'    
-     ];
+    ];
+
+    // Use Carbon to handle timezone-aware timestamps
+    public function getSubmittedAtAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->setTimezone('Asia/Manila')->format('M d, Y h:i A') : null;
+    }
+
+    // Ensure timestamps are stored in the database in the correct timezone
+    public function setSubmittedAtAttribute($value)
+    {
+        $this->attributes['submitted_at'] = Carbon::now('Asia/Manila');
+    }
 
     // Relationship with Admin (UITC Staff)
     public function assignedUITCStaff()

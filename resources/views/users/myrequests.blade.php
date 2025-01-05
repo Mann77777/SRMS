@@ -3,11 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="{{ asset('css/myrequest.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
+    <script>
+$(document).ready(function() {
+    // View request details
+    $('.btn-view').click(function() {
+        const id = $(this).data('id');
+        $.get(`/faculty/request/${id}`, function(data) {
+            $('#viewServiceName').text(data.service_category);
+            $('#viewServiceStatus').text(data.status);
+            
+            // Add more fields as needed
+            const modalBody = $('#viewServiceModal .modal-body');
+            modalBody.html(`
+                <p><strong>Request ID:</strong> ${data.id}</p>
+                <p><strong>Service:</strong> ${data.service_category}</p>
+                <p><strong>Status:</strong> ${data.status}</p>
+                <p><strong>First Name:</strong> ${data.first_name}</p>
+                <p><strong>Last Name:</strong> ${data.last_name}</p>
+                <p><strong>Date Submitted:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
+                ${data.ms_options ? `<p><strong>MS Options:</strong> ${JSON.parse(data.ms_options).join(', ')}</p>` : ''}
+                ${data.description ? `<p><strong>Description:</strong> ${data.description}</p>` : ''}
+            `);
+            
+            $('#viewServiceModal').modal('show');
+        });
+    });
+
+    // Delete request
+    $('.btn-delete').click(function() {
+        const id = $(this).data('id');
+        if (confirm('Are you sure you want to delete this request?')) {
+            $.ajax({
+                url: `/faculty/request/${id}`,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function() {
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error deleting request');
+                }
+            });
+        }
+    });
+
+    // Filter by status
+    $('#status-filter').change(function() {
+        const status = $(this).val().toLowerCase();
+        $('.request-table tbody tr').each(function() {
+            const rowStatus = $(this).find('td:eq(3)').text().toLowerCase();
+            $(this).toggle(status === '' || rowStatus.includes(status));
+        });
+    });
+
+    // Search functionality
+    $('#search-input').keyup(function() {
+        const searchText = $(this).val().toLowerCase();
+        $('.request-table tbody tr').each(function() {
+            const text = $(this).text().toLowerCase();
+            $(this).toggle(text.includes(searchText));
+        });
+    });
+});
+</script>
     <title>My Requests</title>
 </head>
 <body>
@@ -22,19 +88,18 @@
         <h1>My Request</h1>
         <div class="form-container">
             <div class="dropdown-container">
-                <select name="" id="">
-                    <option value="pending">Pending</option>
-                    <option value="in progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                </select>
+            <select name="" id="">
+                <option value="pending">Pending</option>
+                <option value="in progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
 
-                <!-- Search Bar -->
-                <div class="search-container">
-                    <input type="text" name="" placeholder="Search...">
-                    <button class="search-btn" type="button" onclick="performSearch()">Search</button>
-                </div>
-
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" name="" placeholder="Search...">
+                <button class="search-btn" type="button" onclick="performSearch()">Search</button>
             </div>
+        </div>
             
             <div class="request-table-container">
                 <form action="">
@@ -278,5 +343,6 @@
         });
     });
     </script>
+    <script src="{{ asset('js/myrequests.js') }}"></script>
 </body>
 </html>

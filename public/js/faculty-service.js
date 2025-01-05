@@ -1,119 +1,169 @@
 function showFormFields() {
     var serviceCategory = document.getElementById('serviceCategory').value;
-    document.getElementById('selectedServiceCategory').value = serviceCategory;
+    var selectedServiceCategory = document.getElementById('selectedServiceCategory');
+    if (selectedServiceCategory) {
+        selectedServiceCategory.value = serviceCategory;
+    }
 
-    // Hide all additional form sections first
-    document.getElementById('personalInfoForm').style.display = 'none';
-    document.getElementById('resetForm').style.display = 'none';
-    document.getElementById('changeOfDataForm').style.display = 'none';
-    document.getElementById('attendancerecordForm').style.display = 'none';
-    document.getElementById('biometricsEnrollmentForm').style.display = 'none';
-    document.getElementById('locationForm').style.display = 'none';
-    document.getElementById('problemsForm').style.display = 'none';
-    document.getElementById('add_info').style.display = 'none';
-    document.getElementById('useled').style.display = 'none';
-    document.getElementById('post_pub').style.display = 'none';
-    document.getElementById('otherServicesForm').style.display = 'none';
-
-    // Remove required attribute from all optional fields
-    var optionalFields = [
-        'account_email',
-        'data_type',
-        'new_data',
-        'supporting_document',
-        'preferred_date',
-        'preferred_time',
-        'description',
-
+    // Hide all form sections first
+    const formSections = [
+        'personalInfoForm',
+        'resetForm',
+        'changeOfDataForm',
+        'attendancerecordForm',
+        'biometricsEnrollmentForm',
+        'locationForm',
+        'problemsForm',
+        'add_info',
+        'useled',
+        'post_pub',
+        'otherServicesForm',
+        'ms_options_form'
     ];
-    optionalFields.forEach(function(fieldName) {
-        var field = document.querySelector(`[name="${fieldName}"]`);
-        if (field) {
-            field.removeAttribute('required');
+
+    formSections.forEach(section => {
+        const element = document.getElementById(section);
+        if (element) {
+            element.style.display = 'none';
         }
     });
 
-    // Show appropriate form section based on selected service category
+    // Show appropriate form sections based on selected service category
     switch(serviceCategory) {
         case 'create':
-            document.getElementById('personalInfoForm').style.display = 'block';
+            showElement('personalInfoForm');
+            showElement('ms_options_form');
+            setFieldRequired('first_name', true);
+            setFieldRequired('last_name', true);
             break;
+
         case 'reset_email_password':
         case 'reset_tup_web_password':
         case 'reset_ers_password':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('resetForm').style.display = 'block';
-
-            // Add required to specific fields
-            document.querySelector('[name="account_email"]').setAttribute('required', 'required');
+            showElement('personalInfoForm');
+            showElement('resetForm');
+            setFieldRequired('first_name', true);
+            setFieldRequired('last_name', true);
+            setFieldRequired('account_email', true);
             break;
+
         case 'change_of_data_ms':
         case 'change_of_data_portal':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('changeOfDataForm').style.display = 'block';
-
-            // Add required to specific fields
-            document.querySelector('[name="data_type"]').setAttribute('required', 'required');
-            document.querySelector('[name="new_data"]').setAttribute('required', 'required');
-            document.querySelector('[name="supporting_document"]').setAttribute('required', 'required');
+            showElement('personalInfoForm');
+            showElement('changeOfDataForm');
+            setFieldRequired('first_name', true);
+            setFieldRequired('last_name', true);
             break;
+
         case 'dtr':
         case 'biometric_record':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('attendancerecordForm').style.display = 'block';
+            showElement('personalInfoForm');
+            showElement('attendancerecordForm');
             break;
+
         case 'biometrics_enrollement':
-            document.getElementById('biometricsEnrollmentForm').style.display = 'block';
+            showElement('biometricsEnrollmentForm');
             break;
+
         case 'new_internet':
         case 'new_telephone':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('locationForm').style.display = 'block';
+            showElement('personalInfoForm');
+            showElement('locationForm');
             break;
+
         case 'repair_and_maintenance':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('locationForm').style.display = 'block';
-            document.getElementById('add_info').style.display = 'block';
+            showElement('personalInfoForm');
+            showElement('locationForm');
+            showElement('add_info');
             break;
+
         case 'computer_repair_maintenance':
         case 'printer_repair_maintenance':
-        case 'install':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('add_info').style.display = 'block';
-            break; 
+            showElement('personalInfoForm');
+            showElement('add_info');
+            break;
+
         case 'request_led_screen':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('useled').style.display = 'block';
+            showElement('personalInfoForm');
+            showElement('useled');
+            break;
 
-            // Add required to specific fields
-            document.querySelector('[name="preferred_date"]').setAttribute('required', 'required');
-            document.querySelector('[name="preferred_time"]').setAttribute('required', 'required');
-            break;
-        case 'post_publication':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('post_pub').style.display = 'block';
-            break;
-        case 'data_handling':
-        case 'document_handling':
-        case 'reports_handling':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('add_info').style.display = 'block';
-            break;
         case 'others':
-            document.getElementById('personalInfoForm').style.display = 'block';
-            document.getElementById('otherServicesForm').style.display = 'block';
-
-            // Add required to specific fields
-            document.querySelector('[name="description"]').setAttribute('required', 'required');
+            showElement('personalInfoForm');
+            showElement('otherServicesForm');
             break;
     }
-}   
+}
 
+// Helper function to show an element
+function showElement(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.display = 'block';
+    }
+}
 
-document.addEventListener("DOMContentLoaded", function() {
-    var serviceCategoryDropdown = document.getElementById('serviceCategory');
-    serviceCategoryDropdown.addEventListener('change', showFormFields);
+// Helper function to set field as required
+function setFieldRequired(fieldName, required) {
+    const field = document.querySelector(`[name="${fieldName}"]`);
+    if (field) {
+        if (required) {
+            field.setAttribute('required', 'required');
+        } else {
+            field.removeAttribute('required');
+        }
+    }
+}
 
-    // Trigger initial form setup
-    showFormFields();
+// Initialize form when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const serviceCategory = document.getElementById('serviceCategory');
+    if (serviceCategory) {
+        serviceCategory.addEventListener('change', showFormFields);
+        showFormFields(); // Initial call to set up form state
+    }
+
+    // Form submission handler
+    const form = document.getElementById('facultyServiceForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const category = serviceCategory ? serviceCategory.value : '';
+            
+            // Validate MS options for 'create' category
+            if (category === 'create') {
+                const msOptions = document.querySelectorAll('input[name="ms_options[]"]:checked');
+                if (msOptions.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one MS option');
+                    return;
+                }
+            }
+
+            // Validate required fields
+            const firstName = document.querySelector('input[name="first_name"]');
+            const lastName = document.querySelector('input[name="last_name"]');
+            
+            if (firstName && !firstName.value.trim()) {
+                e.preventDefault();
+                alert('Please enter your first name');
+                firstName.focus();
+                return;
+            }
+
+            if (lastName && !lastName.value.trim()) {
+                e.preventDefault();
+                alert('Please enter your last name');
+                lastName.focus();
+                return;
+            }
+
+            // Terms validation
+            const terms = document.getElementById('agreeTerms');
+            if (terms && !terms.checked) {
+                e.preventDefault();
+                alert('Please agree to the terms and conditions');
+                return;
+            }
+        });
+    }
 });

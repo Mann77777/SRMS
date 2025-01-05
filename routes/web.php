@@ -68,13 +68,44 @@ Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword']
 //Route::post('/faculty-service', [FacultyRequestController::class, 'submitRequest'])->name('faculty.request.submit');
 
 //Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'submitRequest'])->name('faculty.request.submit');
-Route::get('/faculty/myrequests', [FacultyServiceRequestController::class, 'myRequests'])->name('faculty.myrequests');
-Route::get('/faculty/myrequests/{id}', [FacultyServiceRequestController::class, 'show'])->name('faculty.myrequests.show');
+//Route::get('/faculty/myrequests', [FacultyServiceRequestController::class, 'myRequests'])->name('faculty.myrequests');
+//Route::get('/faculty/myrequests/{id}', [FacultyServiceRequestController::class, 'show'])->name('faculty.myrequests.show');
 
-Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'store'])
-    ->name('faculty.service.request.submit')
-    ->middleware('auth');
+//Route::post('/faculty/service-request', [FacultyServiceRequestController::class, 'store'])
+   // ->name('faculty.service.request.submit')
+    //->middleware('auth');
 
+    // Faculty & Staff Service Request Routes
+Route::middleware(['auth'])->group(function () {
+    // View faculty service form
+    Route::get('/faculty-service', function () {
+        return view('users.faculty-service');
+    })->name('faculty-service');
+    
+    // Handle form submission
+    Route::post('/faculty/service-request/store', [FacultyServiceRequestController::class, 'store'])
+        ->name('faculty.service.request.store');
+    
+    Route::post('/faculty/service-request/submit', [FacultyServiceRequestController::class, 'submit'])
+        ->name('faculty.service.request.submit');
+    
+    // My Requests routes
+    Route::get('/faculty/myrequests', [FacultyServiceRequestController::class, 'myRequests'])
+        ->name('faculty.myrequests');
+    
+    // Request actions
+    Route::get('/faculty/request/{id}', [FacultyServiceRequestController::class, 'getRequestDetails'])
+        ->name('faculty.request.details');
+    
+    Route::put('/faculty/request/{id}', [FacultyServiceRequestController::class, 'updateRequest'])
+        ->name('faculty.request.update');
+    
+    Route::delete('/faculty/request/{id}', [FacultyServiceRequestController::class, 'deleteRequest'])
+        ->name('faculty.request.delete');
+});
+    
+    Route::post('/faculty/service-request/store', [FacultyServiceRequestController::class, 'store'])
+        ->name('faculty.service-request.store');
 // Add this with the other routes
 Route::get('/myrequests', [StudentServiceRequestController::class, 'myRequests'])
 ->name('myrequests')

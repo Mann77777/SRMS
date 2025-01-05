@@ -191,7 +191,7 @@ class AdminServiceRequestController extends Controller
                'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
                'transaction_type' => $validatedData['transaction_type'],
                'admin_notes' => $validatedData['notes'] ?? null,
-               'status' => 'Assigned' // Change status to assigned
+               'status' => 'In Progress' // Change status to assigned
            ]);
  
            // Update staff availability

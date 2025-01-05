@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
-
+use App\Notifications\ServiceRequestReceived;
+use Illuminate\Support\Facades\Notification;
 class StudentServiceRequestController extends Controller
 {
   public function store(Request $request)
@@ -65,7 +66,15 @@ class StudentServiceRequestController extends Controller
       // Optional additional notes
       $studentRequest->additional_notes = $request->input('additional_notes');
       
-      // Save the request
+           // Send email notification
+           Notification::route('mail', $request->user()->email)
+           ->notify(new ServiceRequestReceived(
+               $studentRequest->id, 
+               $studentRequest->service_category,
+               $studentRequest->first_name . ' ' . $studentRequest->last_name
+           ));
+      
+       // Save the request
       $studentRequest->save();
 
       // Redirect to my requests page

@@ -4,6 +4,7 @@
         <a href="{{ url('/admin_dashboard') }}">
             <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
         </a>      
+        <span class="sidebar-title">TUP SRMS</span>
     </div>
 
     <div class="menu_content">

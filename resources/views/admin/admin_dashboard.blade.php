@@ -15,9 +15,8 @@
 <body>
     <!-- Include Navbar -->
     @include('layouts.admin-navbar')
-    
-    <!-- Include Sidebar -->
     @include('layouts.admin-sidebar')
+
 
     <!-- HERO SECTION -->
     <section class="hero">
@@ -121,6 +120,35 @@
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- REQUEST STATISTICS CHART -->
+    <section class="request-statistics">
+        <div class="container">
+            @if(isset($error))
+                <div class="alert alert-danger">
+                    {{ $error }}
+                </div>
+            @endif
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Request Statistics</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="requestStatisticsChart"></canvas>
+                    
+                    <!-- Debug Information -->
+                    <div class="mt-3">
+                        <strong>Debug Info:</strong>
+                        <p>Total Requests: {{ $totalRequests ?? 'N/A' }}</p>
+                        <p>Week Requests: {{ $weekRequests ?? 'N/A' }}</p>
+                        <p>Month Requests: {{ $monthRequests ?? 'N/A' }}</p>
+                        <p>Year Requests: {{ $yearRequests ?? 'N/A' }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -254,5 +282,59 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('requestStatisticsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Requests', 'This Week', 'This Month', 'This Year'],
+                datasets: [{
+                    label: 'Number of Requests',
+                    data: [
+                        {{ $totalRequests ?? 0 }}, 
+                        {{ $weekRequests ?? 0 }}, 
+                        {{ $monthRequests ?? 0 }}, 
+                        {{ $yearRequests ?? 0 }}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 206, 86, 0.6)',   // Total
+                        'rgba(75, 192, 192, 0.6)',   // Week
+                        'rgba(255, 99, 132, 0.6)',   // Month
+                        'rgba(54, 162, 235, 0.6)'    // Year
+                    ],
+                    borderColor: [
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Requests'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Request Statistics Overview'
+                    }
+                }
+            }
+        });
+    });
+    </script>
 </body>
 </html>

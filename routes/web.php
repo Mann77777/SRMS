@@ -375,9 +375,15 @@ Route::post('/admin/assign-student-uitc-staff', [AdminServiceRequestController::
 ->name('admin.assign.student.uitc.staff')
 ->middleware(['auth:admin']);
 
+Route::post('/admin/service-requests/delete', [AdminServiceRequestController::class, 'deleteServiceRequests'])
+    ->name('admin.delete.service.requests');
+
 Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
     ->name('admin.dashboard')
     ->middleware(['auth:admin']);
+
+    Route::post('/admin/service-request/reject', [AdminServiceRequestController::class, 'rejectServiceRequest'])
+    ->name('admin.reject.service.request');
     
 // TECHNICIAN/UITC STAFF ROUTES
 Route::get('/assign-history', function () {

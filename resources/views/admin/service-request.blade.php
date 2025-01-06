@@ -248,106 +248,88 @@
 
         // Event listener for approve button to trigger UITC Staff selection
         $('.btn-approve').on('click', function(e) {
-            e.preventDefault(); // Prevent any default action
-            
-            const requestId = $(this).data('id');
-            const services = $(this).closest('tr').find('.service-details').text().trim();
-            
-            // Populate modal details
-            $('#requestIdInput').val(requestId);
-            $('#modalRequestId').text(requestId);
-            $('#modalRequestServices').text(services);
-            
-            // Fetch and populate available UITC Staff
-            fetchAvailableUITCStaff().always(function() {
-                // Ensure modal is shown after AJAX call completes
-                $('#assignStaffModal').modal('show');
-            });
+    e.preventDefault();
+    
+    const requestId = $(this).data('id');
+    const requestType = $(this).data('type'); // Make sure this matches your data-type attribute
+    const services = $(this).closest('tr').find('td:nth-child(3)').html().trim();
+    
+    // Populate modal details
+    $('#requestIdInput').val(requestId);
+    $('#requestTypeInput').val(requestType); // Add a hidden input for request type
+    $('#modalRequestId').text(requestId);
+    $('#modalRequestServices').html(services);
+    
+    // Fetch and populate available UITC Staff
+    fetchAvailableUITCStaff().always(function() {
+        $('#assignStaffModal').modal('show');
+    });
+});
+
+// Update the saveAssignStaff function
+function saveAssignStaff() {
+    const uitcStaffId = $('select[name="uitcstaff_id"]').val();
+    const transactionType = $('select[name="transaction_type"]').val();
+    const requestId = $('#requestIdInput').val();
+    const requestType = $('#requestTypeInput').val();
+    const notes = $('textarea[name="notes"]').val();
+
+    if (!uitcStaffId || !transactionType) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Required Fields Missing',
+            text: 'Please fill in all required fields',
+            confirmButtonText: 'OK'
         });
+        return;
+    }
 
+    const formData = {
+        request_id: requestId,
+        uitcstaff_id: uitcStaffId,
+        transaction_type: transactionType,
+        notes: notes,
+        request_type: requestType
+    };
 
-        function saveAssignStaff() {
-            // Validate form inputs
-            const uitcStaffId = $('select[name="uitcstaff_id"]').val();
-            const transactionType = $('select[name="transaction_type"]').val();
-            const requestId = $('#requestIdInput').val();
-            const notes = $('textarea[name="notes"]').val();
-            const requestType = $('#requestTypeInput').val(); // Add this hidden input to track request type
-
-            // Basic client-side validation
-            if (!uitcStaffId) {
+    $.ajax({
+        url: '{{ route("admin.assign.uitc.staff") }}',
+        method: 'POST',
+        data: formData,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if (response.success) {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Select UITC Staff',
-                    text: 'Please choose an available UITC Staff',
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'UITC Staff assigned successfully',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    $('#assignStaffModal').modal('hide');
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.message || 'Failed to assign UITC Staff',
                     confirmButtonText: 'OK'
                 });
-                return;
             }
-
-            if (!transactionType) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Select Transaction Type',
-                    text: 'Please select a transaction type',
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
-
-            // Prepare form data based on request type
-            const formData = {
-                request_id: requestId,
-                uitcstaff_id: uitcStaffId,
-                transaction_type: transactionType,
-                notes: notes || '' // Optional notes
-            };
-
-            // Determine the appropriate route based on request type
-            const assignmentRoute = requestType === 'student' 
-                ? '{{ route("admin.assign.student.uitc.staff") }}' 
-                : '{{ route("admin.assign.uitc.staff") }}';
-
-            // Send AJAX request to assign UITC Staff
-            $.ajax({
-                url: assignmentRoute,
-                method: 'POST',
-                data: formData,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'UITC Staff Assigned',
-                            text: 'Request successfully assigned to UITC Staff',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            $('#assignStaffModal').modal('hide');
-                            location.reload(); // Refresh page to show updated status
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Assignment Failed',
-                            text: response.message || 'Unable to assign UITC Staff',
-                            confirmButtonText: 'Try Again'
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    // Handle network or server errors
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'An error occurred while assigning UITC Staff. Please try again.',
-                        confirmButtonText: 'OK'
-                    });
-                    console.error('Assignment error:', xhr.responseText);
-                }
+        },
+        error: function(xhr) {
+            console.error('Assignment error:', xhr.responseText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while assigning UITC Staff',
+                confirmButtonText: 'OK'
             });
         }
+    });
+}
 
         document.querySelectorAll('.btn-reject').forEach(function(button) {
             button.addEventListener('click', function(event) {

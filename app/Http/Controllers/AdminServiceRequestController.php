@@ -18,59 +18,102 @@ class AdminServiceRequestController extends Controller
 
         try {
             // Fetch all student requests
-            $studentRequests = ServiceRequest::all();
-            foreach($studentRequests as $request){
-                $requests[] = [
-                    'id' => $request->id,
-                    'user_id' => $request->user_id,
-                    'role' => $request->user ? $request->user->role : 'Unknown', // Fetch user role
-                    'service' => $this->getServiceName($request, 'student'),
-                    'request_data' => $this->getRequestData($request),
-                    'date' => $request->created_at,
-                    'status' => $request->status,
-                    'type' => 'student',
-                ];
-            }
-
-            // Fetch all new student service requests
-            $newStudentRequests = StudentServiceRequest::all();
-            foreach($newStudentRequests as $request){
-                $requests[] = [
-                    'id' => $request->id,
-                    'user_id' => $request->user_id,
-                    'role' => $request->user ? $request->user->role : 'Student', // Default to 'Student' if no user found
-                    'service' => $request->service_category,
-                    'request_data' => $this->formatStudentServiceRequestData($request),
-                    'date' => $request->created_at,
-                    'status' => $request->status ?? 'Pending',
-                    'type' => 'new_student_service',
-                ];
-            }
-
-            // Fetch all faculty requests
-            $facultyRequests = FacultyServiceRequest::all();
-            foreach($facultyRequests as $request){
-                $requests[] = [
-                    'id' => $request->id,
-                    'user_id' => $request->user_id,
-                    'service' => $this->getServiceName($request, 'faculty'),
-                    'request_data' => $this->getRequestData($request),
-                    'date' => $request->created_at,
-                    'status' => $request->status,
-                    'type' => 'faculty',
-                ];
-            }
-
-        } catch (\Exception $e) {
-            Log::error('Error fetching service requests: ' . $e->getMessage());
+            $studentRequests = ServiceRequest::with('user')->get();
+        foreach($studentRequests as $request) {
+            $user = $request->user;
+            $requests[] = [
+                'id' => $request->id,
+                'user_id' => $request->user_id,
+                'role' => $user ? $user->role : 'Student',
+                'service' => $this->getServiceName($request, 'student'),
+                'request_data' => $this->getRequestData($request),
+                'date' => $request->created_at,
+                'status' => $request->status,
+                'type' => 'student',
+            ];
         }
 
-        // Sort by date
-        $allRequests = collect($requests)->sortByDesc('date');
+        // Fetch new student service requests
+        $newStudentRequests = StudentServiceRequest::with('user')->get();
+        foreach($newStudentRequests as $request) {
+            $user = $request->user;
+            $requests[] = [
+                'id' => $request->id,
+                'user_id' => $request->user_id,
+                'role' => $user ? $user->role : 'Student',
+                'service' => $request->service_category,
+                'request_data' => $this->formatStudentServiceRequestData($request),
+                'date' => $request->created_at,
+                'status' => $request->status ?? 'Pending',
+                'type' => 'new_student_service',
+            ];
+        }
 
-        return view('admin.service-request', ['requests' => $allRequests]);
+        // Fetch faculty requests
+        $facultyRequests = FacultyServiceRequest::with('user')->get();
+        foreach($facultyRequests as $request) {
+            $user = $request->user;
+            $requests[] = [
+                'id' => $request->id,
+                'user_id' => $request->user_id,
+                'role' => $user ? $user->role : 'Faculty',
+                'service' => $this->getServiceName($request, 'faculty'),
+                'request_data' => $this->getRequestData($request),
+                'date' => $request->created_at,
+                'status' => $request->status,
+                'type' => 'faculty',
+            ];
+        }
+
+    } catch (\Exception $e) {
+        Log::error('Error fetching service requests: ' . $e->getMessage());
     }
 
+    // Sort requests by date
+    $allRequests = collect($requests)->sortByDesc('date');
+
+    return view('admin.service-request', ['requests' => $allRequests]);
+}
+    private function getServiceName($request, $type)
+{
+    switch ($type) {
+        case 'student':
+            return $request->service_category ?? 'Unspecified Service';
+            
+        case 'faculty':
+            return $request->service_type ?? 'Unspecified Service';
+            
+        default:
+            return 'Unknown Service';
+    }
+}
+
+private function getRequestData($request)
+{
+    $output = [];
+    
+    if ($request->user) {
+        $output[] = '<strong>Name:</strong> ' . htmlspecialchars($request->user->name) . '<br>';
+    }
+    
+    if (isset($request->service_category)) {
+        $output[] = '<strong>Service:</strong> ' . htmlspecialchars($request->service_category) . '<br>';
+    }
+    
+    if (isset($request->description)) {
+        $output[] = '<strong>Description:</strong> ' . htmlspecialchars($request->description) . '<br>';
+    }
+    
+    // Add additional data based on request type
+    if (method_exists($request, 'getAdditionalData')) {
+        $additionalData = $request->getAdditionalData();
+        foreach ($additionalData as $key => $value) {
+            $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
+        }
+    }
+    
+    return implode('', $output);
+}
 
     /**
      * Format student service request data for display
@@ -173,44 +216,56 @@ class AdminServiceRequestController extends Controller
 
    // Method to assign UITC Staff to a student service request
    public function assignUITCStaff(Request $request)
-   {
-       // Validate the request
-       $validatedData = $request->validate([
-           'request_id' => 'required|exists:student_service_requests,id',
-           'uitcstaff_id' => 'required|exists:admins,id',
-           'transaction_type' => 'required|in:simple,complex,highly_technical',
-           'notes' => 'nullable|string'
-       ]);
- 
-       try {
-           // Find the student service request
-           $studentServiceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
- 
-           // Update student service request with assigned UITC Staff
-           $studentServiceRequest->update([
-               'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-               'transaction_type' => $validatedData['transaction_type'],
-               'admin_notes' => $validatedData['notes'] ?? null,
-               'status' => 'In Progress' // Change status to assigned
-           ]);
- 
-           // Update staff availability
-           $uitcStaff = Admin::findOrFail($validatedData['uitcstaff_id']);
-           $uitcStaff->update(['availability_status' => 'available']);
- 
-           return response()->json([
-               'success' => true, 
-               'message' => 'UITC Staff assigned to student service request successfully'
-           ]);
- 
-       } catch (\Exception $e) {
-           // Log the error for debugging
-           Log::error('UITC Staff Assignment Error: ' . $e->getMessage());
- 
-           return response()->json([
-               'success' => false, 
-               'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
-           ], 500);
-       }
-   }
+{
+    // Validate the request
+    $validatedData = $request->validate([
+        'request_id' => 'required',
+        'uitcstaff_id' => 'required|exists:admins,id',
+        'transaction_type' => 'required|in:simple,complex,highly_technical',
+        'notes' => 'nullable|string',
+        'request_type' => 'required|in:student,faculty,new_student_service'
+    ]);
+
+    try {
+        // Handle different request types
+        switch ($validatedData['request_type']) {
+            case 'new_student_service':
+                $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
+                break;
+            case 'faculty':
+                $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
+                break;
+            case 'student':
+                $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
+                break;
+            default:
+                throw new \Exception('Invalid request type');
+        }
+
+        // Update service request with assigned UITC Staff
+        $serviceRequest->update([
+            'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+            'transaction_type' => $validatedData['transaction_type'],
+            'admin_notes' => $validatedData['notes'],
+            'status' => 'In Progress'
+        ]);
+
+        // Update staff availability
+        $uitcStaff = Admin::findOrFail($validatedData['uitcstaff_id']);
+        $uitcStaff->update(['availability_status' => 'available']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'UITC Staff assigned successfully'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('UITC Staff Assignment Error: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

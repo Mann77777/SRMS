@@ -38,7 +38,7 @@
                             <th>Actions</th>
                        </tr>
                     </thead>
-                    <tbody>
+                    <!--<tbody>
                         <tr>
                             <td>1</td>
                             <td>MS Teams</td>
@@ -58,7 +58,7 @@
                                 <button class="btn-view">View</button>
                             </td>
                         </tr>
-                    </tbody>
+                    </tbody> -->
                 </table>
             </form>
         </div>

@@ -52,7 +52,7 @@
 
             <!-- Service History Link -->
             <li class="item">
-                <a href="{{ url('/request-history') }}" class="nav_link {{ request()->is('service-history') ? 'active' : '' }}">
+                <a href="{{ url('/request-history') }}" class="nav_link {{ request()->is('request-history') ? 'active' : '' }}">
                     <span class="navlink_icon">
                         <i class="bx bx-history"></i>
                     </span>

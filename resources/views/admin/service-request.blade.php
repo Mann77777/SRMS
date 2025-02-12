@@ -366,7 +366,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Success',
-                                text: 'Service request rejected successfully',
+                                text: 'Request for Rejection Submitted',
                                 confirmButtonText: 'OK'
                             }).then(() => {
                                 $('#rejectServiceRequestModal').modal('hide');

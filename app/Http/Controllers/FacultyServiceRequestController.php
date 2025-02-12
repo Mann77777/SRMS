@@ -59,7 +59,14 @@ class FacultyServiceRequestController extends Controller
 
             Log::info('Service request created:', ['id' => $serviceRequest->id]);
 
-            return redirect()->back()->with('success', 'Service request submitted successfully!');
+            //return redirect()->back()->with('success', 'Service request submitted successfully!');
+
+            // Redirect back with success modal data
+            return redirect()->back()->with([
+                'showSuccessModal' => true,
+                'requestId' => $serviceRequest->id,
+                'serviceCategory' => $validatedData['service_category']
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Error creating service request:', [

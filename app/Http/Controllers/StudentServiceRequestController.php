@@ -74,11 +74,18 @@ class StudentServiceRequestController extends Controller
                $studentRequest->first_name . ' ' . $studentRequest->last_name
            ));
       
-       // Save the request
-      $studentRequest->save();
+        // Save the request
+        $studentRequest->save();
 
-      // Redirect to my requests page
-      return redirect()->route('myrequests')->with('success', 'Service request submitted successfully!');
+        // Redirect to my requests page
+        //return redirect()->route('myrequests')->with('success', 'Service request submitted successfully!');
+
+        // Redirect back with success modal data
+        return redirect()->back()->with([
+            'showSuccessModal' => true,
+            'requestId' => $studentRequest->id,
+            'serviceCategory' => $studentRequest->service_category
+        ]);
     }
 
 

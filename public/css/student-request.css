@@ -56,7 +56,6 @@ body {
     margin-bottom: 20px;
 }
 
-
 .submitbtn {
     padding: 10px 20px;
     background-color: #C4203C;
@@ -72,10 +71,6 @@ body {
 
 .submitbtn:hover {
     background-color: #f12245;
-}
-
-.publication-form {
-    margin-top: 1%;
 }
 
 

@@ -144,7 +144,7 @@
                 <div class="form-section">
                     <div class="row justify-content-center">
                         <div class="col-md-6 text-center">
-                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                            <button type="submit" class="submitbtn">Submit Request</button>
                         </div>
                     </div>
                 </div>
@@ -167,6 +167,31 @@
                 </div>
             </div>
         </div>
+
+
+             <!-- Success Modal -->
+             @if(session('showSuccessModal'))
+            <div class="modal" id="serviceRequestSuccessModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="successModalLabel">Success</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeSuccessModal()">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Your service request for <strong>{{ session('serviceCategory') }}</strong> has been submitted successfully!
+                            <br>
+                            Request ID: <strong>{{ session('requestId') }}</strong>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeSuccessModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -174,5 +199,17 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/faculty-service.js') }}"></script>
+
+    <script>
+        function closeSuccessModal() {
+            window.location.href = "{{ route('myrequests') }}";
+        }
+        $(document).ready(function() {
+            @if(session('showSuccessModal'))
+                $('#serviceRequestSuccessModal').modal('show');
+            @endif
+        });
+
+    </script>
 </body>
 </html>

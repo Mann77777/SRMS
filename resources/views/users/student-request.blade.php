@@ -83,7 +83,7 @@
                 <!-- Additional Forms for Each Option -->
                 <div id="resetForm" style="display: none;">
                     <div class="form-section">
-                        <h5>Reset Information</h5>
+                        <!-- <h5>Reset Information</h5> -->
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Account Email</label>

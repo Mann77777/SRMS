@@ -82,6 +82,13 @@
                             <option value="printer_repair_maintenance">Printer Repair and Maintenance</option>
                             <option value="request_led_screen">Request to use LED Screen</option>
                         </optgroup>
+                        <optgroup label="Software and Website Management">
+                            <option value="install_application">Install Application/Information System/Software</option>
+                            <option value="post_publication">Post Publication/Update of Information Website</option>
+                        </optgroup>
+                        <optgroup label="Data, Documents and Reports Handled by the UITC">
+                            <option value="data_docs_reports">Data, Documents and Reports</option>
+                        </optgroup>
                     </select>
                 </div>
 
@@ -97,10 +104,10 @@
                                 <label>Last Name</label>
                                 <input type="text" class="form-control" name="last_name" placeholder="Last Name">
                             </div>
-                            <div class="col-md-4">
+                            <!-- <div class="col-md-4">
                                 <label>Email</label>
                                 <input type="email" class="form-control" name="email" placeholder="Email">
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -122,6 +129,332 @@
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" name="ms_options[]" value="TUP Email">
                                     <label class="form-check-label">TUP Email</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Forms for Each Option -->
+                <div id="resetForm" style="display: none;">
+                    <div class="form-section">
+                        <!-- <h5>Reset Information</h5> -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Account Email</label>
+                                <input type="email" class="form-control" name="account_email" placeholder="Account Email" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="dtr_options_form" style="display: none;">
+                    <div class="form-section">
+                        <h5>Daily Time Record Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="dtr_months">Month(s)</label>
+                                    <input type="text" class="form-control" id="dtr_months" name="dtr_months" 
+                                           placeholder="Enter month(s) (e.g., January 2024)" 
+                                           required>
+                                    <small class="form-text text-muted">
+                                        Enter one or multiple months separated by comma
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check mt-4">
+                                        <input type="checkbox" class="form-check-input" id="dtr_with_details" name="dtr_with_details" value="1">
+                                        <label class="form-check-label" for="dtr_with_details">
+                                            Include In/Out Details
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="changeOfDataForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Change of Data</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Type of Data to Change</label>
+                                <select class="form-control" name="data_type" required>
+                                    <option value="">Select Data Type</option>
+                                    <option value="name">Name</option>
+                                    <option value="email">Email Address</option>
+                                    <option value="contact_number">Contact Number</option>
+                                    <option value="address">Address</option>
+                                    <option value="others">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Specify New Information</label>
+                                <input type="text" class="form-control" name="new_data" placeholder="Enter New Information" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label>Upload Supporting Document</label>
+                                <input type="file" class="form-control" name="supporting_document" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label>Additional Notes (Optional)</label>
+                                <textarea class="form-control" name="additional_notes" rows="3" placeholder="Provide any additional details..."></textarea>
+                            </div>
+                        </div>
+                
+                    </div>
+                </div>
+                
+                <div id="biometricsEnrollmentForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Biometrics Enrollment Form</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Last Name</label>
+                                    <input type="text" class="form-control" name="last_name" placeholder="Enter Last Name">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>First Name</label>
+                                    <input type="text" class="form-control" name="first_name" placeholder="Enter First Name">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Middle Name</label>
+                                    <input type="text" class="form-control" name="middle_name" placeholder="Enter Middle Name">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>College</label>
+                                    <select class="form-control" name="college">
+                                        <option value="">Select College</option>
+                                        <option value="CEIT">College of Engineering and Information Technology</option>
+                                        <option value="CAS">College of Arts and Sciences</option>
+                                        <option value="COED">College of Education</option>
+                                        <option value="COET">College of Engineering and Technology</option>
+                                        <option value="COBA">College of Business Administration</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Department</label>
+                                    <input type="text" class="form-control" name="department" placeholder="Enter Department">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Plantilla Position</label>
+                                    <input type="text" class="form-control" name="plantilla_position" placeholder="Enter Plantilla Position">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Date of Birth</label>
+                                    <input type="date" class="form-control" name="date_of_birth">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" class="form-control" name="phone_number" placeholder="Enter Phone Number">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Address</label>
+                                    <input type="text" class="form-control" name="address" placeholder="Enter Full Address">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Blood Type</label>
+                                    <select class="form-control" name="blood_type">
+                                        <option value="">Select Blood Type</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Emergency Contact Person</label>
+                                    <input type="text" class="form-control" name="emergency_contact_person" placeholder="Enter Emergency Contact Name">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Emergency Contact Number</label>
+                                    <input type="tel" class="form-control" name="emergency_contact_number" placeholder="Enter Emergency Contact Number">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="locationForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Location Details</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Specific Location</label>
+                                    <input type="text" class="form-control" name="location" placeholder="Enter full location details (Building, Room, Floor)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="add_info" style="display: none;">
+                    <div class="form-section">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Problems Encountered</label>
+                                    <textarea class="form-control" name="problems_encountered" rows="4" placeholder="Describe the problems you are experiencing in detail"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ledScreenForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Request to use LED Screen</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Preferred Date</label>
+                                    <input type="date" class="form-control" name="preferred_date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Preferred Time</label>
+                                    <input type="time" class="form-control" name="preferred_time">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Additional Details (Optional)</label>
+                                    <textarea class="form-control" name="led_screen_details" rows="3" placeholder="Provide any additional information about your LED screen request"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div id="installApplicationForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Application/Information System/Software Installation Request</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Name of Application/Information System/Software</label>
+                                    <input type="text" class="form-control" name="application_name" placeholder="Enter the full name of the application or software">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Purpose of Installation</label>
+                                    <textarea class="form-control" name="installation_purpose" rows="3" placeholder="Describe the purpose and intended use of the application/software"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Additional Requirements or Notes (Optional)</label>
+                                    <textarea class="form-control" name="installation_notes" rows="3" placeholder="Provide any additional information or specific requirements for installation"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="publicationForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Publication/Website Information Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Author</label>
+                                    <input type="text" class="form-control" name="publication_author" placeholder="Enter the full name of the author">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Editor</label>
+                                    <input type="text" class="form-control" name="publication_editor" placeholder="Enter the full name of the editor">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Date of Publication</label>
+                                    <input type="date" class="form-control" name="publication_start_date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>End of Publication</label>
+                                    <input type="date" class="form-control" name="publication_end_date">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dataDocumentsForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Data, Documents, and Reports Details</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Please Specify</label>
+                                    <textarea class="form-control" name="data_documents_details" rows="4" placeholder="Provide detailed information about the data, documents, or reports you need assistance with"></textarea>
                                 </div>
                             </div>
                         </div>

@@ -20,6 +20,7 @@ class FacultyServiceRequestController extends Controller
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
                 'email' => 'nullable|email',
+                'account_email' => 'nullable|email',
                 'ms_options' => 'nullable|array',
                 'months' => 'nullable|array',
                 'year' => 'nullable|string',
@@ -29,6 +30,34 @@ class FacultyServiceRequestController extends Controller
                 'repair_maintenance' => 'nullable|string',
                 'preferred_date' => 'nullable|date',
                 'preferred_time' => 'nullable',
+                'dtr_months' => 'nullable|string',
+                'dtr_with_details' => 'nullable|boolean',
+                'data_type' => 'nullable|in:name,email,contact_number,address,others',
+                'new_data' => 'nullable|string|max:255',
+                'supporting_document' => 'nullable|file|max:2048',
+                'description' => 'nullable|string',
+                'middle_name' => 'nullable|string|max:255',
+                'college' => 'nullable|in:CEIT,CAS,COED,COET,COBA,OTHER',
+                'department' => 'nullable|string|max:255',
+                'plantilla_position' => 'nullable|string|max:255',
+                'date_of_birth' => 'nullable|date',
+                'phone_number' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:500',
+                'blood_type' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+                'emergency_contact_person' => 'nullable|string|max:255',
+                'emergency_contact_number' => 'nullable|string|max:20',
+                'location' => 'nullable|string|max:500',
+                'preferred_date' => 'nullable|date|after_or_equal:today',
+                'preferred_time' => 'nullable|date_format:H:i',
+                'led_screen_details' => 'nullable|string|max:500',
+                'application_name' => 'nullable|string|max:255',
+                'installation_purpose' => 'nullable|string|max:1000',
+                'installation_notes' => 'nullable|string|max:500',
+                'publication_author' => 'nullable|string|max:255',
+                'publication_editor' => 'nullable|string|max:255',
+                'publication_start_date' => 'nullable|date',
+                'publication_end_date' => 'nullable|date|after_or_equal:publication_start_date',
+                'data_documents_details' => 'nullable|string|max:2000',
             ]);
 
             // Add user_id if authenticated
@@ -51,6 +80,19 @@ class FacultyServiceRequestController extends Controller
                     $validatedData[$field] = json_encode($validatedData[$field]);
                 }
             }
+
+            // Handle DTR specific fields
+            if ($validatedData['service_category'] === 'dtr') {
+                $validatedData['dtr_months'] = $request->input('dtr_months');
+                $validatedData['dtr_with_details'] = $request->has('dtr_with_details') ? 1 : 0;
+            }
+            
+               // Handle 'other' data type
+               if ($validatedData['data_type'] === 'other') {
+                $validatedData['data_type'] = $request->input('other_data_type');
+            }
+            
+        
 
             Log::info('Validated data:', $validatedData);
 

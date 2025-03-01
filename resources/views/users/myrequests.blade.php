@@ -156,7 +156,7 @@ $(document).ready(function() {
                                         <span class="badge 
                                             @if($request->status == 'Pending') badge-warning
                                             @elseif($request->status == 'In Progress') badge-info
-                                            @elseif($request->status == 'Approved') badge-success
+                                            @elseif($request->status == 'Completed') badge-success
                                             @elseif($request->status == 'Rejected') badge-danger
                                             @else badge-secondary
                                             @endif">

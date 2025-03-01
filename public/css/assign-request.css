@@ -103,7 +103,30 @@ select {
     background-color: #f8f9fa;
 }
 
+.btn-view {
+    background-color: #007bff;  /* Bootstrap primary blue */
+    color: white;
+    transition: background-color 0.3s ease;
+}
 
+.btn-view:hover {
+    background-color: #0056b3;  /* Darker blue on hover */
+}
+
+.btn-complete {
+    background-color: #16A34A;  /* Bootstrap success green */
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.btn-complete:hover {
+    background-color: #218838;  /* Darker green on hover */
+}
+
+.btn-complete:disabled {
+    background-color: #6c757d;  /* Gray for disabled state */
+    cursor: not-allowed;
+}
 
 /* Action Buttons */
 
@@ -118,19 +141,4 @@ button {
     color: #ffffff;
     font-size: 15px;
     font-weight: 500;
-}
-.btn-edit {
-    background-color: #16A34A;  /* Green */
-}
-
-.btn-status {
-    background-color: #FFC107;  /* Yellow */
-}
-
-.btn-reset {
-    background-color: #6C757D;  /* Gray */
-}
-
-.btn-delete {
-    background-color: #DC3545;  /* Red */
 }

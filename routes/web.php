@@ -387,7 +387,6 @@ Route::get('/assign-history', function () {
     return view('uitc_staff.assign-history');
 })->name('uitc_staff.assign-history');
 
-
 Route::get('/assign-request', function () {
     return view('uitc_staff.assign-request');
 })->name('uitc_staff.assign-request');
@@ -402,6 +401,9 @@ Route::get('/assign-request', [UITCStaffController::class, 'getAssignedRequests'
     ->middleware('auth:admin') // Ensure admin authentication
     ->name('uitc.assigned.requests');
 
+Route::get('/uitc-staff/assigned-requests', [UITCStaffController::class, 'getAssignedRequests'])
+    ->name('uitc.assigned.requests')
+    ->middleware(['auth:admin', 'role:UITC_Staff']);
 
 Route::post('/uitc-staff/complete-request', [UITCStaffController::class, 'completeRequest'])
     ->name('uitc.complete.request')

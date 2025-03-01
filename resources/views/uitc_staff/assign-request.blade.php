@@ -40,7 +40,7 @@
             </select>
 
             <!-- Transaction Filter -->
-            <select name="status" id="status">
+            <select name="transaction_type" id="transaction_type">
                 <option value="all">All Transaction</option>
                 <option value="simple">Simple Transaction</option>
                 <option value="complex">Complex Transaction</option>
@@ -73,7 +73,7 @@
                             '<strong>Service:</strong> ' . $request->service_category 
                             !!}
                         </td>
-                        <td>{{ $request->data_type }}</td>
+                        <td>{{ $request->user_role ?? 'N/A' }}</td>
                         <td>
                             <strong>Date:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('Y-m-d') }}<br>
                             <strong>Time:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('g:i A') }}
@@ -91,7 +91,14 @@
                 </td>
                 <td class="btns">
                     <button class="btn-view" onclick="viewRequestDetails({{ $request->id }})">View</button>
-                    <button class="btn-complete" data-request-id="{{ $request->id }}" onclick="completeRequest({{ $request->id }})">Complete</button>
+                    @if($request->status != 'Completed')
+                    <button 
+                        class="btn-complete" 
+                        data-request-id="{{ $request->id }}"
+                    >
+                        Complete
+                    </button>
+                    @endif
                 </td>
             </tr>
             @empty
@@ -192,6 +199,7 @@
 </div>
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+    <script src="{{ asset('js/assign-request.js') }}"></script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>

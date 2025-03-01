@@ -360,22 +360,19 @@ Route::get('/admin/view-supporting-document/{requestId}',
     ->name('admin.view-supporting-document')
     ->middleware(['auth:admin']);
 
-// Route to get available UITC Staff
-Route::get('/admin/available-technicians', [AdminServiceRequestController::class, 'getAvailableTechnicians'])
-     ->name('get.available.technicians')
-     ->middleware(['auth:admin']);
+// Route for UITC Staff
+Route::get('/get-uitc-staff', [AdminServiceRequestController::class, 'getUITCStaff']);
 
 // Route to assign UITC Staff to service request
-Route::post('/admin/assign-uitc-staff', [AdminServiceRequestController::class, 'assignUITCStaff'])
-     ->name('admin.assign.uitc.staff')
-     ->middleware(['auth:admin']);
+Route::post('/assign-uitc-staff', [AdminServiceRequestController::class, 'assignUITCStaff'])
+    ->name('admin.assign.uitc.staff');
 
-// Route to assign UITC Staff to student service request
-Route::post('/admin/assign-student-uitc-staff', [AdminServiceRequestController::class, 'assignStudentUITCStaff'])
-->name('admin.assign.student.uitc.staff')
-->middleware(['auth:admin']);
+// Assign UITC Staff to Student Service Requests
+Route::post('/assign-uitc-staff', [AdminServiceRequestController::class, 'assignUitcStaff'])
+    ->name('admin.assign.uitc.staff');
 
-Route::post('/admin/service-requests/delete', [AdminServiceRequestController::class, 'deleteServiceRequests'])
+    
+Route::post('/service-requests/delete', [AdminServiceRequestController::class, 'deleteServiceRequests'])
     ->name('admin.delete.service.requests');
 
 Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])

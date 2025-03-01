@@ -18,7 +18,6 @@ class Admin extends Authenticatable
         'username', 
         'password', 
         'role',
-        'availability_status',
         'profile_image'
     ];
 
@@ -26,10 +25,5 @@ class Admin extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-    ];
-
-    // Define the attributes that should be cast
-    protected $casts = [
-        'availability_status' => 'string',
     ];
 }

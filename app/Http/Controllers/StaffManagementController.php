@@ -29,7 +29,6 @@ class StaffManagementController extends Controller
           'username' => $request->username,
           'password' => Hash::make($request->password),
           'role' => 'UITC Staff', // Explicitly set role as UITC Staff
-          'availability_status' => 'available', // Always set to available when added via Staff Management
       ]);
 
       return redirect()->back()->with('success', 'UITC Staff member added successfully.');
@@ -42,13 +41,11 @@ class StaffManagementController extends Controller
     $request->validate([
         'name' => 'required|string|max:255',
         'username' => 'required|string|max:255|unique:admins,username,' . $id,
-        'availability_status' => 'required|in:available,busy,on_leave',
         'profile_image' => 'nullable|image|max:2048', // Optional image upload
     ]);
          
     $staff->name = $request->input('name');
     $staff->username = $request->input('username');
-    $staff->availability_status = $request->input('availability_status');
 
     // Handle profile image upload
     if ($request->hasFile('profile_image')) {

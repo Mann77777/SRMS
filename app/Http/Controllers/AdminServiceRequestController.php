@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\FacultyServiceRequest;
 use App\Models\StudentServiceRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AdminServiceRequestController extends Controller
 {
@@ -205,186 +206,238 @@ private function getRequestData($request)
       public function getAvailableTechnicians()
       {
           // Fetch only UITC Staff from admins table who are available
-          $availableUITCStaff = Admin::where('role', 'UITC Staff')
-                ->where('availability_status', 'available') 
+          $availableUITCStaff = Admin::where('department', 'UITC')
                 ->select('id', 'name')
                 ->get();
     
           return response()->json($availableUITCStaff);
       }
+      public function getUITCStaff()
+      {
+          try {
+              // Fetch all UITC Staff
+              $uitcStaff = Admin::where('role', 'UITC Staff')->get();
+              
+              return response()->json([
+                  'success' => true,
+                  'staff' => $uitcStaff
+              ]);
+          } catch (\Exception $e) {
+              Log::error('Error fetching UITC Staff: ' . $e->getMessage());
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Failed to fetch UITC Staff'
+              ], 500);
+          }
+      }
 
 
-   // Method to assign UITC Staff to a student service request
-   public function assignUITCStaff(Request $request)
-{
-    // Validate the incoming request
-    $validatedData = $request->validate([
-        'request_id' => 'required',
-        'uitcstaff_id' => 'required|exists:admins,id',
-        'transaction_type' => 'required|in:simple,complex,highly_technical',
-        'notes' => 'nullable|string',
-        'request_type' => 'required|in:student,faculty,new_student_service'
-    ]);
+    // Method to assign UITC Staff to a student service request
+    public function assignUitcStaff(Request $request)
+    {
+        // Log the incoming request data for debugging
+        Log::info('Assign UITC Staff Request Data:', $request->all());
 
-    try {
-        // Find the appropriate service request based on type
-        switch ($validatedData['request_type']) {
-            case 'new_student_service':
-                $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
-                break;
-            case 'faculty':
-                $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
-                break;
-            case 'student':
-                $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
-                break;
-            default:
-                throw new \Exception('Invalid request type');
-        }
-
-        // Update the service request
-        $serviceRequest->update([
-            'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-            'transaction_type' => $validatedData['transaction_type'],
-            'admin_notes' => $validatedData['notes'],
-            'status' => 'In Progress'
+        // Validate the incoming request
+        $validatedData = $request->validate([
+            'request_id' => ['required', 'integer', function($attribute, $value, $fail) {
+                $requestExists = DB::table('student_service_requests')
+                    ->where('id', $value)
+                    ->exists();
+                
+                if (!$requestExists) {
+                    Log::error("Invalid Student Service Request ID: {$value}");
+                    $fail("The selected request ID is invalid or does not exist.");
+                }
+            }],
+            'request_type' => 'required|string',
+            'uitcstaff_id' => 'required|exists:admins,id',
+            'transaction_type' => ['required', function($attribute, $value, $fail) {
+                $validTypes = [
+                    'Simple Transaction', 
+                    'Complex Transaction', 
+                    'Highly Technical Transaction'
+                ];
+                
+                if (!in_array(strtolower($value), array_map('strtolower', $validTypes))) {
+                    $fail("The selected transaction type is invalid.");
+                }
+            }],
+            'notes' => 'nullable|string'
         ]);
+        try {
+            // Find the student service request
+            $studentServiceRequest = DB::table('student_service_requests')
+                ->where('id', $validatedData['request_id'])
+                ->first();
 
-        // Update the staff's availability status
-        $uitcStaff = Admin::findOrFail($validatedData['uitcstaff_id']);
-        $uitcStaff->update(['availability_status' => 'available']);
-
-        // Optional: Send notification to the assigned staff
-        // Notification::send($uitcStaff, new ServiceRequestAssignedNotification($serviceRequest));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'UITC Staff assigned successfully'
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('UITC Staff Assignment Error: ' . $e->getMessage());
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
-        ], 500);
-    }
-    
-}
-public function deleteServiceRequests(Request $request)
-{
-    // Validate the incoming request
-    $validatedData = $request->validate([
-        'request_ids' => 'required|array',
-        'request_ids.*' => 'required|integer'
-    ]);
-
-    try {
-        // Start a database transaction
-        DB::beginTransaction();
-
-        foreach ($validatedData['request_ids'] as $requestId) {
-            // Try to find and delete from each possible table
-            $deleted = false;
-
-            // Try StudentServiceRequest
-            $studentRequest = StudentServiceRequest::find($requestId);
-            if ($studentRequest) {
-                $studentRequest->delete();
-                $deleted = true;
+            if (!$studentServiceRequest) {
+                Log::error('Student Service Request not found', [
+                    'request_id' => $validatedData['request_id']
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student Service Request not found.'
+                ], 404);
             }
 
-            // Try FacultyServiceRequest
-            if (!$deleted) {
-                $facultyRequest = FacultyServiceRequest::find($requestId);
-                if ($facultyRequest) {
-                    $facultyRequest->delete();
+            // Update the student service request with assigned staff and status
+            DB::table('student_service_requests')
+                ->where('id', $validatedData['request_id'])
+                ->update([
+                    'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+                    'status' => 'In Progress',
+                    'transaction_type' => $validatedData['transaction_type'],
+                    'admin_notes' => $validatedData['notes'] ?? null,
+                    'updated_at' => now()
+            ]);
+
+            // Retrieve the updated request to return in the response
+            $updatedRequest = DB::table('student_service_requests')
+                ->where('id', $validatedData['request_id'])
+                ->first();
+
+            Log::info('UITC Staff assigned successfully', [
+                'request_id' => $validatedData['request_id'],
+                'assigned_staff_id' => $validatedData['uitcstaff_id']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'UITC Staff assigned successfully',
+                'request' => $updatedRequest
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error assigning UITC Staff: ' . $e->getMessage(), [
+                'request_id' => $validatedData['request_id'],
+                'request_type' => $validatedData['request_type'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to assign UITC Staff: ' . $e->getMessage(),
+                'error_details' => [
+                    'request_id' => $validatedData['request_id'],
+                    'request_type' => $validatedData['request_type']
+                ]
+            ], 500);
+        }
+    }    
+    public function deleteServiceRequests(Request $request)
+    {
+        // Validate the incoming request
+        $validatedData = $request->validate([
+            'request_ids' => 'required|array',
+            'request_ids.*' => 'required|integer'
+        ]);
+
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+
+            foreach ($validatedData['request_ids'] as $requestId) {
+                // Try to find and delete from each possible table
+                $deleted = false;
+
+                // Try StudentServiceRequest
+                $studentRequest = StudentServiceRequest::find($requestId);
+                if ($studentRequest) {
+                    $studentRequest->delete();
                     $deleted = true;
+                }
+
+                // Try FacultyServiceRequest
+                if (!$deleted) {
+                    $facultyRequest = FacultyServiceRequest::find($requestId);
+                    if ($facultyRequest) {
+                        $facultyRequest->delete();
+                        $deleted = true;
+                    }
+                }
+
+                // Try ServiceRequest
+                if (!$deleted) {
+                    $serviceRequest = ServiceRequest::find($requestId);
+                    if ($serviceRequest) {
+                        $serviceRequest->delete();
+                        $deleted = true;
+                    }
+                }
+
+                if (!$deleted) {
+                    throw new \Exception("Request ID {$requestId} not found in any table");
                 }
             }
 
-            // Try ServiceRequest
-            if (!$deleted) {
-                $serviceRequest = ServiceRequest::find($requestId);
-                if ($serviceRequest) {
-                    $serviceRequest->delete();
-                    $deleted = true;
-                }
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Selected requests deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Service Request Deletion Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete requests: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function rejectServiceRequest(Request $request)
+    {
+        // Validate the request
+        $validatedData = $request->validate([
+            'request_id' => 'required',
+            'request_type' => 'required|in:student,faculty,new_student_service',
+            'rejection_reason' => 'required|string',
+            'notes' => 'nullable|string'
+        ]);
+
+        try {
+            // Handle different request types
+            switch ($validatedData['request_type']) {
+                case 'new_student_service':
+                    $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
+                    break;
+                case 'faculty':
+                    $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
+                    break;
+                case 'student':
+                    $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
+                    break;
+                default:
+                    throw new \Exception('Invalid request type');
             }
 
-            if (!$deleted) {
-                throw new \Exception("Request ID {$requestId} not found in any table");
-            }
+            // Update the service request
+            $serviceRequest->update([
+                'status' => 'Rejected',
+                'rejection_reason' => $validatedData['rejection_reason'],
+                'admin_notes' => $validatedData['notes'],
+                'rejected_at' => now()
+            ]);
+
+            // You might want to send a notification to the user here
+            // Notification::send($serviceRequest->user, new ServiceRequestRejectedNotification($serviceRequest));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Service request rejected successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Service Request Rejection Error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to reject service request: ' . $e->getMessage()
+            ], 500);
         }
-
-        DB::commit();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Selected requests deleted successfully'
-        ]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Service Request Deletion Error: ' . $e->getMessage());
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to delete requests: ' . $e->getMessage()
-        ], 500);
     }
-}
-
-public function rejectServiceRequest(Request $request)
-{
-    // Validate the request
-    $validatedData = $request->validate([
-        'request_id' => 'required',
-        'request_type' => 'required|in:student,faculty,new_student_service',
-        'rejection_reason' => 'required|string',
-        'notes' => 'nullable|string'
-    ]);
-
-    try {
-        // Handle different request types
-        switch ($validatedData['request_type']) {
-            case 'new_student_service':
-                $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
-                break;
-            case 'faculty':
-                $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
-                break;
-            case 'student':
-                $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
-                break;
-            default:
-                throw new \Exception('Invalid request type');
-        }
-
-        // Update the service request
-        $serviceRequest->update([
-            'status' => 'Rejected',
-            'rejection_reason' => $validatedData['rejection_reason'],
-            'admin_notes' => $validatedData['notes'],
-            'rejected_at' => now()
-        ]);
-
-        // You might want to send a notification to the user here
-        // Notification::send($serviceRequest->user, new ServiceRequestRejectedNotification($serviceRequest));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Service request rejected successfully'
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('Service Request Rejection Error: ' . $e->getMessage());
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to reject service request: ' . $e->getMessage()
-        ], 500);
-    }
-}
 }

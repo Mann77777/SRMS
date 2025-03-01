@@ -18,8 +18,7 @@ class CreateStaffTable extends Migration
             $table->string('name');
             $table->string('username')->unique();
             $table->string('password');
-            $table->enum('availability_status', ['available', 'busy', 'on_leave'])->default('available');
-             $table->rememberToken();
+            $table->rememberToken();
             $table->timestamps();
         });
     }

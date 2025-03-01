@@ -42,7 +42,6 @@
                         <div class="staff-details">
                             <p><strong>Name:</strong> {{ $staffMember->name }}</p>
                             <p><strong>Username:</strong> {{ $staffMember->username }}</p>
-                            <p><strong>Availability Status:</strong> {{ ucfirst(str_replace('_', ' ', $staffMember->availability_status)) }}</p>
 
                             <div class="staff-actions">
                                 <button class="btn btn-sm btn-primary edit-staff" data-toggle="modal" data-target="#editStaffModal"
@@ -125,14 +124,6 @@
                         <div class="form-group">
                             <label>Username</label>
                             <input type="text" class="form-control" name="username"  id="editStaffUsername" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Availability Status</label>
-                             <select class="form-control" name="availability_status" id="editStaffStatus" required>
-                                <option value="available">Available</option>
-                                <option value="busy">Busy</option>
-                                <option value="on_leave">On Leave</option>
-                            </select>
                         </div>
                      <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

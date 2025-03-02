@@ -115,4 +115,64 @@ class StudentServiceRequestController extends Controller
         $request = StudentServiceRequest::findOrFail($id);
        return view('users.student-request-view', ['request' => $request]);
     }
+
+    public function requestHistory()
+    {
+        $user = Auth::user();
+
+        if($user->role === "Student")
+        {
+            $completedRequests = StudentServiceRequest::where('user_id', Auth::id())
+                ->where('status', 'Completed')
+                ->with('assignedUITCStaff')
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10);
+
+            return view('users.request-history', compact('completedRequests'));
+        }
+
+        return redirect()->back()->with('error', 'Unauthorized access');
+    }
+
+    public function showServiceSurvey($requestId)
+    {
+        $request = StudentServiceRequest::findOrFail($requestId);
+        
+        // Ensure only the request owner can access the survey
+        if ($request->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+
+        // Ensure only completed requests can be surveyed
+        if ($request->status !== 'Completed') {
+            return redirect()->back()->with('error', 'Survey is only available for completed requests');
+        }
+
+        return view('users.service-survey', compact('request'));
+    }
+
+    public function submitServiceSurvey(Request $request)
+    {
+        $validatedData = $request->validate([
+            'request_id' => 'required|exists:student_service_requests,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comments' => 'nullable|string|max:500',
+            'issue_resolved' => 'required|in:yes,no'
+        ]);
+
+        $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
+        
+        // Ensure only the request owner can submit the survey
+        if ($serviceRequest->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+
+        // Save survey results (you might want to create a separate Survey model)
+        $serviceRequest->survey_rating = $validatedData['rating'];
+        $serviceRequest->survey_comments = $validatedData['comments'];
+        $serviceRequest->survey_issue_resolved = $validatedData['issue_resolved'];
+        $serviceRequest->save();
+
+        return redirect()->route('request.history')->with('success', 'Thank you for your feedback!');
+    }
 }

@@ -31,34 +31,41 @@
                        <tr>
                             <th>Request ID</th>
                             <th>Service</th>
-                            <th>Date Submitted</th>
                             <th>UITC Staff</th>
+                            <th>Date Submitted</th>
                             <th>Date Completed</th>
                             <th>Review and Ratings</th>
                             <th>Actions</th>
                        </tr>
                     </thead>
-                    <!--<tbody>
+                    <tbody>
+                        @forelse($completedRequests as $request)
                         <tr>
-                            <td>1</td>
-                            <td>MS Teams</td>
+                            <td>{{ $request->id }}</td>
+                            <td>{{ $request->service_category }}</td>
                             <td>
-                                <strong>Date: </strong><span>2024-11-01</span><br>
-                                <strong>Time: </strong><span>10:00 AM</span>
+                                {{ $request->assignedUITCStaff ? $request->assignedUITCStaff->name : 'N/A' }}
+                            </td>                            <td>
+                                <strong>Date: </strong><span>{{ \Carbon\Carbon::parse($request->created_at)->format('Y-m-d') }}</span><br>
+                                <strong>Time: </strong><span>{{ \Carbon\Carbon::parse($request->created_at)->format('h:i A') }}</span>
                             </td>
-                            <td>John Doe</td>
                             <td>
-                                <strong>Date: </strong><span>2024-11-04</span><br>
-                                <strong>Time: </strong><span>11:30 AM</span>
+                                <strong>Date: </strong><span>{{ \Carbon\Carbon::parse($request->updated_at)->format('Y-m-d') }}</span><br>
+                                <strong>Time: </strong><span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
                             </td>
-
-                            <td><button class="btn-primary">Take a Survey</button></td>
-
                             <td>
-                                <button class="btn-view">View</button>
+                                <a href="{{ route('service.survey', $request->id) }}" class="btn btn-primary">Take a Survey</a>
+                            </td>
+                            <td>
+                                <a href="{{ route('student.myrequests.show', $request->id) }}" class="btn-view">View</a>
                             </td>
                         </tr>
-                    </tbody> -->
+                        @empty
+                        <tr>
+                            <td colspan="7" class="text-center">No completed requests found.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
                 </table>
             </form>
         </div>

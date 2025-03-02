@@ -232,6 +232,20 @@ Route::get('/request-history', function () {
     return view('users.request-history');
 })->name('request-history');
 
+
+Route::get('/request-history', [StudentServiceRequestController::class, 'requestHistory'])
+    ->name('request.history')
+    ->middleware('auth');
+
+
+Route::get('/service-survey/{requestId}', [StudentServiceRequestController::class, 'showServiceSurvey'])
+    ->name('service.survey')
+    ->middleware('auth');
+
+Route::post('/submit-survey', [StudentServiceRequestController::class, 'submitServiceSurvey'])
+    ->name('submit.survey')
+    ->middleware('auth');
+
 Route::get('/messages', function () {
     return view('users.messages');
 })->name('messages');

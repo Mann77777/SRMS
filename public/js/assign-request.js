@@ -1,30 +1,58 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Function to complete a request
     function completeRequest(requestId) {
-        // Disable the complete button to prevent multiple submissions
-        const completeButton = document.querySelector(`.btn-complete[data-request-id="${requestId}"]`);
-        completeButton.disabled = true;
-        completeButton.textContent = 'Completing...';
+        // Open the complete request modal instead of directly submitting
+        const completeRequestModal = document.getElementById('completeRequestModal');
+        const requestIdInput = document.getElementById('completeRequestId');
+        
+        if (completeRequestModal && requestIdInput) {
+            requestIdInput.value = requestId;
+            $(completeRequestModal).modal('show');
+        } else {
+            console.error('Complete request modal or input not found');
+        }
+    }
+
+    // Attach event listeners to complete buttons
+    document.querySelectorAll('.btn-complete').forEach(button => {
+        button.addEventListener('click', function() {
+            const requestId = this.getAttribute('data-request-id');
+            completeRequest(requestId);
+        });
+    });
+
+    // Form submission handler
+    document.getElementById('completeRequestForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate form
+        if (!this.checkValidity()) {
+            e.stopPropagation();
+            this.classList.add('was-validated');
+            return;
+        }
+
+        const formData = new FormData(this);
+        const requestId = formData.get('request_id');
+
+        // Disable submit button to prevent multiple submissions
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Completing...';
 
         // AJAX request to complete the request
         fetch('/uitc-staff/complete-request', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
-            body: JSON.stringify({
-                request_id: requestId,
-                actions_taken: 'Request completed by UITC Staff',
-                completion_report: 'Standard request completion',
-                completion_status: 'fully_completed'
-            })
+            body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.message === 'Request completed successfully') {
                 // Remove the row or update its status
-                const row = completeButton.closest('tr');
+                const row = document.querySelector(`.btn-complete[data-request-id="${requestId}"]`).closest('tr');
                 row.classList.add('completed-request');
                 
                 // Update status badge
@@ -37,28 +65,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 const actionCell = row.querySelector('td:last-child');
                 actionCell.innerHTML = '<span class="text-muted">Completed</span>';
 
-                // Optional: Refresh the table or remove the row
-                // row.remove();
+                // Close the modal
+                $('#completeRequestModal').modal('hide');
+                $('#requestCompletedSuccessModal').modal('show');
             } else {
                 // Handle error
-                alert('Failed to complete request: ' + data.message);
-                completeButton.disabled = false;
-                completeButton.textContent = 'Complete';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to complete request'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while completing the request');
-            completeButton.disabled = false;
-            completeButton.textContent = 'Complete';
-        });
-    }
-
-    // Attach event listeners to complete buttons
-    document.querySelectorAll('.btn-complete').forEach(button => {
-        button.addEventListener('click', function() {
-            const requestId = this.getAttribute('data-request-id');
-            completeRequest(requestId);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while completing the request'
+            });
+        })
+        .finally(() => {
+            // Re-enable submit button
+            submitButton.disabled = false;
+            submitButton.textContent = 'Complete Request';
         });
     });
 });

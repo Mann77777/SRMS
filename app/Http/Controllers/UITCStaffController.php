@@ -98,6 +98,14 @@ class UITCStaffController extends Controller
             // Find the request
             $serviceRequest = StudentServiceRequest::findOrFail($request->request_id);
 
+            /* Additional validation to prevent automatic completion
+            if (!$request->has('actions_taken') || !$request->has('completion_report')) {
+                return response()->json([
+                    'message' => 'Cannot complete request without documenting actions and report',
+                    'error' => 'Incomplete request details'
+                ], 400);
+            } */
+
             // Ensure the request is assigned to the current UITC staff
             $currentStaffId = Auth::guard('admin')->user()->id;
             if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {

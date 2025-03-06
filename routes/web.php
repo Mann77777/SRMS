@@ -423,4 +423,10 @@ Route::post('/uitc-staff/complete-request', [UITCStaffController::class, 'comple
     ->name('uitc.complete.request')
     ->middleware('auth:admin');
 
+// UITC Staff Assign History Routes
+Route::get('/uitc-staff/assign-history', [UITCStaffController::class, 'getAssignHistoryRequests'])
+    ->name('uitc.assign.history')
+    ->middleware(['auth:admin', 'role:uitc_staff']);
+
 Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');
+

@@ -59,7 +59,7 @@
                         </div>
                         <div class="status-details">
                             <h3>{{ $assignRequest ?? 0 }}</h3>
-                            <p>Pending Assignments</p>
+                            <p>Pending Requests</p>
                         </div>
                     </div>
                 </div>
@@ -70,7 +70,7 @@
                         </div>
                         <div class="status-details">
                             <h3>{{ $servicesCompleted ?? 0 }}</h3>
-                            <p>Completed Services</p>
+                            <p>Completed Requests</p>
                         </div>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                         </div>
                         <div class="status-details">
                             <h3>{{ $assignStaff ?? 0 }}</h3>
-                            <p>Active Staff</p>
+                            <p>Active UITC Staff</p>
                         </div>
                     </div>
                 </div>

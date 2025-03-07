@@ -24,7 +24,6 @@ class StudentController extends Controller
             'student_id' => 'required|string|unique:users,student_id,' . Auth::id(),
             'college' => 'required|string',
             'course' => 'required|string',
-            'year_level' => 'required|string',
         ]);
     
         $user = Auth::user();
@@ -37,7 +36,6 @@ class StudentController extends Controller
             'status' => 'active',
             'student_id' => $request->student_id,
             'course' => $request->course,
-            'year_level' => $request->year_level,
             'college' => $request->college, 
             'verification_status' => $verificationStatus
         ]);

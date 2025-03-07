@@ -58,21 +58,33 @@
                 <span class="user-data">{{ Auth::user()->email }}</span>
             </p>
 
-            @if(Auth::user()->role === 'Student')
-                <p>
-                    <span class="label">Student ID:</span>
-                    <span class="user-data">{{ Auth::user()->student_id }}</span>
-                </p>
-                @endif
             <p>
                 <span class="label">Role:</span>
                 <span class="user-data">{{ Auth::user()->role }}</span>
             </p>
 
-            <p>
-                <span class="label">Verification Status:</span>
-                <span class="user-data">{{ Auth::user()->verification_status }}</span>
-            </p>
+            @if(Auth::user()->role === 'Student')
+
+               
+                <p>
+                    <span class="label">Student ID:</span>
+                    <span class="user-data">{{ Auth::user()->student_id }}</span>
+                </p>
+
+                <p>
+                    <span class="label">College:</span>
+                    <span class="user-data">{{ Auth::user()->college }}</span>
+                </p>
+                <p>
+                    <span class="label">Course:</span>
+                    <span class="user-data">{{ Auth::user()->course }}</span>
+                </p>
+                @endif
+
+                <p>
+                    <span class="label">Verification Status:</span>
+                    <span class="user-data">{{ Auth::user()->verification_status }}</span>
+                </p>
         </div>
 
         <!-- Form for uploading profile image -->

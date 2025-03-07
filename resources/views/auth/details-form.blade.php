@@ -107,21 +107,6 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label>Year Level</label>
-                <select class="form-control @error('year_level') is-invalid @enderror" name="year_level" required>
-                    <option value="">Select Year Level</option>
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
-                    <option value="5th Year">5th Year</option>
-                </select>
-                @error('year_level')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
-            </div>
-
             <button type="submit" class="btn-submit">Submit Details</button>
         </form>
     </div>

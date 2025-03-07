@@ -13,6 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Function to show success modal
+    function showSuccessModal() {
+        Swal.fire({
+            title: 'Success!',
+            text: 'The request has been successfully completed.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        });
+    }
+
     // Attach event listeners to complete buttons
     document.querySelectorAll('.btn-complete').forEach(button => {
         button.addEventListener('click', function() {
@@ -67,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Close the modal
                 $('#completeRequestModal').modal('hide');
-                $('#requestCompletedSuccessModal').modal('show');
+                showSuccessModal();
             } else {
                 // Handle error
                 Swal.fire({

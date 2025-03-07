@@ -6,6 +6,10 @@
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="{{ asset('css/student-request.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Service Request Form</title>
@@ -209,29 +213,27 @@
             </div>
         </div>
 
+        <script>
+            function showRequestSuccessModal(requestId) {
+                Swal.fire({
+                    title: 'Request Submitted Successfully',
+                    text: 'Your service request has been submitted successfully.\nRequest ID: ' + requestId,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ url('myrequests') }}';
+                    }
+                });
+            }
+        </script>
 
-           <!-- Success Modal -->
-            @if(session('showSuccessModal'))
-            <div class="modal fade show" id="serviceRequestSuccessModal" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0,0,0,0.5);">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Request Submitted Successfully</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeSuccessModal()">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Your service request for <strong>{{ session('serviceCategory') }}</strong> has been submitted successfully.</p>
-                            <p>Request ID: <strong>{{ session('requestId') }}</strong></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="closeSuccessModal()">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
+        @if(session('showSuccessModal'))
+            <script>
+                showRequestSuccessModal('{{ session('requestId') }}');
+            </script>
+        @endif
+
     </div>
     <!-- JavaScript -->
     <script>
@@ -327,7 +329,7 @@
         });
     </script>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>

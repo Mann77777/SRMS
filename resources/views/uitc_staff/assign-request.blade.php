@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="{{ asset('css/assign-request.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Assignment Request</title>
@@ -178,25 +182,7 @@
     </div>
 </div>
 
-<!-- Success Modal -->
-<div class="modal" id="requestCompletedSuccessModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="successModalLabel">Success</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Request has been completed successfully!
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/assign-request.js') }}"></script>
@@ -235,9 +221,7 @@
             success: function(response) {
                 // Close the complete request modal
                 $('#completeRequestModal').modal('hide');
-                
-                // Show success modal
-                $('#requestCompletedSuccessModal').modal('show');
+             
             },
             error: function(xhr) {
                 // Show error message

@@ -56,7 +56,6 @@ class UserController extends Controller
                 'college' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
                 'course' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
                 'student_id' => $request->role === 'Student' ? 'required|string|unique:users' : 'nullable|string',
-                'year_level' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
             ]);
 
             $user = User::create([
@@ -72,7 +71,6 @@ class UserController extends Controller
                 'college' => $request->role === 'Student' ? $request->college : null,
                 'course' => $request->role === 'Student' ? $request->course : null,
                 'student_id' => $request->role === 'Student' ? $request->student_id : null,
-                'year_level' => $request->role === 'Student' ? $request->year_level : null,
                 'admin_verification_notes' => 'User created directly by admin ',
             ]);
 
@@ -175,7 +173,6 @@ class UserController extends Controller
             'college' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
             'course' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
             'student_id' => $request->role === 'Student' ? 'required|string|unique:users,student_id,'.$user->id : 'nullable|string',
-            'year_level' => $request->role === 'Student' ? 'required|string' : 'nullable|string',
         ]);
     
         $user->update([
@@ -186,7 +183,6 @@ class UserController extends Controller
             'college' => $request->role === 'Student' ? $request->college : null,
             'course' => $request->role === 'Student' ? $request->course : null,
             'student_id' => $request->role === 'Student' ? $request->student_id : null,
-            'year_level' => $request->role === 'Student' ? $request->year_level : null,
             'admin_verification_notes' => 'User updated by admin',
         ]);
     

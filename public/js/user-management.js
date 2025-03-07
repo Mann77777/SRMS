@@ -10,7 +10,6 @@ $('#addUserForm').on('submit', function(e) {
         var college = $('#add-college').val();
         var course = $('#add-course').val();
         var studentId = $('input[name="student_id"]').val();
-        var yearLevel = $('select[name="year_level"]').val();
         
         if (!college) {
             alert('Please select a college');
@@ -24,11 +23,6 @@ $('#addUserForm').on('submit', function(e) {
         
         if (!studentId) {
             alert('Please enter a student ID');
-            return;
-        }
-        
-        if (!yearLevel) {
-            alert('Please select a year level');
             return;
         }
     }
@@ -126,26 +120,22 @@ $(document).ready(function() {
         const studentIdInput = $('input[name="student_id"]');
         const collegeSelect = $('#add-college');
         const courseSelect = $('#add-course');
-        const yearLevelSelect = $('select[name="year_level"]');
 
         if ($(this).val() === 'Student') {
             studentDetails.show();
             studentIdInput.prop('required', true);
             collegeSelect.prop('required', true);
             courseSelect.prop('required', true);
-            yearLevelSelect.prop('required', true);
         } else {
             studentDetails.hide();
             studentIdInput.prop('required', false);
             collegeSelect.prop('required', false);
             courseSelect.prop('required', false);
-            yearLevelSelect.prop('required', false);
             
             // Clear student-specific inputs
             studentIdInput.val('');
             collegeSelect.val('');
             courseSelect.html('<option value="">Select Course</option>').prop('disabled', true);
-            yearLevelSelect.val('');
         }
     });
 
@@ -156,7 +146,6 @@ $(document).ready(function() {
         // If not a student, remove student-specific field validations
         if (role !== 'Student') {
             $('input[name="student_id"]').removeAttr('required');
-            $('select[name="year_level"]').removeAttr('required');
             $('#add-college').removeAttr('required');
             $('#add-course').removeAttr('required');
         }
@@ -529,7 +518,6 @@ $(document).ready(function() {
                     courseSelect.prop('disabled', false);
                     $('#edit-course').val(response.course);
                     $('#edit-student-id').val(response.student_id);
-                    $('#edit-year-level').val(response.year_level);
                 }
                 
                 $('#editUserModal').modal('show');
@@ -550,7 +538,6 @@ $(document).ready(function() {
             var college = $('#edit-college').val();
             var course = $('#edit-course').val();
             var studentId = $('#edit-student-id').val();
-            var yearLevel = $('#edit-year-level').val();
             
             if (!college) {
                 alert('Please select a college');
@@ -564,11 +551,6 @@ $(document).ready(function() {
             
             if (!studentId) {
                 alert('Please enter a student ID');
-                return;
-            }
-            
-            if (!yearLevel) {
-                alert('Please select a year level');
                 return;
             }
         }
@@ -599,19 +581,16 @@ $(document).ready(function() {
         var collegeSelect = $('#edit-college');
         var courseSelect = $('#edit-course');
         var studentIdInput = $('#edit-student-id');
-        var yearLevelSelect = $('#edit-year-level');
 
         if (selectedRole === 'Student') {
             studentDetails.show();
             courseSelect.prop('disabled', true);
             studentIdInput.prop('required', true);
-            yearLevelSelect.prop('required', true);
         } else {
             studentDetails.hide();
             collegeSelect.val('');
             courseSelect.val('').prop('disabled', true);
             studentIdInput.val('').prop('required', false);
-            yearLevelSelect.val('').prop('required', false);
         }
     });
       
@@ -735,7 +714,6 @@ $(document).on('click', '.btn-verify', function() {
             $('#student-id').text(student.student_id);
             $('#student-college').text(student.college || 'Not provided');
             $('#student-course').text(student.course || 'Not provided');
-            $('#student-year').text(student.year_level || 'Not provided');
             $('#student-verification-status').text(student.verification_status || 'Pending Verification');
             
             // Store user ID for verification

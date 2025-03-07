@@ -61,21 +61,7 @@
                                 <option value="">Select Course</option>
                             </select>
                         </div>
-
-                        <div class="form-group">
-                            <label>Year Level</label>
-                            <select class="form-control @error('year_level') is-invalid @enderror" name="year_level" required>
-                                <option value="">Select Year Level</option>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
-                                <option value="3rd Year">3rd Year</option>
-                                <option value="4th Year">4th Year</option>
-                                <option value="5th Year">5th Year</option>
-                            </select>
-                            @error('year_level')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
+                  
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
@@ -160,17 +146,6 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label>Year Level</label>
-                                <select class="form-control" id="edit-year-level" name="year_level">
-                                    <option value="">Select Year Level</option>
-                                    <option value="1st Year">1st Year</option>
-                                    <option value="2nd Year">2nd Year</option>
-                                    <option value="3rd Year">3rd Year</option>
-                                    <option value="4th Year">4th Year</option>
-                                    <option value="5th Year">5th Year</option>
-                                </select>
-                            </div>
                         </div>
                     </input>
                 </form>

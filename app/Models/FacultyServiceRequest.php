@@ -30,7 +30,7 @@ class FacultyServiceRequest extends Model
         'preferred_date',
         'preferred_time',
         'status',
-        'ms_options',
+        //'ms_options',
         'dtr_months',
         'dtr_with_details',
         'data_type',
@@ -62,7 +62,7 @@ class FacultyServiceRequest extends Model
 
     protected $casts = [
         'months' => 'array',
-        'ms_options' => 'array',
+        //'ms_options' => 'array',
         'preferred_date' => 'date',
         'preferred_time' => 'datetime',
         'new_data' => 'string',

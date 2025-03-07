@@ -21,7 +21,7 @@ class FacultyServiceRequestController extends Controller
                 'last_name' => 'required|string|max:255',
                 'email' => 'nullable|email',
                 'account_email' => 'nullable|email',
-                'ms_options' => 'nullable|array',
+                //'ms_options' => 'nullable|array',
                 'months' => 'nullable|array',
                 'year' => 'nullable|string',
                 'supporting_document' => 'nullable|file|max:2048',
@@ -72,13 +72,6 @@ class FacultyServiceRequestController extends Controller
             if ($request->hasFile('supporting_document')) {
                 $path = $request->file('supporting_document')->store('documents', 'public');
                 $validatedData['supporting_document'] = $path;
-            }
-
-            // Handle array fields
-            foreach (['ms_options', 'months'] as $field) {
-                if (isset($validatedData[$field]) && is_array($validatedData[$field])) {
-                    $validatedData[$field] = json_encode($validatedData[$field]);
-                }
             }
 
             // Handle DTR specific fields

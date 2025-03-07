@@ -112,29 +112,6 @@
                     </div>
                 </div>
 
-                <!-- Additional form sections will be dynamically shown/hidden by JavaScript -->
-                <div id="ms_options_form" style="display: none;">
-                    <div class="form-section">
-                        <h5>MS Options</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="ms_options[]" value="MS Office 365">
-                                    <label class="form-check-label">MS Office 365</label>
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="ms_options[]" value="MS Teams">
-                                    <label class="form-check-label">MS Teams</label>
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="ms_options[]" value="TUP Email">
-                                    <label class="form-check-label">TUP Email</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Additional Forms for Each Option -->
                 <div id="resetForm" style="display: none;">
                     <div class="form-section">
@@ -200,9 +177,8 @@
                         <div class="row mt-3">
                             <div class="col-md-12">
                                 <label>Upload Supporting Document</label>
-                                <input type="file" class="form-control" name="supporting_document" required>
+                                <input type="file" class="form-control" name="supporting_document" required>                            </div>
                             </div>
-                        </div>
                         <div class="row mt-3">
                             <div class="col-md-12">
                                 <label>Additional Notes (Optional)</label>

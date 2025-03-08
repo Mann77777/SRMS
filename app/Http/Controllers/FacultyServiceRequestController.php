@@ -6,6 +6,7 @@ use App\Models\FacultyServiceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class FacultyServiceRequestController extends Controller
 {
@@ -14,93 +15,71 @@ class FacultyServiceRequestController extends Controller
         try {
             Log::info('Incoming request data:', $request->all());
 
-            // Validate the request
-            $validatedData = $request->validate([
+            // Basic validation for common required fields
+            $request->validate([
                 'service_category' => 'required',
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-                'email' => 'nullable|email',
-                'account_email' => 'nullable|email',
-                //'ms_options' => 'nullable|array',
-                'months' => 'nullable|array',
-                'year' => 'nullable|string',
-                'supporting_document' => 'nullable|file|max:2048',
-                'description' => 'nullable|string',
-                'problem_encountered' => 'nullable|string',
-                'repair_maintenance' => 'nullable|string',
-                'preferred_date' => 'nullable|date',
-                'preferred_time' => 'nullable',
-                'dtr_months' => 'nullable|string',
-                'dtr_with_details' => 'nullable|boolean',
-                'data_type' => 'nullable|in:name,email,contact_number,address,others',
-                'new_data' => 'nullable|string|max:255',
-                'supporting_document' => 'nullable|file|max:2048',
-                'description' => 'nullable|string',
-                'middle_name' => 'nullable|string|max:255',
-                'college' => 'nullable|in:CEIT,CAS,COED,COET,COBA,OTHER',
-                'department' => 'nullable|string|max:255',
-                'plantilla_position' => 'nullable|string|max:255',
-                'date_of_birth' => 'nullable|date',
-                'phone_number' => 'nullable|string|max:20',
-                'address' => 'nullable|string|max:500',
-                'blood_type' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
-                'emergency_contact_person' => 'nullable|string|max:255',
-                'emergency_contact_number' => 'nullable|string|max:20',
-                'location' => 'nullable|string|max:500',
-                'preferred_date' => 'nullable|date|after_or_equal:today',
-                'preferred_time' => 'nullable|date_format:H:i',
-                'led_screen_details' => 'nullable|string|max:500',
-                'application_name' => 'nullable|string|max:255',
-                'installation_purpose' => 'nullable|string|max:1000',
-                'installation_notes' => 'nullable|string|max:500',
-                'publication_author' => 'nullable|string|max:255',
-                'publication_editor' => 'nullable|string|max:255',
-                'publication_start_date' => 'nullable|date',
-                'publication_end_date' => 'nullable|date|after_or_equal:publication_start_date',
-                'data_documents_details' => 'nullable|string|max:2000',
             ]);
 
+            // Get the ACTUAL database columns, not just what's in the model
+            $tableColumns = Schema::getColumnListing('faculty_service_requests');
+            
+            // Get all input data
+            $inputData = $request->all();
+            
+            // Initialize filtered data array
+            $filteredData = [];
+            
+            // Only include fields that exist in the database
+            foreach ($tableColumns as $column) {
+                if (isset($inputData[$column])) {
+                    $filteredData[$column] = $inputData[$column];
+                }
+            }
+            
+            // Handle special field mapping
+            if (isset($inputData['problems_encountered']) && in_array('problem_encountered', $tableColumns)) {
+                $filteredData['problem_encountered'] = $inputData['problems_encountered'];
+            }
+            
             // Add user_id if authenticated
             if (Auth::check()) {
-                $validatedData['user_id'] = Auth::id();
+                $filteredData['user_id'] = Auth::id();
             }
 
             // Add default status
-            $validatedData['status'] = 'Pending';
+            $filteredData['status'] = 'Pending';
 
             // Handle file upload
-            if ($request->hasFile('supporting_document')) {
+            if ($request->hasFile('supporting_document') && in_array('supporting_document', $tableColumns)) {
                 $path = $request->file('supporting_document')->store('documents', 'public');
-                $validatedData['supporting_document'] = $path;
+                $filteredData['supporting_document'] = $path;
             }
 
             // Handle DTR specific fields
-            if ($validatedData['service_category'] === 'dtr') {
-                $validatedData['dtr_months'] = $request->input('dtr_months');
-                $validatedData['dtr_with_details'] = $request->has('dtr_with_details') ? 1 : 0;
+            if ($request->input('service_category') === 'dtr') {
+                if (in_array('dtr_months', $tableColumns)) {
+                    $filteredData['dtr_months'] = $request->input('dtr_months');
+                }
+                if (in_array('dtr_with_details', $tableColumns)) {
+                    $filteredData['dtr_with_details'] = $request->has('dtr_with_details') ? 1 : 0;
+                }
             }
-            
-               // Handle 'other' data type
-               if ($validatedData['data_type'] === 'other') {
-                $validatedData['data_type'] = $request->input('other_data_type');
-            }
-            
-        
 
-            Log::info('Validated data:', $validatedData);
+            // Log filtered data
+            Log::info('Filtered data for submission:', $filteredData);
 
-            // Create the request
-            $serviceRequest = FacultyServiceRequest::create($validatedData);
+            // Create the request with filtered data
+            $serviceRequest = FacultyServiceRequest::create($filteredData);
 
             Log::info('Service request created:', ['id' => $serviceRequest->id]);
-
-            //return redirect()->back()->with('success', 'Service request submitted successfully!');
 
             // Redirect back with success modal data
             return redirect()->back()->with([
                 'showSuccessModal' => true,
                 'requestId' => $serviceRequest->id,
-                'serviceCategory' => $validatedData['service_category']
+                'serviceCategory' => $request->input('service_category')
             ]);
 
         } catch (\Exception $e) {
@@ -126,8 +105,7 @@ class FacultyServiceRequestController extends Controller
             // Log for debugging
             Log::info('Fetched requests:', [
                 'user_id' => Auth::id(),
-                'count' => $requests->count(),
-                'requests' => $requests->toArray()
+                'count' => $requests->count()
             ]);
 
             return view('users.myrequest', ['requests' => $requests]);
@@ -149,7 +127,28 @@ class FacultyServiceRequestController extends Controller
                 return redirect()->back()->with('error', 'Unauthorized action');
             }
 
-            $serviceRequest->update($request->all());
+            // Get the ACTUAL database columns
+            $tableColumns = Schema::getColumnListing('faculty_service_requests');
+            
+            // Get all input data
+            $inputData = $request->all();
+            
+            // Initialize filtered data array
+            $filteredData = [];
+            
+            // Only include fields that exist in the database
+            foreach ($tableColumns as $column) {
+                if (isset($inputData[$column])) {
+                    $filteredData[$column] = $inputData[$column];
+                }
+            }
+            
+            // Handle special field mapping
+            if (isset($inputData['problems_encountered']) && in_array('problem_encountered', $tableColumns)) {
+                $filteredData['problem_encountered'] = $inputData['problems_encountered'];
+            }
+
+            $serviceRequest->update($filteredData);
             return redirect()->back()->with('success', 'Request updated successfully');
         } catch (\Exception $e) {
             Log::error('Error updating request:', [

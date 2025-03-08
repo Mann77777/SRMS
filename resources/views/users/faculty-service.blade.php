@@ -92,6 +92,26 @@
                     </select>
                 </div>
 
+                <!-- MS Office Options Form -->
+                <div id="ms_options_form" style="display: none;">
+                    <div class="form-section">
+                        <h5>MS Office Options</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ms_options[]" id="ms_email" value="email">
+                            <label class="form-check-label" for="ms_email">Email Account</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ms_options[]" id="ms_teams" value="teams">
+                            <label class="form-check-label" for="ms_teams">MS Teams</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ms_options[]" id="ms_office" value="office">
+                            <label class="form-check-label" for="ms_office">MS Office 365</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information Form -->
                 <div id="personalInfoForm" style="display: none;">
                     <div class="form-section">
                         <h5>Personal Information</h5>
@@ -112,19 +132,20 @@
                     </div>
                 </div>
 
-                <!-- Additional Forms for Each Option -->
+                <!-- Reset Form -->
                 <div id="resetForm" style="display: none;">
                     <div class="form-section">
                         <!-- <h5>Reset Information</h5> -->
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Account Email</label>
-                                <input type="email" class="form-control" name="account_email" placeholder="Account Email" required>
+                                <input type="email" class="form-control" name="account_email" placeholder="Account Email">
                             </div>
                         </div>
                     </div>
                 </div>
                 
+                <!-- DTR Options Form -->
                 <div id="dtr_options_form" style="display: none;">
                     <div class="form-section">
                         <h5>Daily Time Record Details</h5>
@@ -133,8 +154,7 @@
                                 <div class="form-group">
                                     <label for="dtr_months">Month(s)</label>
                                     <input type="text" class="form-control" id="dtr_months" name="dtr_months" 
-                                           placeholder="Enter month(s) (e.g., January 2024)" 
-                                           required>
+                                           placeholder="Enter month(s) (e.g., January 2024)">
                                     <small class="form-text text-muted">
                                         Enter one or multiple months separated by comma
                                     </small>
@@ -154,13 +174,14 @@
                     </div>
                 </div>
 
+                <!-- Change of Data Form -->
                 <div id="changeOfDataForm" style="display: none;">
                     <div class="form-section">
                         <h5>Change of Data</h5>
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Type of Data to Change</label>
-                                <select class="form-control" name="data_type" required>
+                                <select class="form-control" name="data_type">
                                     <option value="">Select Data Type</option>
                                     <option value="name">Name</option>
                                     <option value="email">Email Address</option>
@@ -171,14 +192,15 @@
                             </div>
                             <div class="col-md-6">
                                 <label>Specify New Information</label>
-                                <input type="text" class="form-control" name="new_data" placeholder="Enter New Information" required>
+                                <input type="text" class="form-control" name="new_data" placeholder="Enter New Information">
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-md-12">
                                 <label>Upload Supporting Document</label>
-                                <input type="file" class="form-control" name="supporting_document" required>                            </div>
+                                <input type="file" class="form-control" name="supporting_document">
                             </div>
+                        </div>
                         <div class="row mt-3">
                             <div class="col-md-12">
                                 <label>Additional Notes (Optional)</label>
@@ -189,32 +211,18 @@
                     </div>
                 </div>
                 
+                <!-- Biometrics Enrollment Form -->
                 <div id="biometricsEnrollmentForm" style="display: none;">
                     <div class="form-section">
                         <h5>Biometrics Enrollment Form</h5>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Last Name</label>
-                                    <input type="text" class="form-control" name="last_name" placeholder="Enter Last Name">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>First Name</label>
-                                    <input type="text" class="form-control" name="first_name" placeholder="Enter First Name">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
                                     <label>Middle Name</label>
                                     <input type="text" class="form-control" name="middle_name" placeholder="Enter Middle Name">
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>College</label>
                                     <select class="form-control" name="college">
@@ -228,7 +236,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Department</label>
                                     <input type="text" class="form-control" name="department" placeholder="Enter Department">
@@ -302,6 +310,7 @@
                     </div>
                 </div>
 
+                <!-- Location Form -->
                 <div id="locationForm" style="display: none;">
                     <div class="form-section">
                         <h5>Location Details</h5>
@@ -316,19 +325,20 @@
                     </div>
                 </div>
                 
-                <div id="add_info" style="display: none;">
-                    <div class="form-section">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label>Problems Encountered</label>
-                                    <textarea class="form-control" name="problems_encountered" rows="4" placeholder="Describe the problems you are experiencing in detail"></textarea>
-                                </div>
+                            <div id="add_info" style="display: none;">
+                <div class="form-section">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Problems Encountered</label>
+                                <textarea class="form-control" name="problem_encountered" rows="4" placeholder="Describe the problems you are experiencing in detail"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
+                <!-- LED Screen Request Form -->
                 <div id="ledScreenForm" style="display: none;">
                     <div class="form-section">
                         <h5>Request to use LED Screen</h5>
@@ -357,8 +367,7 @@
                     </div>
                 </div>
 
-
-
+                <!-- Install Application Form -->
                 <div id="installApplicationForm" style="display: none;">
                     <div class="form-section">
                         <h5>Application/Information System/Software Installation Request</h5>
@@ -389,6 +398,7 @@
                     </div>
                 </div>
 
+                <!-- Publication Form -->
                 <div id="publicationForm" style="display: none;">
                     <div class="form-section">
                         <h5>Publication/Website Information Details</h5>
@@ -423,6 +433,7 @@
                     </div>
                 </div>
 
+                <!-- Data Documents Form -->
                 <div id="dataDocumentsForm" style="display: none;">
                     <div class="form-section">
                         <h5>Data, Documents, and Reports Details</h5>
@@ -431,6 +442,21 @@
                                 <div class="form-group">
                                     <label>Please Specify</label>
                                     <textarea class="form-control" name="data_documents_details" rows="4" placeholder="Provide detailed information about the data, documents, or reports you need assistance with"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Services Form - Placeholder if needed -->
+                <div id="otherServicesForm" style="display: none;">
+                    <div class="form-section">
+                        <h5>Other Service Details</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Service Description</label>
+                                    <textarea class="form-control" name="other_service_details" rows="4" placeholder="Provide detailed information about your request"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -471,6 +497,13 @@
                         </div>
                         <div class="modal-body">
                             <!-- Add your terms and conditions content here -->
+                            <p>By submitting this form, you agree that:</p>
+                            <ul>
+                                <li>The information provided is accurate and complete</li>
+                                <li>You authorize UITC staff to process your request</li>
+                                <li>Response time may vary depending on the nature of the request</li>
+                                <li>You will be contacted if additional information is needed</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -478,29 +511,29 @@
         </div>
 
 
-             <!-- Success Modal -->
-             @if(session('showSuccessModal'))
-            <div class="modal" id="serviceRequestSuccessModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="successModalLabel">Success</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeSuccessModal()">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            Your service request for <strong>{{ session('serviceCategory') }}</strong> has been submitted successfully!
-                            <br>
-                            Request ID: <strong>{{ session('requestId') }}</strong>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeSuccessModal()">Close</button>
-                        </div>
+        <!-- Success Modal -->
+        @if(session('showSuccessModal'))
+        <div class="modal" id="serviceRequestSuccessModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="successModalLabel">Success</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeSuccessModal()">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Your service request for <strong>{{ session('serviceCategory') }}</strong> has been submitted successfully!
+                        <br>
+                        Request ID: <strong>{{ session('requestId') }}</strong>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeSuccessModal()">Close</button>
                     </div>
                 </div>
             </div>
-            @endif
+        </div>
+        @endif
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -518,7 +551,6 @@
                 $('#serviceRequestSuccessModal').modal('show');
             @endif
         });
-
     </script>
 </body>
 </html>

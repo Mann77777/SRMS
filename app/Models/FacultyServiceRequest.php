@@ -10,74 +10,67 @@ class FacultyServiceRequest extends Model
     use HasFactory;
 
     protected $fillable = [
+        // User information
         'user_id',
         'service_category',
         'first_name',
         'last_name',
         'email',
+        
+        // Account related
         'account_email',
-        'college',
-        'department',
-        'data_type',
-        'new_data',
-        'location',
-        'description',
-        'months',
-        'year',
-        'supporting_document',
-        'problem_encountered',
-        'repair_maintenance',
-        'preferred_date',
-        'preferred_time',
-        'status',
-        //'ms_options',
+        
+        // DTR related
         'dtr_months',
         'dtr_with_details',
+        'months',
+        'year',
+        
+        // Location information
+        'location',
+        
+        // Change of data
         'data_type',
         'new_data',
         'supporting_document',
+        
+        // Problem description
         'description',
-        'middle_name',
-        'college',
-        'department',
-        'plantilla_position',
-        'date_of_birth',
-        'phone_number',
-        'address',
-        'blood_type',
-        'emergency_contact_person',
-        'emergency_contact_number',
-        'location',
+        'problem_encountered',  // Changed from problems_encountered to problem_encountered
+        'repair_maintenance',
+        
+        // LED screen request
+        'preferred_date',
+        'preferred_time',
         'led_screen_details',
+        
+        // Application installation
         'application_name',
         'installation_purpose',
         'installation_notes',
+        
+        // Publication
         'publication_author',
         'publication_editor',
         'publication_start_date',
         'publication_end_date',
         'publication_details',
+        
+        // Data documents
         'data_documents_details',
+        
+        // Status
+        'status',
     ];
 
     protected $casts = [
         'months' => 'array',
-        //'ms_options' => 'array',
         'preferred_date' => 'date',
         'preferred_time' => 'datetime',
         'new_data' => 'string',
         'supporting_document' => 'string',
         'description' => 'string',
-        'middle_name' => 'string',
-        'college' => 'string',
-        'department' => 'string',
-        'plantilla_position' => 'string',
-        'date_of_birth' => 'date',
-        'phone_number' => 'string',
-        'address' => 'string',
-        'blood_type' => 'string',
-        'emergency_contact_person' => 'string',
-        'emergency_contact_number' => 'string',
+        'problem_encountered' => 'string',  // Changed from problems_encountered to problem_encountered
         'location' => 'string',
         'led_screen_details' => 'string', 
         'application_name' => 'string',

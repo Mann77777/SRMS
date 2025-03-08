@@ -15,12 +15,17 @@ function showFormFields() {
         'locationForm',
         'problemsForm',
         'add_info',
-        'useled',
-        'post_pub',
+        'ledScreenForm',
+        'publicationForm',
+        'dataDocumentsForm',
         'otherServicesForm',
         'ms_options_form',
-        'dtr_options_form'
+        'dtr_options_form',
+        'installApplicationForm'
     ];
+
+    // Reset all required attributes first
+    resetAllRequiredFields();
 
     formSections.forEach(section => {
         const element = document.getElementById(section);
@@ -28,16 +33,6 @@ function showFormFields() {
             element.style.display = 'none';
         }
     });
-
-    // Remove required attribute from DTR specific fields
-    const dtrMonthsField = document.getElementById('dtr_months');
-    if (dtrMonthsField) {
-        dtrMonthsField.removeAttribute('required');
-    }
-
-    // Reset field requirements
-    setFieldRequired('first_name', false);
-    setFieldRequired('last_name', false);
 
     // Always show terms and submit sections
     const termsSection = document.querySelector('.form-section:has(#agreeTerms)');
@@ -62,26 +57,18 @@ function showFormFields() {
             showElement('resetForm');
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
+            setFieldRequired('account_email', true);
             break;
 
         case 'change_of_data_ms':
-            showElement('personalInfoForm');
-            showElement('changeOfDataForm');
-            setFieldRequired('first_name', true);
-            setFieldRequired('last_name', true);
-            
-            // Make description required for change of data
-            const descriptionField = document.querySelector('[name="description"]');
-            if (descriptionField) {
-                descriptionField.setAttribute('required', 'required');
-            }
-            break;
-
         case 'change_of_data_portal':
             showElement('personalInfoForm');
             showElement('changeOfDataForm');
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
+            setFieldRequired('data_type', true);
+            setFieldRequired('new_data', true);
+            setFieldRequired('supporting_document', true);
             break;
 
         case 'dtr':
@@ -90,45 +77,21 @@ function showFormFields() {
             showElement('dtr_options_form');
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
-            
-            // Make DTR specific fields required only for DTR
-            if (dtrMonthsField) {
-                dtrMonthsField.setAttribute('required', 'required');
-            }
+            setFieldRequired('dtr_months', true);
             break;
-
-        /*case 'biometric_record':
-            showElement('personalInfoForm');
-            showElement('dtr_ot');
-            setFieldRequired('first_name', true);
-            setFieldRequired('last_name', true);
-            break; */
 
         case 'biometrics_enrollement':
             showElement('personalInfoForm');
             showElement('biometricsEnrollmentForm');
-            
-            // Required fields for biometrics enrollment
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
-            setFieldRequired('middle_name', true);
-            setFieldRequired('college', true);
-            setFieldRequired('department', true);
-            setFieldRequired('plantilla_position', true);
-            setFieldRequired('date_of_birth', true);
-            setFieldRequired('phone_number', true);
-            setFieldRequired('address', true);
-            // setFieldRequired('blood_type', true);
-            setFieldRequired('emergency_contact_person', true);
-            setFieldRequired('emergency_contact_number', true);
             break;
 
         case 'new_internet':
         case 'new_telephone':
-             showElement('personalInfoForm');
+            showElement('personalInfoForm');
             showElement('locationForm');
             
-            // Required fields for location request
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('location', true);
@@ -141,18 +104,17 @@ function showFormFields() {
             showElement('locationForm');
             showElement('add_info');
 
-            // Required fields for repair services
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('location', true);
-            setFieldRequired('problems_encountered', true);
+            // Changed from problems_encountered to problem_encountered to match the database
+            setFieldRequired('problem_encountered', true);
             break;
 
         case 'request_led_screen':
             showElement('personalInfoForm');
             showElement('ledScreenForm');
             
-            // Required fields for LED screen request
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('preferred_date', true);
@@ -162,20 +124,18 @@ function showFormFields() {
         case 'install_application':
             showElement('personalInfoForm');
             showElement('installApplicationForm');
+            showElement('locationForm');
                 
-            // Required fields for install application request
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('application_name', true);
-           // setFieldRequired('installation_purpose', true);
+            setFieldRequired('location', true);
             break;
 
         case 'post_publication':
-        case 'update_website_info':
             showElement('personalInfoForm');
-             showElement('publicationForm');
+            showElement('publicationForm');
                     
-            // Required fields for publication/website update request
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('publication_author', true);
@@ -183,21 +143,35 @@ function showFormFields() {
             setFieldRequired('publication_end_date', true);
             break;
 
-
         case 'data_docs_reports':
             showElement('personalInfoForm');
             showElement('dataDocumentsForm');
                 
-            // Required fields for data, documents, and reports request
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('data_documents_details', true);
             break;
+
         case 'others':
             showElement('personalInfoForm');
             showElement('otherServicesForm');
+            setFieldRequired('first_name', true);
+            setFieldRequired('last_name', true);
             break;
     }
+}
+
+// Helper function to reset all required attributes
+function resetAllRequiredFields() {
+    // Get all inputs, selects, and textareas with required attribute
+    const requiredElements = document.querySelectorAll('input[required], select[required], textarea[required]');
+    
+    // Remove required attribute from all fields except the service category & terms
+    requiredElements.forEach(function(element) {
+        if (element.id !== 'serviceCategory' && element.id !== 'agreeTerms') {
+            element.removeAttribute('required');
+        }
+    });
 }
 
 // Helper function to show an element
@@ -248,6 +222,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) {
         form.addEventListener('submit', function(e) {
             const category = serviceCategory ? serviceCategory.value : '';
+            
+            if (!category) {
+                e.preventDefault();
+                alert('Please select a service category');
+                return;
+            }
             
             // Validate MS options for 'create' category
             if (category === 'create') {

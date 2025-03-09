@@ -17,6 +17,8 @@ $(document).ready(function() {
         $.get(`/faculty/request/${id}`, function(data) {
             $('#viewServiceName').text(data.service_category);
             $('#viewServiceStatus').text(data.status);
+              $('#viewServiceSubmittedDate').text(new Date(data.created_at).toLocaleString());
+        $('#viewServiceCompletedDate').text(data.status == 'Completed' ? new Date(data.completed_at).toLocaleString() : 'N/A')
             
             // Add more fields as needed
             const modalBody = $('#viewServiceModal .modal-body');
@@ -26,8 +28,9 @@ $(document).ready(function() {
                 <p><strong>Status:</strong> ${data.status}</p>
                 <p><strong>First Name:</strong> ${data.first_name}</p>
                 <p><strong>Last Name:</strong> ${data.last_name}</p>
+                <p><strong>Date Submitted:</strong> ${new Date(data.created_at).toLocaleString()}</p>
+                <p><strong>Date Completed:</strong> ${data.status == 'Completed' ? new Date(data.completed_at).toLocaleString() : 'N/A'}</p>
                 <p><strong>Date Submitted:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
-                ${data.ms_options ? `<p><strong>MS Options:</strong> ${JSON.parse(data.ms_options).join(', ')}</p>` : ''}
                 ${data.description ? `<p><strong>Description:</strong> ${data.description}</p>` : ''}
             `);
             
@@ -108,7 +111,8 @@ $(document).ready(function() {
                             <tr>
                                 <th>Request ID</th>
                                 <th>Service</th>
-                                <th>Date Submitted</th>
+                                <th>Date & Time Submitted</th>
+                                <th>Date & Time Completed</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -118,40 +122,44 @@ $(document).ready(function() {
                             <tr>
                                 <td>{{ $request->id }}</td>
                                 <td>
-                                @switch($request->service_category)
-                                    @case('create')
-                                        @if($request->service_category == 'create')
+                                    @switch($request->service_category)
+                                        @case('create')
                                             Create MS Office/TUP Email Account
-                                        @endif
-                                    @case('reset_email_password')
-                                        @if($request->service_category == 'reset_email_password')
+                                            @break
+                                        @case('reset_email_password')
                                             Reset MS Office/TUP Email Password
-                                        @endif
-                                    @case('change_of_data_ms')
-                                        @if($request->service_category == 'change_of_data_ms')
+                                            @break
+                                        @case('change_of_data_ms')
                                             Change of Data (MS Office)
-                                        @endif
-                                    @case('reset_tup_web_password')
-                                        @if($request->service_category == 'reset_tup_web_password')
+                                            @break
+                                        @case('reset_tup_web_password')
                                             Reset TUP Web Password
-                                        @endif
-                                    @case('change_of_data_portal')
-                                        @if($request->service_category == 'change_of_data_portal')
+                                            @break
+                                        @case('change_of_data_portal')
                                             Change of Data (Portal)
-                                        @endif
-                                    @case('request_led_screen')
-                                        @if($request->service_category == 'request_led_screen')
+                                            @break
+                                        @case('request_led_screen')
                                             LED Screen Request
-                                        @endif
-                                    @case('others')
-                                        @if($request->service_category == 'others')
+                                            @break
+                                        @case('others')
                                             {{ $request->description }}
-                                        @endif
-                                    @default
-                                        {{ $request->service_category }}
-                                @endswitch
+                                            @break
+                                        @default
+                                            {{ $request->service_category }}
+                                    @endswitch
                                 </td>
-                                    <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</td>
+                                <td>
+                                    <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>
+                                    <span>{{ \Carbon\Carbon::parse($request->created_at)->format('h:i A') }}</span>
+                                </td>
+                                <td>
+                                    @if($request->status == 'Completed')
+                                    <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('M d, Y') }}</span><br>
+                                    <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('h:i A') }}</span>
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                                     <td>
                                         <span class="badge 
                                             @if($request->status == 'Pending') badge-warning
@@ -164,15 +172,21 @@ $(document).ready(function() {
                                             </span>
                                     </td>
                                     <td>
-                                    <button type="button" class="btn-edit" data-id="{{ $request->id }}">Edit</button>
                                     <button type="button" class="btn-view" data-id="{{ $request->id }}">View</button>
-                                    <button type="button" class="btn-delete" data-id="{{ $request->id }}">Delete</button>
+                                    @if($request->status != 'Completed')
+                                        <button type="button" class="btn-edit" data-id="{{ $request->id }}">Edit</button>
+                                        <button type="button" class="btn-delete" data-id="{{ $request->id }}">Delete</button>
+                                    @endif
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </form>
+                   <!-- Pagination Links 
+                    <div class="pagination">
+                        {{ $requests->links() }}
+                    </div> -->
             </div>
         </div>
     </div>
@@ -343,6 +357,5 @@ $(document).ready(function() {
         });
     });
     </script>
-    <script src="{{ asset('js/myrequests.js') }}"></script>
 </body>
 </html>

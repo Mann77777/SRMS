@@ -232,7 +232,7 @@
                         </div>
                         <div class="status-details">
                             <h3>{{ $servicesCompleted ?? 0 }}</h3>
-                            <p>Completed Services</p>
+                            <p>Completed Requests</p>
                         </div>
                     </div>
                 </div>

@@ -43,7 +43,8 @@
                             <th>Request ID</th>
                             <th>Request Details</th>
                             <th>Role</th>
-                            <th>Request Date & Time</th>
+                            <th>Date & Time Submitted</th>
+                            <th>Date & Time Completed</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -56,8 +57,15 @@
                                 <td>{!! $request['request_data'] !!}</td>
                                 <td>{{ $request['role'] }}</td>
                                 <td>
-                                    <strong>Date: </strong><span>{{ $request['date']->format('Y-m-d') }}</span><br>
-                                    <strong>Time: </strong><span>{{ $request['date']->format('g:i A') }}</span>
+                                    <span>{{ \Carbon\Carbon::parse($request['date'])->format('M d, Y') }}</span><br>
+                                    <span>{{ \Carbon\Carbon::parse($request['date'])->format('h:i A') }}</span>
+                                </td>
+                                <td>
+                                    @if($request['status'] == 'Completed' && isset($request['completed_at']))
+                                        <strong>Date: </strong><span>{{ \Carbon\Carbon::parse($request['completed_at'])->format('M d, Y h:i A') }}</span>
+                                    @else
+                                        N/A
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="badge 
@@ -71,6 +79,7 @@
                                         {{ $request['status'] }}
                                     </span>
                                 </td>
+                               
                                 <td class="btns">
                                     @if($request['status'] == 'Pending')
                                         <button type="button" class="btn-approve" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}" data-details="{{ $request['request_data'] }}">

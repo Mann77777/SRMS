@@ -61,7 +61,8 @@
                             <th>Request ID</th>
                             <th>Request Details</th>
                             <th>Role</th>
-                            <th>Date Submitted</th>
+                            <th>Date & Time Submitted</th>
+                            <th>Date & Time Completed</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -79,8 +80,16 @@
                         </td>
                         <td>{{ $request->user_role ?? 'N/A' }}</td>
                         <td>
-                            <strong>Date:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('Y-m-d') }}<br>
-                            <strong>Time:</strong> {{ \Carbon\Carbon::parse($request->created_at)->format('g:i A') }}
+                            <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>
+                            <span>{{ \Carbon\Carbon::parse($request->created_at)->format('h:i A') }}</span>
+                        </td>
+                        <td>
+                            @if($request->status == 'Completed')
+                                <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('M d, Y') }}</span><br>
+                                <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('h:i A') }}</span>
+                            @else
+                                N/A
+                            @endif
                         </td>
                      <td>
 

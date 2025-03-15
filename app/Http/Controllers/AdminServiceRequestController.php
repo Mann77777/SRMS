@@ -89,32 +89,32 @@ class AdminServiceRequestController extends Controller
     }
 }
 
-private function getRequestData($request)
-{
-    $output = [];
-    
-    if ($request->user) {
-        $output[] = '<strong>Name:</strong> ' . htmlspecialchars($request->user->name) . '<br>';
-    }
-    
-    if (isset($request->service_category)) {
-        $output[] = '<strong>Service:</strong> ' . htmlspecialchars($request->service_category) . '<br>';
-    }
-    
-    if (isset($request->description)) {
-        $output[] = '<strong>Description:</strong> ' . htmlspecialchars($request->description) . '<br>';
-    }
-    
-    // Add additional data based on request type
-    if (method_exists($request, 'getAdditionalData')) {
-        $additionalData = $request->getAdditionalData();
-        foreach ($additionalData as $key => $value) {
-            $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
+    private function getRequestData($request)
+    {
+        $output = [];
+        
+        if ($request->user) {
+            $output[] = '<strong>Name:</strong> ' . htmlspecialchars($request->user->name) . '<br>';
         }
+        
+        if (isset($request->service_category)) {
+            $output[] = '<strong>Service:</strong> ' . htmlspecialchars($request->service_category) . '<br>';
+        }
+        
+        if (isset($request->description)) {
+            $output[] = '<strong>Description:</strong> ' . htmlspecialchars($request->description) . '<br>';
+        }
+        
+        // Add additional data based on request type
+        if (method_exists($request, 'getAdditionalData')) {
+            $additionalData = $request->getAdditionalData();
+            foreach ($additionalData as $key => $value) {
+                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
+            }
+        }
+        
+        return implode('', $output);
     }
-    
-    return implode('', $output);
-}
 
     /**
      * Format student service request data for display
@@ -237,75 +237,102 @@ private function getRequestData($request)
     {
         // Log the incoming request data for debugging
         Log::info('Assign UITC Staff Request Data:', $request->all());
-
-        // Validate the incoming request
+    
+        // Basic validation without type-specific checks
         $validatedData = $request->validate([
-            'request_id' => ['required', 'integer', function($attribute, $value, $fail) {
-                $requestExists = DB::table('student_service_requests')
-                    ->where('id', $value)
-                    ->exists();
-                
-                if (!$requestExists) {
-                    Log::error("Invalid Student Service Request ID: {$value}");
-                    $fail("The selected request ID is invalid or does not exist.");
-                }
-            }],
+            'request_id' => 'required|integer',
             'request_type' => 'required|string',
             'uitcstaff_id' => 'required|exists:admins,id',
-            'transaction_type' => ['required', function($attribute, $value, $fail) {
-                $validTypes = [
-                    'Simple Transaction', 
-                    'Complex Transaction', 
-                    'Highly Technical Transaction'
-                ];
-                
-                if (!in_array(strtolower($value), array_map('strtolower', $validTypes))) {
-                    $fail("The selected transaction type is invalid.");
-                }
-            }],
+            'transaction_type' => 'required',
             'notes' => 'nullable|string'
         ]);
+    
         try {
-            // Find the student service request
-            $studentServiceRequest = DB::table('student_service_requests')
-                ->where('id', $validatedData['request_id'])
-                ->first();
-
-            if (!$studentServiceRequest) {
-                Log::error('Student Service Request not found', [
-                    'request_id' => $validatedData['request_id']
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Student Service Request not found.'
-                ], 404);
+            // Handle different request types
+            switch ($validatedData['request_type']) {
+                case 'student':
+                case 'new_student_service':
+                    // Verify student request exists
+                    $exists = DB::table('student_service_requests')
+                        ->where('id', $validatedData['request_id'])
+                        ->exists();
+                    
+                    if (!$exists) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Student Service Request not found.'
+                        ], 404);
+                    }
+                    
+                    // Update student request
+                    DB::table('student_service_requests')
+                        ->where('id', $validatedData['request_id'])
+                        ->update([
+                            'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+                            'status' => 'In Progress',
+                            'transaction_type' => $validatedData['transaction_type'],
+                            'admin_notes' => $validatedData['notes'] ?? null,
+                            'updated_at' => now()
+                        ]);
+                    break;
+                    
+                case 'faculty':
+                    // Verify faculty request exists
+                    $exists = DB::table('faculty_service_requests')
+                        ->where('id', $validatedData['request_id'])
+                        ->exists();
+                    
+                    if (!$exists) {
+                        Log::error('Faculty Service Request not found', [
+                            'request_id' => $validatedData['request_id']
+                        ]);
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Faculty Service Request not found.'
+                        ], 404);
+                    }
+                    
+                    // Log before update
+                    Log::info('Updating faculty service request', [
+                        'request_id' => $validatedData['request_id'],
+                        'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+                        'status' => 'In Progress'
+                    ]);
+                    
+                    // Update faculty request
+                    $updated = DB::table('faculty_service_requests')
+                        ->where('id', $validatedData['request_id'])
+                        ->update([
+                            'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+                            'status' => 'In Progress',
+                            'transaction_type' => $validatedData['transaction_type'],
+                            'admin_notes' => $validatedData['notes'] ?? null,
+                            'updated_at' => now()
+                        ]);
+                    
+                    // Log update result
+                    Log::info('Faculty update result', ['updated' => $updated]);
+                    
+                    break;
+                    
+                default:
+                    Log::warning('Unknown request type', ['type' => $validatedData['request_type']]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid request type: ' . $validatedData['request_type']
+                    ], 400);
             }
-
-            // Update the student service request with assigned staff and status
-            DB::table('student_service_requests')
-                ->where('id', $validatedData['request_id'])
-                ->update([
-                    'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-                    'status' => 'In Progress',
-                    'transaction_type' => $validatedData['transaction_type'],
-                    'admin_notes' => $validatedData['notes'] ?? null,
-                    'updated_at' => now()
-            ]);
-
-            // Retrieve the updated request to return in the response
-            $updatedRequest = DB::table('student_service_requests')
-                ->where('id', $validatedData['request_id'])
-                ->first();
-
+    
             Log::info('UITC Staff assigned successfully', [
                 'request_id' => $validatedData['request_id'],
-                'assigned_staff_id' => $validatedData['uitcstaff_id']
+                'request_type' => $validatedData['request_type'],
+                'assigned_uitc_staff_id' => $validatedData['uitcstaff_id']
             ]);
-
+    
             return response()->json([
                 'success' => true,
                 'message' => 'UITC Staff assigned successfully',
-                'request' => $updatedRequest
+                'request_type' => $validatedData['request_type']
             ]);
         } catch (\Exception $e) {
             Log::error('Error assigning UITC Staff: ' . $e->getMessage(), [
@@ -314,17 +341,14 @@ private function getRequestData($request)
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-
+    
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to assign UITC Staff: ' . $e->getMessage(),
-                'error_details' => [
-                    'request_id' => $validatedData['request_id'],
-                    'request_type' => $validatedData['request_type']
-                ]
+                'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
             ], 500);
         }
     }    
+    
     public function deleteServiceRequests(Request $request)
     {
         // Validate the incoming request
@@ -423,8 +447,9 @@ private function getRequestData($request)
                 'rejected_at' => now()
             ]);
 
-            // You might want to send a notification to the user here
-            // Notification::send($serviceRequest->user, new ServiceRequestRejectedNotification($serviceRequest));
+            // Send a notification to the user
+            //Notification::send($serviceRequest->user, new RequestRejectedNotification($serviceRequest));
+
 
             return response()->json([
                 'success' => true,

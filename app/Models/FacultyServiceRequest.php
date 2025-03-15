@@ -61,6 +61,9 @@ class FacultyServiceRequest extends Model
         
         // Status
         'status',
+        'assigned_uitc_staff_id',
+        'admin_notes',
+        'transaction_type',
     ];
 
     protected $casts = [
@@ -86,5 +89,10 @@ class FacultyServiceRequest extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function assignedUITCStaff()
+    {
+        return $this->belongsTo(Admin::class, 'assigned_uitc_staff_id');
     }
 }

@@ -85,8 +85,8 @@
                         </td>
                         <td>
                             @if($request->status == 'Completed')
-                                <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('M d, Y') }}</span><br>
-                                <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('h:i A') }}</span>
+                                <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
+                                <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
                             @else
                                 N/A
                             @endif

@@ -18,7 +18,7 @@ $(document).ready(function() {
             $('#viewServiceName').text(data.service_category);
             $('#viewServiceStatus').text(data.status);
               $('#viewServiceSubmittedDate').text(new Date(data.created_at).toLocaleString());
-        $('#viewServiceCompletedDate').text(data.status == 'Completed' ? new Date(data.completed_at).toLocaleString() : 'N/A')
+        $('#viewServiceCompletedDate').text(data.status == 'Completed' ? new Date(data.updated_at).toLocaleString() : 'N/A')
             
             // Add more fields as needed
             const modalBody = $('#viewServiceModal .modal-body');
@@ -29,7 +29,7 @@ $(document).ready(function() {
                 <p><strong>First Name:</strong> ${data.first_name}</p>
                 <p><strong>Last Name:</strong> ${data.last_name}</p>
                 <p><strong>Date Submitted:</strong> ${new Date(data.created_at).toLocaleString()}</p>
-                <p><strong>Date Completed:</strong> ${data.status == 'Completed' ? new Date(data.completed_at).toLocaleString() : 'N/A'}</p>
+                <p><strong>Date Completed:</strong> ${data.status == 'Completed' ? new Date(data.updated_at).toLocaleString() : 'N/A'}</p>
                 <p><strong>Date Submitted:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
                 ${data.description ? `<p><strong>Description:</strong> ${data.description}</p>` : ''}
             `);
@@ -154,8 +154,8 @@ $(document).ready(function() {
                                 </td>
                                 <td>
                                     @if($request->status == 'Completed')
-                                    <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('M d, Y') }}</span><br>
-                                    <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('h:i A') }}</span>
+                                    <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
+                                    <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
                                     @else
                                         N/A
                                     @endif

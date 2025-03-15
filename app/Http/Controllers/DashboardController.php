@@ -33,26 +33,36 @@ class DashboardController extends Controller
             $completedRequests = StudentServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count() +
                                  FacultyServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count();
 
-
-           // Fetch recent requests and transform them
+            // Fetch recent requests and transform them
             $studentRequests = StudentServiceRequest::where('user_id', $user->id)->latest()->take(3)->get();
-             $facultyRequests = [];
+            
+            // Add this - fetch faculty service requests
+            $facultyRequests = FacultyServiceRequest::where('user_id', $user->id)->latest()->take(3)->get();
 
+            $transformedStudentRequests = $studentRequests->map(function ($request) {
+                return [
+                    'id' => $request->id,
+                    'service_type' => $this->getServiceName($request, 'student'),
+                    'created_at' => $request->created_at,
+                    'updated_at' => $request->updated_at,
+                    'status' => $request->status,
+                    'type' => 'student',
+                ];
+            });
+            
+            // Transform faculty requests
+            $transformedFacultyRequests = $facultyRequests->map(function ($request) {
+                return [
+                    'id' => $request->id,
+                    'service_type' => $this->getServiceName($request, 'faculty'),
+                    'created_at' => $request->created_at,
+                    'updated_at' => $request->updated_at,
+                    'status' => $request->status,
+                    'type' => 'faculty',
+                ];
+            });
 
-           $transformedStudentRequests = $studentRequests->map(function ($request) {
-                  return [
-                       'id' => $request->id,
-                       'service_type' => $this->getServiceName($request, 'student'),
-                       'created_at' => $request->created_at,
-                       'updated_at' => $request->updated_at,
-                       'status' => $request->status,
-                       'type' => 'student',
-                   ];
-               });
-           $transformedFacultyRequests = collect();
-
-
-          // Merge and sort requests by created_at
+            // Merge and sort requests by created_at
             $recentRequests = collect(array_merge($transformedStudentRequests->toArray(), $transformedFacultyRequests->toArray()))
                 ->sortByDesc(function ($request) {
                     return $request['created_at'];
@@ -63,14 +73,14 @@ class DashboardController extends Controller
             Log::error('Error fetching dashboard data: ' . $e->getMessage());
         }
 
-         Log::info('Dashboard Data', [
-               'user' => Auth::user(),
-               'totalRequests' => $totalRequests,
-               'pendingRequests' => $pendingRequests,
-               'inprogressRequests' => $inprogressRequests,
-               'completedRequests' => $completedRequests,
-               'recentRequests' => $recentRequests,
-           ]);
+        Log::info('Dashboard Data', [
+            'user' => Auth::user(),
+            'totalRequests' => $totalRequests,
+            'pendingRequests' => $pendingRequests,
+            'inprogressRequests' => $inprogressRequests,
+            'completedRequests' => $completedRequests,
+            'recentRequests' => $recentRequests,
+        ]);
 
         return view('users.dashboard', [
             'totalRequests' => $totalRequests,
@@ -83,7 +93,7 @@ class DashboardController extends Controller
 
     private function getServiceName($request, $type)
     {
-         $services = [];
+        $services = [];
 
         if ($type === 'student') {
             if ($request->service_category === 'create') {
@@ -143,41 +153,109 @@ class DashboardController extends Controller
               }
 
         } elseif ($type === 'faculty') {
-              if ($request->ms_options && is_array(json_decode($request->ms_options))) {
-                 foreach (json_decode($request->ms_options) as $option) {
-                        $services[] = "MS Office 365, MS Teams, TUP Email - " . $option;
-                 }
-             }
-            if ($request->attendance_option && is_array(json_decode($request->attendance_option))) {
-                 foreach (json_decode($request->attendance_option) as $option) {
-                        $services[] = "Attendance Record - " . $option;
-                  }
+            // Handle faculty service categories
+            if ($request->service_category === 'create') {
+                $services[] = 'Create MS Office/TUP Email Account';
+            } elseif ($request->service_category === 'reset_email_password') {
+                $services[] = 'Reset MS Office/TUP Email Password';
+            } elseif ($request->service_category === 'change_of_data_ms') {
+                $services[] = 'Change of Data (MS Office)';
+            } elseif ($request->service_category === 'dtr') {
+                $services[] = 'Daily Time Record';
+            } elseif ($request->service_category === 'biometric_record') {
+                $services[] = 'Biometric Record';
+            } elseif ($request->service_category === 'biometrics_enrollement') {
+                $services[] = 'Biometrics Enrollment';
+            } elseif ($request->service_category === 'reset_tup_web_password') {
+                $services[] = 'Reset TUP Web Password';
+            } elseif ($request->service_category === 'reset_ers_password') {
+                $services[] = 'Reset ERS Password';
+            } elseif ($request->service_category === 'change_of_data_portal') {
+                $services[] = 'Change of Data (Portal)';
+            } elseif ($request->service_category === 'new_internet') {
+                $services[] = 'New Internet Connection';
+            } elseif ($request->service_category === 'new_telephone') {
+                $services[] = 'New Telephone Connection';
+            } elseif ($request->service_category === 'repair_and_maintenance') {
+                $services[] = 'Internet/Telephone Repair and Maintenance';
+            } elseif ($request->service_category === 'computer_repair_maintenance') {
+                $services[] = 'Computer Repair and Maintenance';
+            } elseif ($request->service_category === 'printer_repair_maintenance') {
+                $services[] = 'Printer Repair and Maintenance';
+            } elseif ($request->service_category === 'request_led_screen') {
+                $services[] = 'Request to use LED Screen';
+            } elseif ($request->service_category === 'install_application') {
+                $services[] = 'Install Application/Information System/Software';
+            } elseif ($request->service_category === 'post_publication') {
+                $services[] = 'Post Publication/Update of Information Website';
+            } elseif ($request->service_category === 'data_docs_reports') {
+                $services[] = 'Data, Documents and Reports';
+            } else {
+                $services[] = $request->service_category;
             }
-             if ($request->tup_web_options && is_array(json_decode($request->tup_web_options))) {
-                 foreach (json_decode($request->tup_web_options) as $option) {
-                       $services[] = "TUP Web ERS, ERS, and TUP Portal - " . $option;
-                 }
-             }
-            if ($request->internet_telephone && is_array(json_decode($request->internet_telephone))) {
-                 foreach (json_decode($request->internet_telephone) as $option) {
-                     $services[] = "Internet and Telephone Management - " . $option;
-                 }
-             }
-            if ($request->ict_equip_options && is_array(json_decode($request->ict_equip_options))) {
-                foreach (json_decode($request->ict_equip_options) as $option) {
+
+            // Handle options if they exist and are in array format
+            if ($request->ms_options && is_array(json_decode($request->ms_options, true))) {
+                foreach (json_decode($request->ms_options, true) as $option) {
+                    $services[] = "MS Office 365, MS Teams, TUP Email - " . $option;
+                }
+            }
+            
+            if (isset($request->attendance_option) && is_array(json_decode($request->attendance_option, true))) {
+                foreach (json_decode($request->attendance_option, true) as $option) {
+                    $services[] = "Attendance Record - " . $option;
+                }
+            }
+            
+            if (isset($request->tup_web_options) && is_array(json_decode($request->tup_web_options, true))) {
+                foreach (json_decode($request->tup_web_options, true) as $option) {
+                    $services[] = "TUP Web ERS, ERS, and TUP Portal - " . $option;
+                }
+            }
+            
+            if (isset($request->internet_telephone) && is_array(json_decode($request->internet_telephone, true))) {
+                foreach (json_decode($request->internet_telephone, true) as $option) {
+                    $services[] = "Internet and Telephone Management - " . $option;
+                }
+            }
+            
+            if (isset($request->ict_equip_options) && is_array(json_decode($request->ict_equip_options, true))) {
+                foreach (json_decode($request->ict_equip_options, true) as $option) {
                     $services[] = "ICT Equipment Management - " . $option;
                 }
             }
-           if ($request->service_category === 'change_of_data_ms') {
-                $services[] = 'Change of Data (MS Office)';
-           }else if ($request->service_category === 'change_of_data_portal') {
-              $services[] = "Change of Data (Portal)";
-            }
-               else if ($request->service_category === 'others') {
-                  $services[] = $request->description;
-              }
-         }
+        }
 
         return implode(', ', $services) ?: 'No service selected';
+    }
+    
+    /**
+     * API endpoint to get recent faculty/staff requests
+     */
+    public function getFacultyStaffRecentRequests()
+    {
+        try {
+            // Fetch faculty and staff recent requests
+            $facultyRequests = FacultyServiceRequest::where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get()
+                ->map(function ($request) {
+                    return [
+                        'id' => $request->id,
+                        'service_type' => $this->getServiceName($request, 'faculty'),
+                        'created_at' => $request->created_at,
+                        'updated_at' => $request->updated_at,
+                        'status' => $request->status,
+                        'type' => 'faculty'
+                    ];
+                });
+            
+            return response()->json($facultyRequests);
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching faculty/staff recent requests: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch recent requests'], 500);
+        }
     }
 }

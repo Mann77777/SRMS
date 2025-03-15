@@ -12,7 +12,7 @@
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Dashboard</title>
 </head>
-<body class="{{ Auth::check() ? 'user-authenticated' : '' }}">
+<body class="{{ Auth::check() ? 'user-authenticated' : '' }}" data-user-role="{{ Auth::user()->role }}">
     <!-- Include Navbar -->
     @include('layouts.navbar')
 
@@ -193,6 +193,7 @@
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/chatbot.js') }}"></script>
     <script src="{{ asset('js/service-dashboard.js') }}"></script>
+    <script src="{{ asset('js/dashboard-requests.js') }}"></script>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>

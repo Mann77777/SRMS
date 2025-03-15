@@ -40,9 +40,14 @@ Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle
 
 //Route::get('/home', [ProfileController::class, 'show'])->name('home'); // Use ProfileController to show the profile
 //Route::post('/home/update', [ProfileController::class, 'update'])->name('profile.update'); // Use ProfileController to update the profile
+
 Route::middleware(['auth'])->group(function () {
 
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('users.dashboard');
+    Route::get('/faculty-staff-recent-requests', [DashboardController::class, 'getFacultyStaffRecentRequests'])
+            ->name('faculty.staff.recent.requests');
+
 
     Route::get('/myprofile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/myprofile/upTodate', [ProfileController::class, 'upTodate'])->name('profile.upTodate');

@@ -26,6 +26,8 @@ use App\Http\Controllers\RequestFormController;
 use App\Http\Controllers\StudentServiceRequestController;
 use App\Http\Controllers\BotManController;
 use App\Http\Controllers\UITCStaffController;
+use App\Http\Controllers\RequestsController;
+
 
 
 Route::get('/', function () {
@@ -107,12 +109,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/faculty/service-request/store', [FacultyServiceRequestController::class, 'store'])
         ->name('faculty.service-request.store');
 // Add this with the other routes
-Route::get('/myrequests', [StudentServiceRequestController::class, 'myRequests'])
+Route::get('/myrequests', [RequestsController::class, 'myRequests'])
 ->name('myrequests')
 ->middleware('auth');
 
 Route::get('/student/myrequests/{id}', [StudentServiceRequestController::class, 'show'])->name('student.myrequests.show');
 
+Route::get('/myrequests', [RequestsController::class, 'myRequests'])
+->name('myrequests')
+->middleware('auth');
+
+Route::get('/faculty/myrequests/{id}', [FacultyServiceRequestController::class, 'show'])->name('faculty.myrequests.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/chat-history', [BotManController::class, 'getChatHistoryApi']);

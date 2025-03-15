@@ -103,11 +103,6 @@ class StudentServiceRequestController extends Controller
 
                return view('users.myrequests', compact('requests'));
          }
-
-           $requests = StudentServiceRequest::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-          return view('users.myrequests', compact('requests'));
     }
 
        public function show($id)
@@ -125,7 +120,7 @@ class StudentServiceRequestController extends Controller
             $completedRequests = StudentServiceRequest::where('user_id', Auth::id())
                 ->where('status', 'Completed')
                 ->with('assignedUITCStaff')
-                ->orderBy('updated_at', 'desc')
+                ->orderBy('updated_at', 'asc')
                 ->paginate(10);
 
             return view('users.request-history', compact('completedRequests'));

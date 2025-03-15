@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="{{ asset('css/assign-request.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
-    <title>Assignment Request</title>
+    <title>Assigned Request</title>
 </head>
 <body>
     <!-- Include Navbar -->

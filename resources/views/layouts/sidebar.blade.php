@@ -44,7 +44,7 @@
             <li class="item">
                 <a href="{{ url('/myrequests') }}" class="nav_link {{ request()->is('myrequests') ? 'active' : '' }}">
                     <span class="navlink_icon">
-                        <i class="bx bxs-book-open"></i>
+                        <i class="fas fa-clipboard-list"></i>
                     </span>
                     <span class="navlink">My Requests</span>
                 </a>

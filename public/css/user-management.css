@@ -152,11 +152,11 @@ button {
     font-weight: 500;
 }
 .btn-edit {
-    background-color: #16A34A;  /* Green */
+    background-color: #FFC107;  /* Yellow */
 }
 
 .btn-status {
-    background-color: #FFC107;  /* Yellow */
+    background-color: #0095ff;  /* Yellow */
 }
 
 .btn-reset {

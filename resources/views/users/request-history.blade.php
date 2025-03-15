@@ -31,11 +31,10 @@
                        <tr>
                             <th>Request ID</th>
                             <th>Service</th>
-                            <th>UITC Staff</th>
+                            <th>Assigned Staff</th>
                             <th>Date Submitted</th>
                             <th>Date Completed</th>
-                            <th>Review and Ratings</th>
-                            <th>Actions</th>
+                            <th>Survey</th>
                        </tr>
                     </thead>
                     <tbody>
@@ -45,20 +44,19 @@
                             <td>{{ $request->service_category }}</td>
                             <td>
                                 {{ $request->assignedUITCStaff ? $request->assignedUITCStaff->name : 'N/A' }}
-                            </td>                            <td>
-                                <strong>Date: </strong><span>{{ \Carbon\Carbon::parse($request->created_at)->format('Y-m-d') }}</span><br>
-                                <strong>Time: </strong><span>{{ \Carbon\Carbon::parse($request->created_at)->format('h:i A') }}</span>
+                            </td>                            
+                            <td>
+                                <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>
+                                <span>{{ \Carbon\Carbon::parse($request->created_at)->format('h:i A') }}</span>
                             </td>
                             <td>
-                                <strong>Date: </strong><span>{{ \Carbon\Carbon::parse($request->updated_at)->format('Y-m-d') }}</span><br>
-                                <strong>Time: </strong><span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
+                               <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
+                                <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
                             </td>
                             <td>
                                 <a href="{{ route('service.survey', $request->id) }}" class="btn btn-primary">Take a Survey</a>
                             </td>
-                            <td>
-                                <a href="{{ route('student.myrequests.show', $request->id) }}" class="btn-view">View</a>
-                            </td>
+                           
                         </tr>
                         @empty
                         <tr>

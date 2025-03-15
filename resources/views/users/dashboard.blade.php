@@ -128,12 +128,12 @@
                 <table class="request-table">
                     <thead>
                         <tr>
-                             <th>Request ID</th>
-                             <th>Service Type</th>
+                            <th>Request ID</th>
+                            <th>Service Type</th>
                             <th>Date Submitted</th>
                             <th>Last Update</th>
                             <th>Status</th>
-                             <th>Action</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>

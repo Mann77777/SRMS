@@ -104,8 +104,8 @@
                                 </span>
                             </td>
                             <td>
-                                <strong>Date: </strong>{{ $user->created_at->format('Y-m-d') }}<br>
-                                <strong>Time: </strong>{{ $user->created_at->format('h:i A') }}
+                                {{ $user->created_at->format('M d, Y') }}<br>
+                                {{ $user->created_at->format('h:i A') }}
                             </td>
 
                             <td>

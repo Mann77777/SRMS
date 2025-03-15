@@ -96,26 +96,22 @@ class FacultyServiceRequestController extends Controller
 
     public function myRequests()
     {
-        try {
-            // Get all requests for the current user
+       $user = Auth::user();
+
+       if($user->role === "Faculty & Staff")
+       {
             $requests = FacultyServiceRequest::where('user_id', Auth::id())
-                ->orderBy('created_at', 'desc')
-                ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-            // Log for debugging
-            Log::info('Fetched requests:', [
-                'user_id' => Auth::id(),
-                'count' => $requests->count()
-            ]);
+            return view('users.myrequests', compact('requests'));
+       }
+    }
 
-            return view('users.myrequest', ['requests' => $requests]);
-        } catch (\Exception $e) {
-            Log::error('Error fetching requests:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return back()->with('error', 'Error fetching requests');
-        }
+    public function show($id)
+    {
+        $request = FacultyServiceRequest::findOrFail($id);
+        return view('users.faculty-service-view', ['request' => $request]);
     }
 
     public function updateRequest(Request $request, $id)

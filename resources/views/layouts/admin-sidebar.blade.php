@@ -14,7 +14,7 @@
                 <li class="item">
                     <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('admin_dashboard') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bxs-dashboard"></i>
+                            <i class="fas fa-chart-bar"></i>
                         </span>
                         <span class="navlink">Dashboard</span>
                     </a>
@@ -32,7 +32,7 @@
                 <li class="item">
                     <a href="{{ url('/service-management') }}" class="nav_link {{ request()->is('service-management') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bx-history"></i>
+                            <i class="fas fa-cogs"></i>
                         </span>
                         <span class="navlink">Service Management</span>
                     </a>
@@ -41,7 +41,7 @@
                 <li class="item">
                     <a href="{{ url('/staff-management') }}" class="nav_link {{ request()->is('staff-management') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bxs-book-open"></i>
+                            <i class="fas fa-user"></i>
                         </span>
                         <span class="navlink">Staff Management</span>
                     </a>
@@ -50,7 +50,7 @@
                 <li class="item">
                     <a href="{{ url('/user-management') }}" class="nav_link {{ request()->is('user-management') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bxs-book-open"></i>
+                            <i class="fas fa-users"></i>
                         </span>
                         <span class="navlink">User Management</span>
                     </a>
@@ -87,7 +87,7 @@
                 <li class="item">
                     <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('admin_dashboard') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bxs-dashboard"></i>
+                            <i class="fas fa-chart-bar"></i>
                         </span>
                         <span class="navlink">Dashboard</span>
                     </a>
@@ -96,9 +96,9 @@
                 <li class="item">
                     <a href="{{ url('/assign-request') }}" class="nav_link {{ request()->is('assign-request') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bxs-book-open"></i>
+                            <i class="fas fa-clipboard-list"></i>
                         </span>
-                        <span class="navlink">Assignment Request</span>
+                        <span class="navlink">Assigned Request</span>
                     </a>
                 </li>
 

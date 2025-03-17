@@ -53,7 +53,11 @@
                         @forelse($requests as $request)
                             <tr>
                                 <td><input type="checkbox" name="selected_requests[]" value="{{ $request['id'] }}"></td>
-                                <td>{{ $request['id'] }}</td>
+                                <td>
+                                    <span class="clickable-request-id" style="cursor: pointer; color: #007bff; text-decoration: underline;">
+                                        {{ $request['id'] }}
+                                    </span>
+                                </td>
                                 <td>{!! $request['request_data'] !!}</td>
                                 <td>{{ $request['role'] }}</td>
                                 <td>
@@ -61,8 +65,9 @@
                                     <span>{{ \Carbon\Carbon::parse($request['date'])->format('h:i A') }}</span>
                                 </td>
                                 <td>
-                                    @if($request['status'] == 'Completed' && isset($request['completed_at']))
-                                        <strong>Date: </strong><span>{{ \Carbon\Carbon::parse($request['completed_at'])->format('M d, Y h:i A') }}</span>
+                                    @if($request['status'] == 'Completed' && isset($request['updated_at']))
+                                        <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('M d, Y') }}</span><br>
+                                        <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('h:i A') }}</span>
                                     @else
                                         N/A
                                     @endif
@@ -105,115 +110,18 @@
         </div>
     </div>
 
-    <!-- Assign UITC Staff Modal -->
-    <div class="modal fade" id="assignStaffModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Assign UITC Staff</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="assignStaffForm">
-                        @csrf
-                        <input type="hidden" id="requestIdInput" name="request_id">
-                        <input type="hidden" id="requestTypeInput" name="request_type">
-                        
-                        <div class="form-group">
-                            <label>Request Summary</label>
-                            <div class="request-summary">
-                                <p><strong>Request ID:</strong> <span id="modalRequestId"></span></p>
-                                <div id="modalRequestServices"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Select UITC Staff</label>
-                            <select class="form-control" name="uitcstaff_id" required>
-                                <option value="">Choose UITC Staff</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Transaction Type</label>
-                            <select class="form-control" name="transaction_type" required>
-                                <option value="">Select Transaction Type</option>
-                                <option value="Simple Transaction">Simple Transaction</option>
-                                <option value="Complex Transaction">Complex Transaction</option>
-                                <option value="Highly Technical Transaction">Highly Technical Transaction</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Notes (Optional)</label>
-                            <textarea class="form-control" name="notes" rows="3" placeholder="Additional notes for the UITC Staff"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="saveAssignStaffBtn">Assign UITC Staff</button>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
+    
 
-    <!-- Reject Service Request Modal -->
-    <div class="modal fade" id="rejectServiceRequestModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Reject Service Request</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="rejectServiceRequestForm">
-                        <input type="hidden" name="request_id">
-                        <input type="hidden" name="request_type">
-                        
-                        <div class="form-group">
-                            <label>Request Summary</label>
-                            <div class="request-summary">
-                                <p><strong>Request ID:</strong> <span id="modalRejectRequestId"></span></p>
-                                <div id="modalRejectRequestServices"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Reason for Rejection <span class="text-danger">*</span></label>
-                            <select class="form-control" id="rejectionReason" name="rejection_reason" required>
-                                <option value="">Select Rejection Reason</option>
-                                <option value="incomplete_information">Incomplete Information</option>
-                                <option value="out_of_scope">Service Out of Scope</option>
-                                <option value="resource_unavailable">Resources Unavailable</option>
-                                <option value="duplicate_request">Duplicate Request</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Additional Notes</label>
-                            <textarea class="form-control" id="rejectionNotes" name="notes" rows="4" placeholder="Provide additional details about the rejection (optional)"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmRejectBtn">Confirm Rejection</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+    @include('admin.modal.servicerequest-modal')
+
 
     <script>
         $(document).ready(function() {
@@ -567,6 +475,158 @@
                 $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
             });
         });
+
+
+    // Extract service information from the request details HTML
+    function extractServiceFromDetails(detailsHtml) {
+        // Create a temporary DOM element to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = detailsHtml;
+        
+        // Look for service information
+        const serviceElements = tempDiv.querySelectorAll('strong');
+        let serviceCategory = '';
+        let serviceDescription = '';
+        
+        // Search for service name in the HTML
+        for (let i = 0; i < serviceElements.length; i++) {
+            if (serviceElements[i].textContent === 'Service:') {
+                // Get the text after this strong element
+                let nextNode = serviceElements[i].nextSibling;
+                if (nextNode) {
+                    serviceCategory = nextNode.textContent.trim();
+                }
+            }
+            
+            if (serviceElements[i].textContent === 'Description:') {
+                // Get the text after this strong element
+                let nextNode = serviceElements[i].nextSibling;
+                if (nextNode) {
+                    serviceDescription = nextNode.textContent.trim();
+                }
+            }
+        }
+        
+        return {
+            category: serviceCategory,
+            description: serviceDescription
+        };
+    }
+
+    // Update the details modal with request information
+    function updateRequestDetailsModal(requestData) {
+        // Set basic request information
+        $('#detailsRequestId').text(requestData.id);
+        $('#detailsRequestRole').text(requestData.role);
+        $('#detailsRequestDate').text(moment(requestData.date).format('MMM D, YYYY h:mm A'));
+        
+        // Format the data in request_data field
+        $('#detailsRequestData').html(requestData.request_data);
+    
+        // Set status with appropriate color
+        // Set status with appropriate color
+        const $statusBadge = $('#detailsRequestStatus');
+        // Trim and normalize the status text
+        const statusText = requestData.status.trim().toLowerCase();
+        $statusBadge.text(requestData.status);
+        $statusBadge.removeClass().addClass('badge');
+
+        // Match the status badge styling with the table using more flexible matching
+        if (statusText.includes('pending')) {
+            $statusBadge.addClass('badge-warning');
+        } else if (statusText.includes('in progress')) {
+            $statusBadge.addClass('badge-info');
+        } else if (statusText.includes('completed') || statusText.includes('approved')) {
+            $statusBadge.addClass('badge-success');
+        } else if (statusText.includes('rejected')) {
+            $statusBadge.addClass('badge-danger');
+        } else {
+            $statusBadge.addClass('badge-secondary');
+        }
+            // Handle completed date
+            if (requestData.status === 'Completed' && requestData.updated_at) {
+                $('#detailsRequestCompleted').text(moment(requestData.updated_at).format('MMM D, YYYY h:mm A'));
+            } else {
+                $('#detailsRequestCompleted').text('N/A');
+            }
+            
+            // Show/hide action buttons based on status
+            if (requestData.status === 'Pending') {
+                $('#pendingActionsContainer').show();
+                
+                // Set up modal action buttons
+                $('.modal-approve-btn').data('id', requestData.id);
+                $('.modal-approve-btn').data('type', requestData.type);
+                $('.modal-approve-btn').data('details', requestData.request_data);
+                
+                $('.modal-reject-btn').data('id', requestData.id);
+                $('.modal-reject-btn').data('type', requestData.type);
+                $('.modal-reject-btn').data('details', requestData.request_data);
+            } else {
+                $('#pendingActionsContainer').hide();
+            }
+            
+            // Show assignment information if available
+            if (requestData.assigned_uitc_staff) {
+                $('#assignmentInfoSection').show();
+                $('#detailsAssignedTo').text(requestData.assigned_uitc_staff);
+                $('#detailsTransactionType').text(requestData.transaction_type || '-');
+                $('#detailsAdminNotes').text(requestData.admin_notes || 'No notes');
+            } else {
+                $('#assignmentInfoSection').hide();
+            }
+            
+            // Show rejection information if rejected
+            if (requestData.status === 'Rejected') {
+                $('#rejectionInfoSection').show();
+                $('#detailsRejectionReason').text(requestData.rejection_reason || '-');
+                $('#detailsRejectionNotes').text(requestData.notes || 'No notes');
+                $('#detailsRejectedDate').text(requestData.updated_at ? 
+                    moment(requestData.updated_at).format('MMM D, YYYY h:mm A') : '-');
+            } else {
+                $('#rejectionInfoSection').hide();
+            }
+        }
+
+    // Document ready function for request detail modal
+    $(document).on('click', '.clickable-request-id', function() {
+    const row = $(this).closest('tr');
+    const requestId = $(this).text();
+    
+    // Extract data from the current row
+    const statusText = row.find('td:eq(6) .badge').text().trim();
+    
+    // Get completed date differently based on the cell content
+    let completedDate = null;
+    const completedDateCell = row.find('td:eq(5)');
+    
+    // Check if the status is completed and the cell doesn't just contain "N/A"
+    if (statusText === 'Completed' && !completedDateCell.text().trim().includes('N/A')) {
+        // Get both date and time spans if they exist
+        if (completedDateCell.find('span').length > 0) {
+            const completedDateValue = completedDateCell.find('span:first').text();
+            const completedTimeValue = completedDateCell.find('span:last').text();
+            completedDate = completedDateValue + ' ' + completedTimeValue;
+        } else {
+            // Handle case where there might just be text without spans
+            completedDate = completedDateCell.text().trim();
+        }
+    }
+    
+    // Build the request data object
+    const requestData = {
+        id: requestId,
+        role: row.find('td:eq(3)').text(),
+        request_data: row.find('td:eq(2)').html(),
+        date: row.find('td:eq(4)').find('span:first').text() + ' ' + row.find('td:eq(4)').find('span:last').text(),
+        status: statusText,
+        updated_at: completedDate
+    };
+    
+    // Update and show the modal
+    updateRequestDetailsModal(requestData);
+    $('#requestDetailsModal').modal('show');
+});
     </script>
 </body>
 </html>

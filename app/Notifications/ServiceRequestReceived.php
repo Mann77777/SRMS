@@ -13,7 +13,7 @@ class ServiceRequestReceived extends Notification
 
     protected $requestId;
     protected $serviceCategory;
-    protected $studentName;
+    protected $requestorName;
 
     private $serviceCategoryTitles = [
         'create' => 'Create MS Office/TUP Email Account',
@@ -22,15 +22,26 @@ class ServiceRequestReceived extends Notification
         'reset_ers_password' => 'Reset ERS Password',
         'change_of_data_ms' => 'Change of Data (MS Office)',
         'change_of_data_portal' => 'Change of Data (Portal)',
+        'dtr' => 'Daily Time Record',
+        'biometric_record' => 'Biometric Record',
+        'biometrics_enrollement' => 'Biometrics Enrollment',
+        'new_internet' => 'New Internet Connection',
+        'new_telephone' => 'New Telephone Connection',
+        'repair_and_maintenance' => 'Internet/Telephone Repair and Maintenance',
+        'computer_repair_maintenance' => 'Computer Repair and Maintenance',
+        'printer_repair_maintenance' => 'Printer Repair and Maintenance',
+        'install_application' => 'Install Application/Information System/Software',
+        'post_publication' => 'Post Publication/Update of Information Website',
+        'data_docs_reports' => 'Data, Documents and Reports',
         'request_led_screen' => 'Request LED Screen',
         'others' => 'Other Service Request'
     ];
 
-    public function __construct($requestId, $serviceCategory, $studentName = '')
+    public function __construct($requestId, $serviceCategory, $requestorName = '')
     {
         $this->requestId = $requestId;
         $this->serviceCategory = $serviceCategory;
-        $this->studentName = $studentName;
+        $this->requestorName = $requestorName;
     }
 
     public function via($notifiable)
@@ -44,7 +55,7 @@ class ServiceRequestReceived extends Notification
 
         return (new MailMessage)
             ->subject('TUP SRMS - Service Request Received')
-            ->greeting('Dear, ' . $this->studentName . '!')
+            ->greeting('Dear ' . $this->requestorName . ',')
             ->line('Thank you for submitting your request. We have received it and will process it as soon as possible.')
             ->line('Request ID: ' . $this->requestId)
             ->line('Service: ' . $serviceCategoryTitle)

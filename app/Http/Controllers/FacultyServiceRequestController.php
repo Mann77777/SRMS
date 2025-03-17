@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Notifications\ServiceRequestReceived;
+use Illuminate\Support\Facades\Notification;
 
 class FacultyServiceRequestController extends Controller
 {
@@ -75,6 +77,16 @@ class FacultyServiceRequestController extends Controller
 
             Log::info('Service request created:', ['id' => $serviceRequest->id]);
 
+            if (Auth::check() && $request->user()->email) {
+                Notification::route('mail', $request->user()->email)
+                    ->notify(new ServiceRequestReceived(
+                        $serviceRequest->id, 
+                        $request->input('service_category'),
+                        $filteredData['first_name'] . ' ' . $filteredData['last_name']
+                    ));
+                    
+                Log::info('Email notification sent to: ' . $request->user()->email);
+            }
             // Redirect back with success modal data
             return redirect()->back()->with([
                 'showSuccessModal' => true,

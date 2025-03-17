@@ -66,16 +66,18 @@ class StudentServiceRequestController extends Controller
       // Optional additional notes
       $studentRequest->additional_notes = $request->input('additional_notes');
       
-           // Send email notification
-           Notification::route('mail', $request->user()->email)
-           ->notify(new ServiceRequestReceived(
-               $studentRequest->id, 
-               $studentRequest->service_category,
-               $studentRequest->first_name . ' ' . $studentRequest->last_name
-           ));
-      
+    
         // Save the request
         $studentRequest->save();
+
+        // Send email notification
+        Notification::route('mail', $request->user()->email)
+            ->notify(new ServiceRequestReceived(
+                $studentRequest->id, 
+                $studentRequest->service_category,
+                $studentRequest->first_name . ' ' . $studentRequest->last_name
+        ));
+         
 
         // Redirect to my requests page
         //return redirect()->route('myrequests')->with('success', 'Service request submitted successfully!');

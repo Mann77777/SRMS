@@ -9,6 +9,8 @@ use App\Models\FacultyServiceRequest;
 use App\Models\StudentServiceRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\ServiceRequestRejected;
 
 class AdminServiceRequestController extends Controller
 {
@@ -74,21 +76,15 @@ class AdminServiceRequestController extends Controller
     $allRequests = collect($requests)->sortByDesc('date');
 
     return view('admin.service-request', ['requests' => $allRequests]);
-}
-    private function getServiceName($request, $type)
-{
-    switch ($type) {
-        case 'student':
-            return $request->service_category ?? 'Unspecified Service';
-            
-        case 'faculty':
-            return $request->service_type ?? 'Unspecified Service';
-            
-        default:
-            return 'Unknown Service';
-    }
-}
+}   
 
+
+    /**
+     * Get formatted request data for display
+     * 
+     * @param object $request The request object
+     * @return string HTML output
+     */
     private function getRequestData($request)
     {
         $output = [];
@@ -98,7 +94,9 @@ class AdminServiceRequestController extends Controller
         }
         
         if (isset($request->service_category)) {
-            $output[] = '<strong>Service:</strong> ' . htmlspecialchars($request->service_category) . '<br>';
+            // Format the service category name
+            $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
+            $output[] = '<strong>Service:</strong> ' . htmlspecialchars($formattedServiceName) . '<br>';
         }
         
         if (isset($request->description)) {
@@ -117,6 +115,88 @@ class AdminServiceRequestController extends Controller
     }
 
     /**
+     * Format service category to human-readable name
+     * 
+     * @param string $category The service category code
+     * @param string|null $description Optional description for "others" category
+     * @return string The formatted service name
+     */
+    private function formatServiceCategory($category, $description = null)
+    {
+        switch ($category) {
+            case 'create':
+                return 'Create MS Office/TUP Email Account';
+            case 'reset_email_password':
+                return 'Reset MS Office/TUP Email Password';
+            case 'change_of_data_ms':
+                return 'Change of Data (MS Office)';
+            case 'reset_tup_web_password':
+                return 'Reset TUP Web Password';
+            case 'reset_ers_password':
+                return 'Reset ERS Password';
+            case 'change_of_data_portal':
+                return 'Change of Data (Portal)';
+            case 'dtr':
+                return 'Daily Time Record';
+            case 'biometric_record':
+                return 'Biometric Record';
+            case 'biometrics_enrollement':
+                return 'Biometrics Enrollment';
+            case 'new_internet':
+                return 'New Internet Connection';
+            case 'new_telephone':
+                return 'New Telephone Connection';
+            case 'repair_and_maintenance':
+                return 'Internet/Telephone Repair and Maintenance';
+            case 'computer_repair_maintenance':
+                return 'Computer Repair and Maintenance';
+            case 'printer_repair_maintenance':
+                return 'Printer Repair and Maintenance';
+            case 'request_led_screen':
+                return 'LED Screen Request';
+            case 'install_application':
+                return 'Install Application/Information System/Software';
+            case 'post_publication':
+                return 'Post Publication/Update of Information Website';
+            case 'data_docs_reports':
+                return 'Data, Documents and Reports';
+            case 'others':
+                return $description ?? 'Other Service';
+            default:
+                return $category;
+        }
+    }
+
+
+    /**
+     * Get formatted service name based on request type
+     * 
+     * @param object $request The request object
+     * @param string $type The type of request (student, faculty)
+     * @return string Formatted service name
+     */
+    private function getServiceName($request, $type)
+    {
+        switch ($type) {
+            case 'student':
+                return $this->formatServiceCategory(
+                    $request->service_category ?? 'Unspecified Service',
+                    $request->description ?? null
+                );
+                
+            case 'faculty':
+                return $this->formatServiceCategory(
+                    $request->service_type ?? 'Unspecified Service',
+                    $request->description ?? null
+                );
+                
+            default:
+                return 'Unknown Service';
+        }
+    }
+
+
+    /**
      * Format student service request data for display
      * 
      * @param StudentServiceRequest $request
@@ -124,11 +204,13 @@ class AdminServiceRequestController extends Controller
      */
     private function formatStudentServiceRequestData($request)
     {
+        // Format the service category name
+        $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
+        
         $data = [
             'Name' => $request->first_name . ' ' . $request->last_name,
             'Student ID' => $request->student_id,
-            'Service' => $request->service_category,
-
+            'Service' => $formattedServiceName,
         ];
     
         // Add additional details based on service category
@@ -428,12 +510,18 @@ class AdminServiceRequestController extends Controller
             switch ($validatedData['request_type']) {
                 case 'new_student_service':
                     $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
+                    $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+                    $serviceCategory = $serviceRequest->service_category;
                     break;
                 case 'faculty':
                     $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
+                    $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+                    $serviceCategory = $serviceRequest->service_category;
                     break;
                 case 'student':
                     $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
+                    $requestorName = $serviceRequest->user ? $serviceRequest->user->name : 'Student';
+                    $serviceCategory = $serviceRequest->service_category;
                     break;
                 default:
                     throw new \Exception('Invalid request type');
@@ -449,6 +537,25 @@ class AdminServiceRequestController extends Controller
 
             // Send a notification to the user
             //Notification::send($serviceRequest->user, new RequestRejectedNotification($serviceRequest));
+
+               // Send a notification to the user if we have the user associated
+        if (isset($serviceRequest->user) && $serviceRequest->user) {
+            $user = $serviceRequest->user;
+            
+            // Send the notification
+            Notification::route('mail', $user->email)
+                ->notify(new ServiceRequestRejected(
+                    $serviceRequest->id,
+                    $serviceCategory,
+                    $requestorName,
+                    $validatedData['rejection_reason'],
+                    $validatedData['notes']
+                ));
+                
+            Log::info('Rejection notification sent to: ' . $user->email);
+        } else {
+            Log::warning('Unable to send rejection notification - user not found for request ID: ' . $validatedData['request_id']);
+        }
 
 
             return response()->json([

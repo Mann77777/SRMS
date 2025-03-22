@@ -92,25 +92,6 @@
                     </select>
                 </div>
 
-                <!-- MS Office Options Form -->
-                <div id="ms_options_form" style="display: none;">
-                    <div class="form-section">
-                        <h5>MS Office Options</h5>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="ms_options[]" id="ms_email" value="email">
-                            <label class="form-check-label" for="ms_email">Email Account</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="ms_options[]" id="ms_teams" value="teams">
-                            <label class="form-check-label" for="ms_teams">MS Teams</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="ms_options[]" id="ms_office" value="office">
-                            <label class="form-check-label" for="ms_office">MS Office 365</label>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Personal Information Form -->
                 <div id="personalInfoForm" style="display: none;">
                     <div class="form-section">

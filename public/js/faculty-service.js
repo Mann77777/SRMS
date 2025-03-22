@@ -229,15 +229,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Validate MS options for 'create' category
-            if (category === 'create') {
-                const msOptions = document.querySelectorAll('input[name="ms_options[]"]:checked');
-                if (msOptions.length === 0) {
-                    e.preventDefault();
-                    alert('Please select at least one MS option');
-                    return;
-                }
-            }
 
             // Validate required fields
             const firstName = document.querySelector('input[name="first_name"]');

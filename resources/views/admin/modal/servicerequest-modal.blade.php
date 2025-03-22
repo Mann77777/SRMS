@@ -151,12 +151,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                
-                <!-- Action buttons based on status -->
-                <div id="pendingActionsContainer" style="display: none;">
-                    <button type="button" class="btn btn-success modal-approve-btn">Approve</button>
-                    <button type="button" class="btn btn-danger modal-reject-btn">Reject</button>
-                </div>
             </div>
         </div>
     </div>

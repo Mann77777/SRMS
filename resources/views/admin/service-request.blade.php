@@ -107,6 +107,9 @@
                     </tbody>
                 </table>
             </form>
+            <div class="pagination-container">
+                {{ $requests->links('vendor.pagination.custom') }}
+            </div>
         </div>
     </div>
 

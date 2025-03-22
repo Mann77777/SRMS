@@ -22,61 +22,77 @@ class AdminServiceRequestController extends Controller
         try {
             // Fetch all student requests
             $studentRequests = ServiceRequest::with('user')->get();
-        foreach($studentRequests as $request) {
-            $user = $request->user;
-            $requests[] = [
-                'id' => $request->id,
-                'user_id' => $request->user_id,
-                'role' => $user ? $user->role : 'Student',
-                'service' => $this->getServiceName($request, 'student'),
-                'request_data' => $this->getRequestData($request),
-                'date' => $request->created_at,
-                'status' => $request->status,
-                'type' => 'student',
-            ];
+            foreach($studentRequests as $request) {
+                $user = $request->user;
+                $requests[] = [
+                    'id' => $request->id,
+                    'user_id' => $request->user_id,
+                    'role' => $user ? $user->role : 'Student',
+                    'service' => $this->getServiceName($request, 'student'),
+                    'request_data' => $this->getRequestData($request),
+                    'date' => $request->created_at,
+                    'status' => $request->status,
+                    'type' => 'student',
+                ];
+            }
+
+            // Fetch new student service requests
+            $newStudentRequests = StudentServiceRequest::with('user')->get();
+            foreach($newStudentRequests as $request) {
+                $user = $request->user;
+                $requests[] = [
+                    'id' => $request->id,
+                    'user_id' => $request->user_id,
+                    'role' => $user ? $user->role : 'Student',
+                    'service' => $request->service_category,
+                    'request_data' => $this->formatStudentServiceRequestData($request),
+                    'date' => $request->created_at,
+                    'status' => $request->status ?? 'Pending',
+                    'type' => 'new_student_service',
+                ];
+            }
+
+            // Fetch faculty requests
+            $facultyRequests = FacultyServiceRequest::with('user')->get();
+            foreach($facultyRequests as $request) {
+                $user = $request->user;
+                $requests[] = [
+                    'id' => $request->id,
+                    'user_id' => $request->user_id,
+                    'role' => $user ? $user->role : 'Faculty',
+                    'service' => $this->getServiceName($request, 'faculty'),
+                    'request_data' => $this->getRequestData($request),
+                    'date' => $request->created_at,
+                    'status' => $request->status,
+                    'type' => 'faculty',
+                ];
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching service requests: ' . $e->getMessage());
         }
 
-        // Fetch new student service requests
-        $newStudentRequests = StudentServiceRequest::with('user')->get();
-        foreach($newStudentRequests as $request) {
-            $user = $request->user;
-            $requests[] = [
-                'id' => $request->id,
-                'user_id' => $request->user_id,
-                'role' => $user ? $user->role : 'Student',
-                'service' => $request->service_category,
-                'request_data' => $this->formatStudentServiceRequestData($request),
-                'date' => $request->created_at,
-                'status' => $request->status ?? 'Pending',
-                'type' => 'new_student_service',
-            ];
-        }
+        // Sort requests by date
+        $allRequests = collect($requests)->sortByDesc('date');
+        
+        // Get current page from request query string
+        $page = request()->get('page', 1);
+        $perPage = 10;
+        
+        // Paginate the collection manually
+        $items = $allRequests->forPage($page, $perPage);
+        
+        // Create a new paginator instance
+        $paginatedRequests = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $allRequests->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
-        // Fetch faculty requests
-        $facultyRequests = FacultyServiceRequest::with('user')->get();
-        foreach($facultyRequests as $request) {
-            $user = $request->user;
-            $requests[] = [
-                'id' => $request->id,
-                'user_id' => $request->user_id,
-                'role' => $user ? $user->role : 'Faculty',
-                'service' => $this->getServiceName($request, 'faculty'),
-                'request_data' => $this->getRequestData($request),
-                'date' => $request->created_at,
-                'status' => $request->status,
-                'type' => 'faculty',
-            ];
-        }
-
-    } catch (\Exception $e) {
-        Log::error('Error fetching service requests: ' . $e->getMessage());
+        return view('admin.service-request', ['requests' => $paginatedRequests]);
     }
-
-    // Sort requests by date
-    $allRequests = collect($requests)->sortByDesc('date');
-
-    return view('admin.service-request', ['requests' => $allRequests]);
-}   
 
 
     /**

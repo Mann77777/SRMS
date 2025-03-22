@@ -3,17 +3,18 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use App\Models\StudentServiceRequest;
+use Illuminate\Notifications\Notification;
 
-class ServiceRequestReceived extends Notification
+class ServiceRequestRejected extends Notification
 {
     use Queueable;
-
     protected $requestId;
     protected $serviceCategory;
     protected $requestorName;
+    protected $rejectionReason;
+    protected $notes;
 
     private $serviceCategoryTitles = [
         'create' => 'Create MS Office/TUP Email Account',
@@ -37,11 +38,21 @@ class ServiceRequestReceived extends Notification
         'others' => 'Other Service Request'
     ];
 
-    public function __construct($requestId, $serviceCategory, $requestorName = '')
+    private $rejectionReasonTitles = [
+        'incomplete_information' => 'Incomplete Information',
+        'out_of_scope' => 'Service Out of Scope',
+        'resource_unavailable' => 'Resources Unavailable',
+        'duplicate_request' => 'Duplicate Request',
+        'other' => 'Other Reason'
+    ];
+
+    public function __construct($requestId, $serviceCategory, $requestorName, $rejectionReason, $notes = '')
     {
         $this->requestId = $requestId;
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
+        $this->rejectionReason = $rejectionReason;
+        $this->notes = $notes;
     }
 
     public function via($notifiable)
@@ -52,16 +63,26 @@ class ServiceRequestReceived extends Notification
     public function toMail($notifiable)
     {
         $serviceCategoryTitle = $this->serviceCategoryTitles[$this->serviceCategory] ?? $this->serviceCategory;
+        $rejectionReasonTitle = $this->rejectionReasonTitles[$this->rejectionReason] ?? $this->rejectionReason;
 
-        return (new MailMessage)
-            ->subject('TUP SRMS - Service Request Received')
+        $mailMessage = (new MailMessage)
+            ->subject('TUP SRMS - Service Request Rejected')
             ->greeting('Dear ' . $this->requestorName . ',')
-            ->line('Thank you for submitting your request. We have received it and will process it as soon as possible.')
+            ->line('We regret to inform you that your service request has been rejected.')
             ->line('Request ID: ' . $this->requestId)
             ->line('Service: ' . $serviceCategoryTitle)
-            ->line('Current Status: Pending')
-           // ->action('View Request', url('/student/requests/' . $this->requestId))
+            ->line('Reason for Rejection: ' . $rejectionReasonTitle);
+
+        // Add notes if provided
+        if (!empty($this->notes)) {
+            $mailMessage->line('Additional Notes: ' . $this->notes);
+        }
+
+        $mailMessage->line('If you have any questions regarding this decision, please contact the UITC office for clarification.')
+            ->action('Submit New Request', url('/service-request'))
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
+
+        return $mailMessage;
     }
 }

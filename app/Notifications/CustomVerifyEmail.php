@@ -17,7 +17,7 @@ class CustomVerifyEmail extends VerifyEmail
 
         return (new MailMessage)
             ->subject('TUP SRMS - Verify Your Email Address')
-            ->greeting('Hello ' . $notifiable->name . '!')
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line('Welcome to TUP Service Request Management System.')
             ->line('Please click the button below to verify your email address.')
             ->action('Verify Email Address', $verificationUrl)

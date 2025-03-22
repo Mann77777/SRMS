@@ -91,18 +91,19 @@ $(document).ready(function() {
         <h1>My Request</h1>
         <div class="form-container">
             <div class="dropdown-container">
-            <select name="" id="">
-                <option value="pending">Pending</option>
-                <option value="in progress">In Progress</option>
-                <option value="completed">Completed</option>
-            </select>
-
-            <!-- Search Bar -->
-            <div class="search-container">
-                <input type="text" name="" placeholder="Search...">
-                <button class="search-btn" type="button" onclick="performSearch()">Search</button>
+                <select name="status" id="status">
+                    <option value="all">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <input type="text" name="search" id="search-input" placeholder="Search...">
+                    <button class="search-btn" type="button">Search</button>
+                </div>
             </div>
-        </div>
             
             <div class="request-table-container">
                 <form action="">
@@ -122,31 +123,67 @@ $(document).ready(function() {
                             <tr>
                                 <td>{{ $request->id }}</td>
                                 <td>
-                                    @switch($request->service_category)
-                                        @case('create')
-                                            Create MS Office/TUP Email Account
-                                            @break
-                                        @case('reset_email_password')
-                                            Reset MS Office/TUP Email Password
-                                            @break
-                                        @case('change_of_data_ms')
-                                            Change of Data (MS Office)
-                                            @break
-                                        @case('reset_tup_web_password')
-                                            Reset TUP Web Password
-                                            @break
-                                        @case('change_of_data_portal')
-                                            Change of Data (Portal)
-                                            @break
-                                        @case('request_led_screen')
-                                            LED Screen Request
-                                            @break
-                                        @case('others')
-                                            {{ $request->description }}
-                                            @break
-                                        @default
-                                            {{ $request->service_category }}
-                                    @endswitch
+                                @switch($request->service_category)
+                                    @case('create')
+                                        Create MS Office/TUP Email Account
+                                        @break
+                                    @case('reset_email_password')
+                                        Reset MS Office/TUP Email Password
+                                        @break
+                                    @case('change_of_data_ms')
+                                        Change of Data (MS Office)
+                                        @break
+                                    @case('reset_tup_web_password')
+                                        Reset TUP Web Password
+                                        @break
+                                    @case('reset_ers_password')
+                                        Reset ERS Password
+                                        @break
+                                    @case('change_of_data_portal')
+                                        Change of Data (Portal)
+                                        @break
+                                    @case('dtr')
+                                        Daily Time Record
+                                        @break
+                                    @case('biometric_record')
+                                        Biometric Record
+                                        @break
+                                    @case('biometrics_enrollement')
+                                        Biometrics Enrollment
+                                        @break
+                                    @case('new_internet')
+                                        New Internet Connection
+                                        @break
+                                    @case('new_telephone')
+                                        New Telephone Connection
+                                        @break
+                                    @case('repair_and_maintenance')
+                                        Internet/Telephone Repair and Maintenance
+                                        @break
+                                    @case('computer_repair_maintenance')
+                                        Computer Repair and Maintenance
+                                        @break
+                                    @case('printer_repair_maintenance')
+                                        Printer Repair and Maintenance
+                                        @break
+                                    @case('request_led_screen')
+                                        LED Screen Request
+                                        @break
+                                    @case('install_application')
+                                        Install Application/Information System/Software
+                                        @break
+                                    @case('post_publication')
+                                        Post Publication/Update of Information Website
+                                        @break
+                                    @case('data_docs_reports')
+                                        Data, Documents and Reports
+                                        @break
+                                    @case('others')
+                                        {{ $request->description ?? 'Other Service' }}
+                                        @break
+                                    @default
+                                        {{ $request->service_category }}
+                                @endswitch
                                 </td>
                                 <td>
                                     <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>
@@ -183,10 +220,9 @@ $(document).ready(function() {
                         </tbody>
                     </table>
                 </form>
-                   <!-- Pagination Links 
-                    <div class="pagination">
-                        {{ $requests->links() }}
-                    </div> -->
+                <div class="pagination-container">
+                    {{ $requests->links('vendor.pagination.custom') }}
+                </div>
             </div>
         </div>
     </div>
@@ -323,39 +359,81 @@ $(document).ready(function() {
         });
         
         $(document).ready(function() {
-        // Filter by Status (Dropdown)
-        $('select').on('change', function() {
-            const selectedStatus = $(this).val().toLowerCase();
-            $('.request-table tbody tr').each(function() {
-                const rowStatus = $(this).find('td:nth-child(4)').text().toLowerCase();
-                if (rowStatus.includes(selectedStatus) || selectedStatus === '') {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-
-        // Search by Service Name
-        $('.search-btn').on('click', function() {
-            const searchTerm = $('input[type="text"]').val().toLowerCase();
-            $('.request-table tbody tr').each(function() {
-                const serviceName = $(this).find('td:nth-child(2)').text().toLowerCase();
-                if (serviceName.includes(searchTerm)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-
-        // Optional: Add "Enter" key functionality for the search bar
-        $('input[type="text"]').on('keypress', function(e) {
-            if (e.which === 13) {
-                $('.search-btn').click();
-            }
-        });
+    console.log('Document ready - initializing filters');
+    
+    // Set the dropdown and search input values based on URL parameters
+    initializeFiltersFromURL();
+    
+    // Filter by Status (Dropdown)
+    $('#status').on('change', function() {
+        console.log('Status changed to:', $(this).val());
+        applyFilters();
     });
+    
+    // Search button click
+    $('.search-btn').on('click', function() {
+        console.log('Search button clicked');
+        applyFilters();
+    });
+    
+    // Enter key in search input
+    $('#search-input').on('keypress', function(e) {
+        if (e.which === 13) {
+            console.log('Enter key pressed in search');
+            e.preventDefault();
+            applyFilters();
+        }
+    });
+    
+    // Function to apply filters
+    function applyFilters() {
+        const selectedStatus = $('#status').val();
+        const searchTerm = $('#search-input').val().trim();
+        
+        console.log('Applying filters:', {
+            status: selectedStatus,
+            search: searchTerm
+        });
+        
+        // Create URL with query parameters
+        const url = new URL(window.location.href);
+        
+        // Clear existing parameters
+        url.search = '';
+        
+        // Add status parameter if not "all"
+        if (selectedStatus && selectedStatus !== 'all') {
+            url.searchParams.set('status', selectedStatus);
+        }
+        
+        // Add search parameter if not empty
+        if (searchTerm) {
+            url.searchParams.set('search', searchTerm);
+        }
+        
+        console.log('Navigating to:', url.toString());
+        window.location.href = url.toString();
+    }
+    
+    // Function to initialize filters from URL
+    function initializeFiltersFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Set status dropdown
+        const statusParam = urlParams.get('status');
+        if (statusParam) {
+            console.log('Setting status dropdown to:', statusParam);
+            $('#status').val(statusParam);
+        }
+        
+        // Set search input
+        const searchParam = urlParams.get('search');
+        if (searchParam) {
+            console.log('Setting search input to:', searchParam);
+            $('#search-input').val(searchParam);
+        }
+    }
+});
     </script>
 </body>
 </html>

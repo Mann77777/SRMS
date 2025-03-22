@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Notifications\ServiceRequestReceived;
+use Illuminate\Support\Facades\Notification;
 
 class FacultyServiceRequestController extends Controller
 {
@@ -75,6 +77,16 @@ class FacultyServiceRequestController extends Controller
 
             Log::info('Service request created:', ['id' => $serviceRequest->id]);
 
+            if (Auth::check() && $request->user()->email) {
+                Notification::route('mail', $request->user()->email)
+                    ->notify(new ServiceRequestReceived(
+                        $serviceRequest->id, 
+                        $request->input('service_category'),
+                        $filteredData['first_name'] . ' ' . $filteredData['last_name']
+                    ));
+                    
+                Log::info('Email notification sent to: ' . $request->user()->email);
+            }
             // Redirect back with success modal data
             return redirect()->back()->with([
                 'showSuccessModal' => true,
@@ -93,19 +105,61 @@ class FacultyServiceRequestController extends Controller
                 ->withInput();
         }
     }
-
-    public function myRequests()
+    public function myRequests(Request $request = null)
     {
-       $user = Auth::user();
-
-       if($user->role === "Faculty & Staff")
-       {
-            $requests = FacultyServiceRequest::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
+        $user = Auth::user();
+    
+        if($user->role === "Faculty & Staff")
+        {
+            // If $request is null, initialize it to get an empty request object
+            if ($request === null) {
+                $request = new Request();
+            }
+            
+            // Debug the incoming request parameters
+            \Log::info('Request parameters for faculty requests:', [
+                'status' => $request->status,
+                'search' => $request->search,
+                'page' => $request->page
+            ]);
+            
+            // Start building the query
+            $query = FacultyServiceRequest::where('user_id', Auth::id());
+            
+            // Apply status filter if provided - exact match with database value
+            if ($request->has('status') && $request->status !== 'all' && $request->status !== '') {
+                \Log::info('Filtering by status: ' . $request->status);
+                $query->where('status', $request->status);
+            }
+            
+            // Apply search filter if provided
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                \Log::info('Searching for: ' . $search);
+                
+                $query->where(function($q) use ($search) {
+                    $q->where('service_category', 'like', '%' . $search . '%')
+                      ->orWhere('description', 'like', '%' . $search . '%')
+                      ->orWhere('id', 'like', '%' . $search . '%');
+                });
+            }
+            
+            // Count the total records after filtering (before pagination)
+            $totalRecords = $query->count();
+            \Log::info('Total filtered records: ' . $totalRecords);
+            
+            // Get the requests with pagination after filtering
+            $requests = $query->orderBy('created_at', 'desc')->paginate(10);
+            
+            // Append query parameters to pagination links
+            $requests->appends($request->except('page'));
+            
+            \Log::info('Paginated results count: ' . $requests->count());
+            
             return view('users.myrequests', compact('requests'));
-       }
+        }
+        
+        return redirect()->back()->with('error', 'Unauthorized access');
     }
 
     public function show($id)

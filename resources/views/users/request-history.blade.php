@@ -38,10 +38,72 @@
                        </tr>
                     </thead>
                     <tbody>
-                        @forelse($completedRequests as $request)
+                        @forelse($requests as $request)
                         <tr>
                             <td>{{ $request->id }}</td>
-                            <td>{{ $request->service_category }}</td>
+                            <td>
+                                @switch($request->service_category)
+                                    @case('create')
+                                        Create MS Office/TUP Email Account
+                                        @break
+                                    @case('reset_email_password')
+                                        Reset MS Office/TUP Email Password
+                                        @break
+                                    @case('change_of_data_ms')
+                                        Change of Data (MS Office)
+                                        @break
+                                    @case('reset_tup_web_password')
+                                        Reset TUP Web Password
+                                        @break
+                                    @case('reset_ers_password')
+                                        Reset ERS Password
+                                        @break
+                                    @case('change_of_data_portal')
+                                        Change of Data (Portal)
+                                        @break
+                                    @case('dtr')
+                                        Daily Time Record
+                                        @break
+                                    @case('biometric_record')
+                                        Biometric Record
+                                        @break
+                                    @case('biometrics_enrollement')
+                                        Biometrics Enrollment
+                                        @break
+                                    @case('new_internet')
+                                        New Internet Connection
+                                        @break
+                                    @case('new_telephone')
+                                        New Telephone Connection
+                                        @break
+                                    @case('repair_and_maintenance')
+                                        Internet/Telephone Repair and Maintenance
+                                        @break
+                                    @case('computer_repair_maintenance')
+                                        Computer Repair and Maintenance
+                                        @break
+                                    @case('printer_repair_maintenance')
+                                        Printer Repair and Maintenance
+                                        @break
+                                    @case('request_led_screen')
+                                        LED Screen Request
+                                        @break
+                                    @case('install_application')
+                                        Install Application/Information System/Software
+                                        @break
+                                    @case('post_publication')
+                                        Post Publication/Update of Information Website
+                                        @break
+                                    @case('data_docs_reports')
+                                        Data, Documents and Reports
+                                        @break
+                                    @case('others')
+                                        {{ $request->description ?? 'Other Service' }}
+                                        @break
+                                    @default
+                                        {{ $request->service_category }}
+                                @endswitch
+                            </td>                            
                             <td>
                                 {{ $request->assignedUITCStaff ? $request->assignedUITCStaff->name : 'N/A' }}
                             </td>                            
@@ -66,11 +128,19 @@
                     </tbody>
                 </table>
             </form>
+            
+            <!-- Pagination Container -->
+            <div class="pagination-container">
+                {{ $requests->links('vendor.pagination.custom') }}
+            </div>
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     @stack('scripts') 
 
+    </style>
 </body>
 </html>

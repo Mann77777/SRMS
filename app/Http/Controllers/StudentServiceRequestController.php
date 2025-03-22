@@ -66,16 +66,18 @@ class StudentServiceRequestController extends Controller
       // Optional additional notes
       $studentRequest->additional_notes = $request->input('additional_notes');
       
-           // Send email notification
-           Notification::route('mail', $request->user()->email)
-           ->notify(new ServiceRequestReceived(
-               $studentRequest->id, 
-               $studentRequest->service_category,
-               $studentRequest->first_name . ' ' . $studentRequest->last_name
-           ));
-      
+    
         // Save the request
         $studentRequest->save();
+
+        // Send email notification
+        Notification::route('mail', $request->user()->email)
+            ->notify(new ServiceRequestReceived(
+                $studentRequest->id, 
+                $studentRequest->service_category,
+                $studentRequest->first_name . ' ' . $studentRequest->last_name
+        ));
+         
 
         // Redirect to my requests page
         //return redirect()->route('myrequests')->with('success', 'Service request submitted successfully!');
@@ -90,19 +92,62 @@ class StudentServiceRequestController extends Controller
 
 
 
-    // New method to show student's requests
-     public function myRequests()
+    // New method to show student's requestspublic function myRequests(Request $request = null)
+    public function myRequests(Request $request = null)
     {
-         $user = Auth::user();
-
-         if($user->role === "Student")
-         {
-              $requests = StudentServiceRequest::where('user_id', Auth::id())
-              ->orderBy('created_at', 'desc')
-              ->paginate(10);
-
-               return view('users.myrequests', compact('requests'));
-         }
+        $user = Auth::user();
+        
+        if($user->role === "Student")
+        {
+            // If $request is null, initialize it to get an empty request object
+            if ($request === null) {
+                $request = new Request();
+            }
+            
+            // Debug the incoming request parameters
+            \Log::info('Request parameters for student requests:', [
+                'status' => $request->status,
+                'search' => $request->search,
+                'page' => $request->page
+            ]);
+            
+            // Start building the query
+            $query = StudentServiceRequest::where('user_id', Auth::id());
+            
+            // Apply status filter if provided - exact match with database value
+            if ($request->has('status') && $request->status !== 'all' && $request->status !== '') {
+                \Log::info('Filtering by status: ' . $request->status);
+                $query->where('status', $request->status);
+            }
+            
+            // Apply search filter if provided
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                \Log::info('Searching for: ' . $search);
+                
+                $query->where(function($q) use ($search) {
+                    $q->where('service_category', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('id', 'like', '%' . $search . '%');
+                });
+            }
+            
+            // Count the total records after filtering (before pagination)
+            $totalRecords = $query->count();
+            \Log::info('Total filtered records: ' . $totalRecords);
+            
+            // Get the requests with pagination after filtering
+            $requests = $query->orderBy('created_at', 'desc')->paginate(10);
+            
+            // Append query parameters to pagination links
+            $requests->appends($request->except('page'));
+            
+            \Log::info('Paginated results count: ' . $requests->count());
+            
+            return view('users.myrequests', compact('requests'));
+        }
+        
+        return redirect()->back()->with('error', 'Unauthorized access');
     }
 
        public function show($id)
@@ -117,13 +162,13 @@ class StudentServiceRequestController extends Controller
 
         if($user->role === "Student")
         {
-            $completedRequests = StudentServiceRequest::where('user_id', Auth::id())
+            $requests = StudentServiceRequest::where('user_id', Auth::id())
                 ->where('status', 'Completed')
                 ->with('assignedUITCStaff')
-                ->orderBy('updated_at', 'asc')
+                ->orderBy('updated_at', 'desc')
                 ->paginate(10);
 
-            return view('users.request-history', compact('completedRequests'));
+            return view('users.request-history', compact('requests'));
         }
 
         return redirect()->back()->with('error', 'Unauthorized access');

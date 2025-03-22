@@ -164,7 +164,7 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
     }
 
     if (Auth::user()->role === 'Faculty & Staff') {
-        return redirect()->route('dashboard')
+        return redirect()->route('users.dashboard')
             ->with('message', 'Email verified! Welcome to your dashboard.');
     }
 

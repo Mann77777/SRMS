@@ -69,7 +69,7 @@
                                         <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('M d, Y') }}</span><br>
                                         <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('h:i A') }}</span>
                                     @else
-                                        N/A
+                                        –
                                     @endif
                                 </td>
                                 <td>
@@ -594,37 +594,38 @@
     // Document ready function for request detail modal
     $(document).on('click', '.clickable-request-id', function() {
     const row = $(this).closest('tr');
-    const requestId = $(this).text();
+    const requestId = $(this).text().trim();
     
     // Extract data from the current row
     const statusText = row.find('td:eq(6) .badge').text().trim();
     
-    // Get completed date differently based on the cell content
+    // Get completed date from the completed date cell directly
     let completedDate = null;
     const completedDateCell = row.find('td:eq(5)');
     
     // Check if the status is completed and the cell doesn't just contain "N/A"
     if (statusText === 'Completed' && !completedDateCell.text().trim().includes('N/A')) {
-        // Get both date and time spans if they exist
-        if (completedDateCell.find('span').length > 0) {
-            const completedDateValue = completedDateCell.find('span:first').text();
-            const completedTimeValue = completedDateCell.find('span:last').text();
-            completedDate = completedDateValue + ' ' + completedTimeValue;
-        } else {
-            // Handle case where there might just be text without spans
-            completedDate = completedDateCell.text().trim();
+        // Try to combine date and time from spans
+        const dateSpan = completedDateCell.find('span:first').text().trim();
+        const timeSpan = completedDateCell.find('span:last').text().trim();
+        
+        if (dateSpan && timeSpan) {
+            completedDate = dateSpan + ' ' + timeSpan;
         }
     }
     
     // Build the request data object
     const requestData = {
         id: requestId,
-        role: row.find('td:eq(3)').text(),
+        role: row.find('td:eq(3)').text().trim(),
         request_data: row.find('td:eq(2)').html(),
-        date: row.find('td:eq(4)').find('span:first').text() + ' ' + row.find('td:eq(4)').find('span:last').text(),
+        date: row.find('td:eq(4) span:first').text().trim() + ' ' + 
+              row.find('td:eq(4) span:last').text().trim(),
         status: statusText,
         updated_at: completedDate
     };
+    
+    console.log('Request data for modal:', requestData);
     
     // Update and show the modal
     updateRequestDetailsModal(requestData);

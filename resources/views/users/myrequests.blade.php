@@ -194,7 +194,7 @@ $(document).ready(function() {
                                     <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
                                     <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
                                     @else
-                                        N/A
+                                        –
                                     @endif
                                 </td>
                                     <td>

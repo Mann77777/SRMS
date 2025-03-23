@@ -85,17 +85,6 @@
                         </div>
                     </div>
                 </div>
-               <!-- <div class="col-md-3">
-                    <div class="status-card services">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-cogs"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3 class="service-count">0</h3>
-                            <p>Available Services</p>
-                        </div>
-                    </div>
-                </div> -->
             </div>
         </div>
     </section>
@@ -104,10 +93,6 @@
     <section class="quick-actions">
         <div class="container">
             <div class="action-buttons">
-               <!-- <a href="{{ url('/admin/requests/new') }}" class="action-button">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Process Requests</span>
-                </a> -->
                 <a href="{{ url('/assign-management') }}" class="action-button">
                     <i class="fas fa-user-plus"></i>
                     <span>Assign Staff</span>
@@ -124,29 +109,43 @@
         </div>
     </section>
 
-    <!-- REQUEST STATISTICS CHART -->
-    <section class="request-statistics">
+    <!-- CHARTS SECTION -->
+    <section class="charts-section">
         <div class="container">
-            @if(isset($error))
-                <div class="alert alert-danger">
-                    {{ $error }}
+            <div class="row">
+                <!-- Requests Over Time Chart -->
+                <div class="col-lg-8 mb-4">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Requests Over Time</h3>
+                            <!-- <div class="chart-actions">
+                                <button class="time-filter active" data-period="6months">6 Months</button>
+                                <button class="time-filter" data-period="year">1 Year</button>
+                            </div> -->
+                        </div>
+                        <canvas id="requestsOverTimeChart" height="250"></canvas>
+                    </div>
                 </div>
-            @endif
-            
-            <div class="card">
-                <div class="card-header">
-                    <h3>Request Statistics</h3>
+
+                <!-- Request Statistics Chart (Keep existing) -->
+                <div class="col-lg-4 mb-4">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Request Statistics</h3>
+                        </div>
+                        <canvas id="requestStatisticsChart" height="250"></canvas>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <canvas id="requestStatisticsChart"></canvas>
-                    
-                    <!-- Debug Information -->
-                    <div class="mt-3">
-                        <strong>Debug Info:</strong>
-                        <p>Total Requests: {{ $totalRequests ?? 'N/A' }}</p>
-                        <p>Week Requests: {{ $weekRequests ?? 'N/A' }}</p>
-                        <p>Month Requests: {{ $monthRequests ?? 'N/A' }}</p>
-                        <p>Year Requests: {{ $yearRequests ?? 'N/A' }}</p>
+            </div>
+
+            <div class="row">
+                <!-- Appointments by UITC Staff Chart -->
+                <div class="col-lg-12 mb-4">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Appointments by UITC Staff</h3>
+                        </div>
+                        <canvas id="appointmentsByStaffChart" height="300"></canvas>
                     </div>
                 </div>
             </div>
@@ -175,21 +174,21 @@
                     <tbody>
                         @forelse($recentRequests ?? [] as $request)
                         <tr>
-                            <td>#{{ $request->id }}</td>
-                            <td>{{ $request->service_type }}</td>
-                            <td>{{ $request->user_name }}</td>
-                            <td>{{ $request->created_at->format('M d, Y') }}</td>
+                            <td>#{{ $request['id'] }}</td>
+                            <td>{{ $request['service_type'] }}</td>
+                            <td>{{ $request['user_name'] }}</td>
+                            <td>{{ $request['created_at']->format('M d, Y') }}</td>
                             <td>
-                                <span class="status-badge {{ strtolower($request->status) }}">
-                                    {{ $request->status }}
+                                <span class="status-badge {{ strtolower($request['status']) }}">
+                                    {{ $request['status'] }}
                                 </span>
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="btn-view" onclick="window.location.href='{{ url('/admin/request/'.$request->id) }}'">
+                                    <button class="btn-view" onclick="window.location.href='{{ url('/admin/request/'.$request['id']) }}'">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button class="btn-edit" onclick="window.location.href='{{ url('/admin/request/'.$request->id.'/assign') }}'">
+                                    <button class="btn-edit" onclick="window.location.href='{{ url('/admin/request/'.$request['id'].'/assign') }}'">
                                         <i class="fas fa-user-plus"></i>
                                     </button>
                                 </div>
@@ -284,57 +283,89 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('requestStatisticsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Total Requests', 'This Week', 'This Month', 'This Year'],
-                datasets: [{
-                    label: 'Number of Requests',
-                    data: [
-                        {{ $totalRequests ?? 0 }}, 
-                        {{ $weekRequests ?? 0 }}, 
-                        {{ $monthRequests ?? 0 }}, 
-                        {{ $yearRequests ?? 0 }}
-                    ],
-                    backgroundColor: [
-                        'rgba(255, 206, 86, 0.6)',   // Total
-                        'rgba(75, 192, 192, 0.6)',   // Week
-                        'rgba(255, 99, 132, 0.6)',   // Month
-                        'rgba(54, 162, 235, 0.6)'    // Year
-                    ],
-                    borderColor: [
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Requests'
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Request Statistics Overview'
-                    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set data attributes programmatically for all charts
+            
+            // Request Stats Chart
+            const statsChart = document.getElementById('requestStatisticsChart');
+            if (statsChart) {
+                statsChart.dataset.totalRequests = "{{ $totalRequests ?? 0 }}";
+                statsChart.dataset.weekRequests = "{{ $weekRequests ?? 0 }}";
+                statsChart.dataset.monthRequests = "{{ $monthRequests ?? 0 }}";
+                statsChart.dataset.yearRequests = "{{ $yearRequests ?? 0 }}";
+                
+                console.log("Request Stats Data:", {
+                    totalRequests: statsChart.dataset.totalRequests,
+                    weekRequests: statsChart.dataset.weekRequests,
+                    monthRequests: statsChart.dataset.monthRequests,
+                    yearRequests: statsChart.dataset.yearRequests
+                });
+            }
+            
+            // Requests Over Time Chart
+            const timeChart = document.getElementById('requestsOverTimeChart');
+            if (timeChart) {
+                timeChart.dataset.labels = JSON.stringify(@json($requestsOverTime['labels'] ?? []));
+                timeChart.dataset.values = JSON.stringify(@json($requestsOverTime['data'] ?? []));
+                
+                try {
+                    console.log("Requests Over Time Data:", {
+                        labels: JSON.parse(timeChart.dataset.labels || '[]'),
+                        values: JSON.parse(timeChart.dataset.values || '[]')
+                    });
+                } catch (e) {
+                    console.error("Error parsing time chart data:", e);
+                    console.log("Raw labels:", timeChart.dataset.labels);
+                    console.log("Raw values:", timeChart.dataset.values);
                 }
             }
+            
+            // Staff Appointments Chart
+            const staffChart = document.getElementById('appointmentsByStaffChart');
+            if (staffChart) {
+                staffChart.dataset.staffNames = JSON.stringify(@json($appointmentsByStaff['labels'] ?? []));
+                staffChart.dataset.assignedCounts = JSON.stringify(@json($appointmentsByStaff['assigned'] ?? []));
+                staffChart.dataset.completedCounts = JSON.stringify(@json($appointmentsByStaff['completed'] ?? []));
+                
+                try {
+                    console.log("Staff Appointments Data:", {
+                        staffNames: JSON.parse(staffChart.dataset.staffNames || '[]'),
+                        assignedCounts: JSON.parse(staffChart.dataset.assignedCounts || '[]'),
+                        completedCounts: JSON.parse(staffChart.dataset.completedCounts || '[]')
+                    });
+                } catch (e) {
+                    console.error("Error parsing staff chart data:", e);
+                    console.log("Raw staff names:", staffChart.dataset.staffNames);
+                    console.log("Raw assigned counts:", staffChart.dataset.assignedCounts);
+                    console.log("Raw completed counts:", staffChart.dataset.completedCounts);
+                }
+            }
+            
+            // Event listeners for time filter buttons
+            document.querySelectorAll('.time-filter').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.time-filter').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const period = this.dataset.period;
+                    console.log('Time period selected:', period);
+                    
+                    // Call the fetchTimeSeriesData function from the external JS
+                    if (typeof fetchTimeSeriesData === 'function') {
+                        fetchTimeSeriesData(period);
+                    } else {
+                        console.error('fetchTimeSeriesData function not available');
+                        alert('This would fetch data for the ' + period + ' period');
+                    }
+                });
+            });
         });
-    });
     </script>
+
+    <!-- Load chart initialization script after setting data attributes -->
+    <script src="{{ asset('js/admin-dashboard-charts.js') }}"></script>
 </body>
 </html>

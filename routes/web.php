@@ -27,6 +27,7 @@ use App\Http\Controllers\StudentServiceRequestController;
 use App\Http\Controllers\BotManController;
 use App\Http\Controllers\UITCStaffController;
 use App\Http\Controllers\RequestsController;
+use App\Http\Controllers\AdminDashboardController;
 
 
 
@@ -296,8 +297,10 @@ Route::post('/admin_register', [SysadminController::class, 'registerAdmin'])->na
 
 Route::middleware(['auth:admin'])->group(function () {
     // Dashboard
-    Route::get('/admin_dashboard', [SysadminController::class, 'showAdminDashboard'])->name('admin.dashboard');
-
+    Route::get('/admin_dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // API endpoint for time series data
+    Route::post('/admin/dashboard/time-series-data', [AdminDashboardController::class, 'getTimeSeriesData']);
     // Profile
     Route::get('/admin_myprofile', function () {
         return view('admin.admin_myprofile');

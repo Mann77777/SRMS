@@ -31,7 +31,6 @@ class AdminServiceRequestController extends Controller
                     'service' => $this->getServiceName($request, 'student'),
                     'request_data' => $this->getRequestData($request),
                     'date' => $request->created_at,
-                    'updated_at' => $request->updated_at, // Add this line to include updated_at timestamp
                     'status' => $request->status,
                     'type' => 'student',
                 ];
@@ -48,7 +47,6 @@ class AdminServiceRequestController extends Controller
                     'service' => $request->service_category,
                     'request_data' => $this->formatStudentServiceRequestData($request),
                     'date' => $request->created_at,
-                    'updated_at' => $request->updated_at, // Add this line to include updated_at timestamp
                     'status' => $request->status ?? 'Pending',
                     'type' => 'new_student_service',
                 ];
@@ -65,7 +63,6 @@ class AdminServiceRequestController extends Controller
                     'service' => $this->getServiceName($request, 'faculty'),
                     'request_data' => $this->getRequestData($request),
                     'date' => $request->created_at,
-                    'updated_at' => $request->updated_at, // Add this line to include updated_at timestamp
                     'status' => $request->status,
                     'type' => 'faculty',
                 ];

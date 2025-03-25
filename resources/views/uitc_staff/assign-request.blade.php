@@ -66,68 +66,93 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($assignedRequests as $request)
-                        <tr>
-                            <td>{{ $request->id }}</td>
-                            <td>
-                            {!! 
-                                '<strong>Name:</strong> ' . ($request->first_name && $request->last_name ? 
-                                    $request->first_name . ' ' . $request->last_name : 
-                                    ($request->requester_name ?? 'N/A')) . '<br>' .
-                                
-                                (isset($request->student_id) ? 
-                                    '<strong>Student ID:</strong> ' . $request->student_id . '<br>' : 
-                                    (isset($request->faculty_id) ? 
-                                        '<strong>Faculty ID:</strong> ' . $request->faculty_id . '<br>' : '')) .
-                                
-                                '<strong>Service:</strong> ' . $request->service_category 
-                            !!}
-                            </td>
-                            <td>{{ $request->user_role ?? 'N/A' }}</td>
-                            <td>
-                                <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>
-                                <span>{{ \Carbon\Carbon::parse($request->created_at)->format('h:i A') }}</span>
-                            </td>
-                            <td>
-                                @if($request->status == 'Completed')
-                                    <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
-                                    <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
-                                @else
-                                    –
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge 
-                                    @if($request->status == 'Pending') badge-warning
-                                    @elseif($request->status == 'In Progress') badge-info
-                                    @elseif($request->status == 'Completed') badge-success
-                                    @else badge-secondary
-                                    @endif">
-                                    {{ $request->status }}
-                                </span>
-                            </td>
-                            <td class="btns">
-                                <button class="btn-view" onclick="viewRequestDetails({{ $request->id }}, '{{ $request->request_type ?? '' }}')">View</button>
-                                @if($request->status != 'Completed')
-                                <button 
-                                    class="btn-complete" 
-                                    data-request-id="{{ $request->id }}"
-                                    data-request-type="{{ $request->request_type ?? '' }}"
-                                >
-                                    Complete
-                                </button>
-                                @endif
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-inbox fa-3x"></i>
-                                <p>No assigned requests found</p>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+    @forelse($assignedRequests as $request)
+    <tr>
+        <td>{{ $request->id }}</td>
+        <td>
+        {!! 
+            '<strong>Name:</strong> ' . ($request->first_name && $request->last_name ? 
+                $request->first_name . ' ' . $request->last_name : 
+                ($request->requester_name ?? 'N/A')) . '<br>' .
+            
+            (isset($request->student_id) ? 
+                '<strong>Student ID:</strong> ' . $request->student_id . '<br>' : 
+                (isset($request->faculty_id) ? 
+                    '<strong>Faculty ID:</strong> ' . $request->faculty_id . '<br>' : '')) .
+            
+            '<strong>Service:</strong> ' . 
+            (function($category) {
+                switch($category) {
+                    case 'create': return 'Create MS Office/TUP Email Account';
+                    case 'reset_email_password': return 'Reset MS Office/TUP Email Password';
+                    case 'change_of_data_ms': return 'Change of Data (MS Office)';
+                    case 'reset_tup_web_password': return 'Reset TUP Web Password';
+                    case 'reset_ers_password': return 'Reset ERS Password';
+                    case 'change_of_data_portal': return 'Change of Data (Portal)';
+                    case 'dtr': return 'Daily Time Record';
+                    case 'biometric_record': return 'Biometric Record';
+                    case 'biometrics_enrollement': return 'Biometrics Enrollment';
+                    case 'new_internet': return 'New Internet Connection';
+                    case 'new_telephone': return 'New Telephone Connection';
+                    case 'repair_and_maintenance': return 'Internet/Telephone Repair and Maintenance';
+                    case 'computer_repair_maintenance': return 'Computer Repair and Maintenance';
+                    case 'printer_repair_maintenance': return 'Printer Repair and Maintenance';
+                    case 'request_led_screen': return 'LED Screen Request';
+                    case 'install_application': return 'Install Application/Information System/Software';
+                    case 'post_publication': return 'Post Publication/Update of Information Website';
+                    case 'data_docs_reports': return 'Data, Documents and Reports';
+                    case 'others': return isset($request->description) && $request->description ? $request->description : 'Other Service';
+                    default: return $category;
+                }
+            })($request->service_category)
+        !!}
+        </td>
+        </td>
+        <td>{{ $request->user_role ?? ($request->request_type == 'faculty' ? 'Faculty & Staff' : 'Student') }}</td>
+        <td>
+            <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>
+            <span>{{ \Carbon\Carbon::parse($request->created_at)->format('h:i A') }}</span>
+        </td>
+        <td>
+            @if($request->status == 'Completed')
+                <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
+                <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
+            @else
+                –
+            @endif
+        </td>
+        <td>
+            <span class="badge 
+                @if($request->status == 'Pending') badge-warning
+                @elseif($request->status == 'In Progress') badge-info
+                @elseif($request->status == 'Completed') badge-success
+                @else badge-secondary
+                @endif">
+                {{ $request->status }}
+            </span>
+        </td>
+        <td class="btns">
+            <button class="btn-view" onclick="viewRequestDetails({{ $request->id }}, '{{ $request->request_type }}')">View</button>
+            @if($request->status != 'Completed')
+            <button 
+                class="btn-complete" 
+                data-request-id="{{ $request->id }}"
+                data-request-type="{{ $request->request_type }}"
+            >
+                Complete
+            </button>
+            @endif
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="7" class="empty-state">
+            <i class="fas fa-inbox fa-3x"></i>
+            <p>No assigned requests found</p>
+        </td>
+    </tr>
+    @endforelse
+</tbody>
                 </table>
             </div>
             
@@ -203,69 +228,69 @@
     <script src="{{ asset('js/assign-request.js') }}"></script>
 
     <script>
-    $(document).ready(function() {
-        // Set CSRF token for all AJAX requests
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
+  $(document).ready(function() {
+    // Set CSRF token for all AJAX requests
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    
+    $('#completeRequestForm').on('submit', function(e) {
+        e.preventDefault();
         
-        $('#completeRequestForm').on('submit', function(e) {
-            e.preventDefault();
-            
-            // Validate form
-            if (this.checkValidity() === false) {
-                e.stopPropagation();
-                $(this).addClass('was-validated');
-                return;
+        // Validate form
+        if (this.checkValidity() === false) {
+            e.stopPropagation();
+            $(this).addClass('was-validated');
+            return;
+        }
+
+        // Get form data
+        const formData = $(this).serialize();
+
+        // AJAX call to complete the request
+        $.ajax({
+            url: '{{ route("uitc.complete.request") }}',
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                // Close the complete request modal
+                $('#completeRequestModal').modal('hide');
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Request completed successfully',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Refresh the page to show updated data
+                    window.location.reload();
+                });
+            },
+            error: function(xhr) {
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to complete the request.'
+                });
             }
-
-            // Get form data
-            const formData = $(this).serialize();
-
-            // AJAX call to complete the request
-            $.ajax({
-                url: '{{ route("uitc.complete.request") }}',
-                method: 'POST',
-                data: formData,
-                success: function(response) {
-                    // Close the complete request modal
-                    $('#completeRequestModal').modal('hide');
-                    
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Request completed successfully',
-                        confirmButtonText: 'OK'
-                    }).then((result) => {
-                        // Refresh the page to show updated data
-                        window.location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    // Show error message
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message || 'Failed to complete the request.'
-                    });
-                }
-            });
-        });
-
-        // Add click event listener to Complete buttons
-        $('.btn-complete').on('click', function() {
-            const requestId = $(this).data('request-id');
-            const requestType = $(this).data('request-type') || '';
-            console.log('Complete button clicked for request ID: ' + requestId + ', type: ' + requestType);
-            
-            $('#completeRequestId').val(requestId);
-            $('#completeRequestType').val(requestType);
-            $('#completeRequestModal').modal('show');
         });
     });
+
+    // Add click event listener to Complete buttons
+    $('.btn-complete').on('click', function() {
+        const requestId = $(this).data('request-id');
+        const requestType = $(this).data('request-type') || 'student';
+        console.log('Complete button clicked for request ID: ' + requestId + ', type: ' + requestType);
+        
+        $('#completeRequestId').val(requestId);
+        $('#completeRequestType').val(requestType);
+        $('#completeRequestModal').modal('show');
+    });
+});
     </script>
 </body>
 </html>

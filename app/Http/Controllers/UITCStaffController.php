@@ -4,68 +4,131 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\StudentServiceRequest;
-use App\Models\User; // Import User model
+use App\Models\FacultyServiceRequest;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log; // Add this import
+use Illuminate\Support\Facades\Log;
 
 class UITCStaffController extends Controller
 {
-    public function getAssignedRequests(Request $request) // Add Request parameter
+    public function getAssignedRequests(Request $request)
     {
         try {
             // Get the currently logged-in UITC staff member's ID
             $uitcStaffId = Auth::guard('admin')->user()->id;
-    
-            // Fetch requests assigned to this UITC staff member with detailed information
-            $query = StudentServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
-                ->join('users', 'student_service_requests.user_id', '=', 'users.id')
+            
+            // Initialize collection for all requests
+            $assignedRequests = collect();
+            
+            // 1. Fetch Student service requests assigned to this UITC staff member
+            $studentQuery = StudentServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
+                ->leftJoin('users', 'student_service_requests.user_id', '=', 'users.id')
                 ->select(
-                    'student_service_requests.*', 
-                    'users.name as requester_name', 
+                    'student_service_requests.*',
+                    'users.name as requester_name',
                     'users.role as user_role',
                     'users.email as requester_email',
-                    
+                    DB::raw("'student' as request_type")
                 );
-    
-            // Add filtering options
-            if ($request->has('status')) {
-                $query->where('student_service_requests.status', $request->input('status'));
+                
+            // 2. Fetch Faculty service requests assigned to this UITC staff member
+            $facultyQuery = FacultyServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
+                ->leftJoin('users', 'faculty_service_requests.user_id', '=', 'users.id')
+                ->select(
+                    'faculty_service_requests.*',
+                    'users.name as requester_name',
+                    'users.role as user_role',
+                    'users.email as requester_email',
+                    DB::raw("'faculty' as request_type")
+                );
+            
+            // Add filtering options (apply to both queries)
+            if ($request->has('status') && $request->input('status') !== 'all') {
+                $studentQuery->where('student_service_requests.status', $request->input('status'));
+                $facultyQuery->where('faculty_service_requests.status', $request->input('status'));
             }
-    
-            if ($request->has('transaction_type')) {
-                $query->where('transaction_type', $request->input('transaction_type'));
+            
+            if ($request->has('transaction_type') && $request->input('transaction_type') !== 'all') {
+                $studentQuery->where('student_service_requests.transaction_type', $request->input('transaction_type'));
+                $facultyQuery->where('faculty_service_requests.transaction_type', $request->input('transaction_type'));
             }
-    
-            // Add sorting
+            
+            // Search functionality
+            if ($request->has('search') && !empty($request->input('search'))) {
+                $search = $request->input('search');
+                
+                $studentQuery->where(function($q) use ($search) {
+                    $q->where('student_service_requests.first_name', 'like', "%{$search}%")
+                      ->orWhere('student_service_requests.last_name', 'like', "%{$search}%")
+                      ->orWhere('student_service_requests.service_category', 'like', "%{$search}%")
+                      ->orWhere('users.name', 'like', "%{$search}%")
+                      ->orWhere('student_service_requests.id', 'like', "%{$search}%");
+                });
+                
+                $facultyQuery->where(function($q) use ($search) {
+                    $q->where('faculty_service_requests.first_name', 'like', "%{$search}%")
+                      ->orWhere('faculty_service_requests.last_name', 'like', "%{$search}%")
+                      ->orWhere('faculty_service_requests.service_category', 'like', "%{$search}%")
+                      ->orWhere('users.name', 'like', "%{$search}%")
+                      ->orWhere('faculty_service_requests.id', 'like', "%{$search}%");
+                });
+            }
+            
+            // Add sorting (apply to both queries)
             $sortBy = $request->input('sort_by', 'created_at');
             $sortOrder = $request->input('sort_order', 'desc');
-            $query->orderBy($sortBy, $sortOrder);
-    
-            // Paginate results
-            $assignedRequests = $query->paginate(10);
-    
+            
+            $studentQuery->orderBy($sortBy, $sortOrder);
+            $facultyQuery->orderBy($sortBy, $sortOrder);
+            
+            // Get student requests and faculty requests
+            $studentRequests = $studentQuery->get();
+            $facultyRequests = $facultyQuery->get();
+            
+            // Combine both collections
+            $allRequests = $studentRequests->concat($facultyRequests);
+            
+            // Sort the combined collection by created_at
+            $sortedRequests = $allRequests->sortByDesc('created_at');
+            
+            // Paginate the results
+            $perPage = 10;
+            $page = $request->input('page', 1);
+            $offset = ($page - 1) * $perPage;
+            $total = $sortedRequests->count();
+            
+            $paginatedRequests = new \Illuminate\Pagination\LengthAwarePaginator(
+                $sortedRequests->slice($offset, $perPage),
+                $total,
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+            
             // If it's an AJAX request, return JSON
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'data' => $assignedRequests
+                    'data' => $paginatedRequests
                 ]);
             }
-    
+            
             // Return view with assigned requests
             return view('uitc_staff.assign-request', [
-                'assignedRequests' => $assignedRequests,
-                'totalRequests' => $assignedRequests->total(),
-                'currentPage' => $assignedRequests->currentPage()
+                'assignedRequests' => $paginatedRequests,
+                'totalRequests' => $total,
+                'currentPage' => $page
             ]);
+            
         } catch (\Exception $e) {
             // Log the error
             Log::error('Error fetching assigned requests: ' . $e->getMessage(), [
-                'staff_id' => $uitcStaffId ?? 'Unknown',
-                'error' => $e->getMessage()
+                'staff_id' => Auth::guard('admin')->id() ?? 'Unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-    
+            
             // If it's an AJAX request, return JSON error
             if ($request->ajax()) {
                 return response()->json([
@@ -74,18 +137,18 @@ class UITCStaffController extends Controller
                     'error' => $e->getMessage()
                 ], 500);
             }
-    
+            
             // For non-AJAX requests, redirect with error
-            return redirect()->back()->with('error', 'Unable to fetch assigned requests');
+            return redirect()->back()->with('error', 'Unable to fetch assigned requests: ' . $e->getMessage());
         }
     }
-
 
     public function completeRequest(Request $request)
     {
         // Validate the request
         $validatedData = $request->validate([
-            'request_id' => 'required|exists:student_service_requests,id',
+            'request_id' => 'required',
+            'request_type' => 'required|in:student,faculty',
             'actions_taken' => 'nullable|string|max:1000',
             'completion_report' => 'nullable|string|max:2000',
             'completion_status' => 'required|in:fully_completed,partially_completed,requires_follow_up'
@@ -95,33 +158,49 @@ class UITCStaffController extends Controller
             // Begin database transaction
             DB::beginTransaction();
 
-            // Find the request
-            $serviceRequest = StudentServiceRequest::findOrFail($request->request_id);
-
-            /* Additional validation to prevent automatic completion
-            if (!$request->has('actions_taken') || !$request->has('completion_report')) {
-                return response()->json([
-                    'message' => 'Cannot complete request without documenting actions and report',
-                    'error' => 'Incomplete request details'
-                ], 400);
-            } */
-
-            // Ensure the request is assigned to the current UITC staff
+            // Get the currently logged in UITC staff ID
             $currentStaffId = Auth::guard('admin')->user()->id;
-            if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
-                return response()->json([
-                    'message' => 'Unauthorized to complete this request',
-                    'error' => 'Request not assigned to current staff'
-                ], 403);
+            
+            // Based on request type, find the appropriate request
+            if ($validatedData['request_type'] === 'student') {
+                // Find the student service request
+                $serviceRequest = StudentServiceRequest::findOrFail($request->request_id);
+                
+                // Ensure the request is assigned to the current UITC staff
+                if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
+                    return response()->json([
+                        'message' => 'Unauthorized to complete this request',
+                        'error' => 'Request not assigned to current staff'
+                    ], 403);
+                }
+                
+                // Update the request status and add completion details
+                $serviceRequest->update([
+                    'status' => 'Completed',
+                    'admin_notes' => $request->completion_report ?? 'Request completed',
+                    'completion_status' => $request->completion_status,
+                    'actions_taken' => $request->actions_taken ?? 'Standard request completion'
+                ]);
+            } else {
+                // Find the faculty service request
+                $serviceRequest = FacultyServiceRequest::findOrFail($request->request_id);
+                
+                // Ensure the request is assigned to the current UITC staff
+                if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
+                    return response()->json([
+                        'message' => 'Unauthorized to complete this request',
+                        'error' => 'Request not assigned to current staff'
+                    ], 403);
+                }
+                
+                // Update the request status and add completion details
+                $serviceRequest->update([
+                    'status' => 'Completed',
+                    'admin_notes' => $request->completion_report ?? 'Request completed',
+                    'completion_status' => $request->completion_status,
+                    'actions_taken' => $request->actions_taken ?? 'Standard request completion'
+                ]);
             }
-
-            // Update the request status and add completion details
-            $serviceRequest->update([
-                'status' => 'Completed', // Explicitly set status to Completed
-                'admin_notes' => $request->completion_report ?? 'Request completed',
-                'completion_status' => $request->completion_status,
-                'actions_taken' => $request->actions_taken ?? 'Standard request completion'
-            ]);
 
             // Commit the transaction
             DB::commit();
@@ -137,8 +216,10 @@ class UITCStaffController extends Controller
             // Log the error
             Log::error('Error completing request: ' . $e->getMessage(), [
                 'request_id' => $request->request_id,
+                'request_type' => $validatedData['request_type'],
                 'staff_id' => $currentStaffId ?? 'Unknown',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
@@ -146,4 +227,54 @@ class UITCStaffController extends Controller
             ], 500);
         }
     }
+
+
+    private function formatServiceCategory($category)
+    {
+        switch ($category) {
+            case 'create':
+                return 'Create MS Office/TUP Email Account';
+            case 'reset_email_password':
+                return 'Reset MS Office/TUP Email Password';
+            case 'change_of_data_ms':
+                return 'Change of Data (MS Office)';
+            case 'reset_tup_web_password':
+                return 'Reset TUP Web Password';
+            case 'reset_ers_password':
+                return 'Reset ERS Password';
+            case 'change_of_data_portal':
+                return 'Change of Data (Portal)';
+            case 'dtr':
+                return 'Daily Time Record';
+            case 'biometric_record':
+                return 'Biometric Record';
+            case 'biometrics_enrollement':
+                return 'Biometrics Enrollment';
+            case 'new_internet':
+                return 'New Internet Connection';
+            case 'new_telephone':
+                return 'New Telephone Connection';
+            case 'repair_and_maintenance':
+                return 'Internet/Telephone Repair and Maintenance';
+            case 'computer_repair_maintenance':
+                return 'Computer Repair and Maintenance';
+            case 'printer_repair_maintenance':
+                return 'Printer Repair and Maintenance';
+            case 'request_led_screen':
+                return 'LED Screen Request';
+            case 'install_application':
+                return 'Install Application/Information System/Software';
+            case 'post_publication':
+                return 'Post Publication/Update of Information Website';
+            case 'data_docs_reports':
+                return 'Data, Documents and Reports';
+            case 'others':
+                return $category;
+            default:
+                return $category;
+        }
+    }
+    
+    
+    // You can add other methods like getAssignHistoryRequests here
 }

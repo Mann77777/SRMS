@@ -37,57 +37,73 @@
     </section>
 
     @if(Auth::guard('admin')->user()->role === 'Admin')
-    <!-- STATUS OVERVIEW -->
-    <section class="status-overview">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="status-card total">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-inbox"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3>{{ $requestReceive ?? 0 }}</h3>
-                            <p>New Requests</p>
-                        </div>
+<!-- STATUS OVERVIEW -->
+<section class="status-overview">
+    <div class="container">
+        <!-- First row -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="status-card total">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <div class="status-details">
+                        <h3>{{ $requestReceive ?? 0 }}</h3>
+                        <p>New Requests</p>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="status-card pending">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3>{{ $assignRequest ?? 0 }}</h3>
-                            <p>Pending Requests</p>
-                        </div>
+            </div>
+            <div class="col-md-4">
+                <div class="status-card pending">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="status-details">
+                        <h3>{{ $assignRequest ?? 0 }}</h3>
+                        <p>Pending Requests</p>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="status-card completed">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3>{{ $servicesCompleted ?? 0 }}</h3>
-                            <p>Completed Requests</p>
-                        </div>
+            </div>
+            <div class="col-md-4">
+                <div class="status-card completed">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-check-circle"></i>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="status-card staff">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3>{{ $assignStaff ?? 0 }}</h3>
-                            <p>Active UITC Staff</p>
-                        </div>
+                    <div class="status-details">
+                        <h3>{{ $servicesCompleted ?? 0 }}</h3>
+                        <p>Completed Requests</p>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+        
+        <!-- Second row -->
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="status-card rejected">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="status-details">
+                        <h3>{{ $rejectedRequests ?? 0 }}</h3>
+                        <p>Rejected Requests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="status-card staff">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="status-details">
+                        <h3>{{ $assignStaff ?? 0 }}</h3>
+                        <p>Active UITC Staff</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
     <!-- QUICK ACTIONS -->
     <section class="quick-actions">
@@ -143,7 +159,7 @@
                 <div class="col-lg-12 mb-4">
                     <div class="chart-container">
                         <div class="chart-header">
-                            <h3 class="chart-title">Appointments by UITC Staff</h3>
+                            <h3 class="chart-title">Request Assigned per UITC Staff</h3>
                         </div>
                         <canvas id="appointmentsByStaffChart" height="300"></canvas>
                     </div>
@@ -168,30 +184,29 @@
                             <th>Requester</th>
                             <th>Date</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($recentRequests ?? [] as $request)
                         <tr>
-                            <td>#{{ $request['id'] }}</td>
+                            <td>{{ $request['id'] }}</td>
                             <td>{{ $request['service_type'] }}</td>
                             <td>{{ $request['user_name'] }}</td>
-                            <td>{{ $request['created_at']->format('M d, Y') }}</td>
+                            <td>{{ $request['created_at']->format('M d, Y h:i: A') }}</td>
                             <td>
-                                <span class="status-badge {{ strtolower($request['status']) }}">
+                                <span class="badge
+                                    @if($request['status'] == 'Pending') badge-warning
+                                    @elseif($request['status'] == 'In Progress') badge-info
+                                    @elseif($request['status'] == 'Completed') badge-success
+                                     @elseif($request['status'] == 'Rejected') badge-danger
+                                    @else badge-secondary
+                                    @endif">
                                     {{ $request['status'] }}
                                 </span>
                             </td>
                             <td>
-                                <div class="action-buttons">
-                                    <button class="btn-view" onclick="window.location.href='{{ url('/admin/request/'.$request['id']) }}'">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn-edit" onclick="window.location.href='{{ url('/admin/request/'.$request['id'].'/assign') }}'">
-                                        <i class="fas fa-user-plus"></i>
-                                    </button>
-                                </div>
+                                <a href="@if($request['type'] === 'student') {{ route('student.myrequests.show', $request['id']) }} @else {{ route('faculty.myrequests.show', $request['id']) }} @endif" class="btn-view">View</a>
                             </td>
                         </tr>
                         @empty

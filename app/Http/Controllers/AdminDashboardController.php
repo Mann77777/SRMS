@@ -54,6 +54,7 @@ class AdminDashboardController extends Controller
                 'requestReceive' => 0,
                 'assignRequest' => 0,
                 'servicesCompleted' => 0,
+                'rejectedRequests' => 0,
                 'assignStaff' => 0,
                 'recentRequests' => [],
             ]);
@@ -112,7 +113,10 @@ class AdminDashboardController extends Controller
             
             // Completed requests - completed today
             $data['servicesCompleted'] = $this->countRequestsByStatusAndDate('Completed', $today);
-            
+             
+            // Rejected requests - rejected today
+            $data['rejectedRequests'] = $this->countRequestsByStatusAndDate('Rejected', $today);
+
             // Active UITC staff count (this doesn't change daily)
             $data['assignStaff'] = Admin::where('role', 'UITC Staff')->count();
         }

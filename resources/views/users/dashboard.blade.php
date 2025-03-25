@@ -37,36 +37,9 @@
         </div>
     </section>
 
-    <!-- QUICK ACTIONS -->
-    <section class="quick-actions">
-        <div class="container">
-            <div class="action-buttons">
-            @if(Auth::user()->role === 'Student')
-                <a href="{{ url('/student-request') }}" class="action-button">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>New Request</span>
-                </a>
-              @else
-                 <a href="{{ url('/faculty-service') }}" class="action-button">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>New Faculty Request</span>
-                </a>
-              @endif
 
-                <a href="{{ url('/myrequests') }}" class="action-button">
-                    <i class="fas fa-list-alt"></i>
-                    <span>My Requests</span>
-                </a>
-                <a href="{{ url('/help') }}" class="action-button">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Help Guide</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- STATUS OVERVIEW -->
-    <section class="status-overview">
+      <!-- STATUS OVERVIEW -->
+      <section class="status-overview">
         <div class="container">
             <div class="row">
                 <div class="col-md-3">
@@ -116,6 +89,36 @@
             </div>
         </div>
     </section>
+
+    <!-- QUICK ACTIONS -->
+    <section class="quick-actions">
+        <div class="container">
+            <div class="action-buttons">
+            @if(Auth::user()->role === 'Student')
+                <a href="{{ url('/student-request') }}" class="action-button">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>New Request</span>
+                </a>
+              @else
+                 <a href="{{ url('/faculty-service') }}" class="action-button">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>New Faculty Request</span>
+                </a>
+              @endif
+
+                <a href="{{ url('/myrequests') }}" class="action-button">
+                    <i class="fas fa-list-alt"></i>
+                    <span>My Requests</span>
+                </a>
+                <a href="{{ url('/help') }}" class="action-button">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help Guide</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+  
 
     <!-- RECENT REQUESTS -->
     <section class="recent-requests">

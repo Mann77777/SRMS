@@ -6,6 +6,7 @@
     <link rel="icon" href="{{ asset('images/tuplogo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="{{ asset('css/facultyservice.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Service Request Form</title>
@@ -522,16 +523,73 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/faculty-service.js') }}"></script>
-
     <script>
-        function closeSuccessModal() {
-            window.location.href = "{{ route('myrequests') }}";
+        function formatServiceCategory(category) {
+            switch (category) {
+                case 'create':
+                    return 'Create MS Office/TUP Email Account';
+                case 'reset_email_password':
+                    return 'Reset MS Office/TUP Email Password';
+                case 'change_of_data_ms':
+                    return 'Change of Data (MS Office)';
+                case 'reset_tup_web_password':
+                    return 'Reset TUP Web Password';
+                case 'reset_ers_password':
+                    return 'Reset ERS Password';
+                case 'change_of_data_portal':
+                    return 'Change of Data (Portal)';
+                case 'dtr':
+                    return 'Daily Time Record';
+                case 'biometric_record':
+                    return 'Biometric Record';
+                case 'biometrics_enrollement':
+                    return 'Biometrics Enrollment';
+                case 'new_internet':
+                    return 'New Internet Connection';
+                case 'new_telephone':
+                    return 'New Telephone Connection';
+                case 'repair_and_maintenance':
+                    return 'Internet/Telephone Repair and Maintenance';
+                case 'computer_repair_maintenance':
+                    return 'Computer Repair and Maintenance';
+                case 'printer_repair_maintenance':
+                    return 'Printer Repair and Maintenance';
+                case 'request_led_screen':
+                    return 'LED Screen Request';
+                case 'install_application':
+                    return 'Install Application/Information System/Software';
+                case 'post_publication':
+                    return 'Post Publication/Update of Information Website';
+                case 'data_docs_reports':
+                    return 'Data, Documents and Reports';
+                case 'others':
+                    return 'Other Service Request';
+                default:
+                    return category;
+            }
         }
-        $(document).ready(function() {
-            @if(session('showSuccessModal'))
-                $('#serviceRequestSuccessModal').modal('show');
-            @endif
-        });
+
+        function showRequestSuccessModal(requestId, serviceCategory) {
+            // Format the service category
+            const formattedCategory = formatServiceCategory(serviceCategory);
+            
+            Swal.fire({
+                title: 'Request Submitted Successfully',
+                html: 'Your service request for <strong>' + formattedCategory + '</strong> has been submitted successfully.<br>Request ID: <strong>' + requestId + '</strong>',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '{{ url('myrequests') }}';
+                }
+            });
+        }
     </script>
+
+    @if(session('showSuccessModal'))
+        <script>
+            showRequestSuccessModal('{{ session('requestId') }}', '{{ session('serviceCategory') }}');
+        </script>
+    @endif
 </body>
 </html>

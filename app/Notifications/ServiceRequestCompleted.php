@@ -7,14 +7,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ServiceRequestRejected extends Notification
+class ServiceRequestCompleted extends Notification
 {
     use Queueable;
     protected $requestId;
     protected $serviceCategory;
     protected $requestorName;
-    protected $rejectionReason;
-    protected $notes;
+    protected $actionsTaken;
+    protected $completionReport;
+    protected $completionStatus;
 
     private $serviceCategoryTitles = [
         'create' => 'Create MS Office/TUP Email Account',
@@ -38,21 +39,20 @@ class ServiceRequestRejected extends Notification
         'others' => 'Other Service Request'
     ];
 
-    private $rejectionReasonTitles = [
-        'incomplete_information' => 'Incomplete Information',
-        'out_of_scope' => 'Service Out of Scope',
-        'resource_unavailable' => 'Resources Unavailable',
-        'duplicate_request' => 'Duplicate Request',
-        'other' => 'Other Reason'
+    private $completionStatusTitles = [
+        'fully_completed' => 'Fully Completed',
+        'partially_completed' => 'Partially Completed',
+        'requires_follow_up' => 'Requires Follow-up'
     ];
 
-    public function __construct($requestId, $serviceCategory, $requestorName, $rejectionReason, $notes = '')
+    public function __construct($requestId, $serviceCategory, $requestorName, $completionStatus, $actionsTaken = '', $completionReport = '')
     {
         $this->requestId = $requestId;
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
-        $this->rejectionReason = $rejectionReason;
-        $this->notes = $notes;
+        $this->completionStatus = $completionStatus;
+        $this->actionsTaken = $actionsTaken;
+        $this->completionReport = $completionReport;
     }
 
     public function via($notifiable)
@@ -63,23 +63,33 @@ class ServiceRequestRejected extends Notification
     public function toMail($notifiable)
     {
         $serviceCategoryTitle = $this->serviceCategoryTitles[$this->serviceCategory] ?? $this->serviceCategory;
-        $rejectionReasonTitle = $this->rejectionReasonTitles[$this->rejectionReason] ?? $this->rejectionReason;
+        $completionStatusTitle = $this->completionStatusTitles[$this->completionStatus] ?? $this->completionStatus;
 
         $mailMessage = (new MailMessage)
-            ->subject('TUP SRMS - Service Request Rejected')
+            ->subject('TUP SRMS - Service Request Completed')
             ->greeting('Dear ' . $this->requestorName . ',')
-            ->line('We regret to inform you that your service request has been rejected.')
+            ->line('We are pleased to inform you that your service request has been completed.')
             ->line('Request ID: ' . $this->requestId)
             ->line('Service: ' . $serviceCategoryTitle)
-            ->line('Reason for Rejection: ' . $rejectionReasonTitle);
+            ->line('Completion Status: ' . $completionStatusTitle);
 
-        // Add notes if provided
-        if (!empty($this->notes)) {
-            $mailMessage->line('Additional Notes: ' . $this->notes);
+        // Add actions taken if provided
+        if (!empty($this->actionsTaken)) {
+            $mailMessage->line('Actions Taken: ' . $this->actionsTaken);
         }
 
-        $mailMessage->line('If you have any questions regarding this decision, please contact the UITC office for clarification.')
-            ->action('Submit New Request', url('/login'))
+        // Add completion report if provided
+        if (!empty($this->completionReport)) {
+            $mailMessage->line('Completion Report: ' . $this->completionReport);
+        }
+
+        // Add follow-up message for partially completed requests
+        if ($this->completionStatus === 'partially_completed' || $this->completionStatus === 'requires_follow_up') {
+            $mailMessage->line('Note: Your request requires additional follow-up. The UITC staff may contact you for further information or assistance.');
+        }
+
+        $mailMessage->line('If you have any questions or concerns regarding this service, please contact the UITC office.')
+            ->action('Submit New Request', url('/service-request'))
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
 

@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\StudentServiceRequest;
 use App\Models\FacultyServiceRequest;
 use App\Models\User;
+use App\Notifications\ServiceRequestCompleted;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class UITCStaffController extends Controller
 {
@@ -160,6 +162,7 @@ class UITCStaffController extends Controller
 
             // Get the currently logged in UITC staff ID
             $currentStaffId = Auth::guard('admin')->user()->id;
+            $staffName = Auth::guard('admin')->user()->name;
             
             // Based on request type, find the appropriate request
             if ($validatedData['request_type'] === 'student') {
@@ -181,6 +184,11 @@ class UITCStaffController extends Controller
                     'completion_status' => $request->completion_status,
                     'actions_taken' => $request->actions_taken ?? 'Standard request completion'
                 ]);
+                
+                // Prepare data for notification
+                $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+                $serviceCategory = $serviceRequest->service_category;
+                $user = $serviceRequest->user;
             } else {
                 // Find the faculty service request
                 $serviceRequest = FacultyServiceRequest::findOrFail($request->request_id);
@@ -200,6 +208,33 @@ class UITCStaffController extends Controller
                     'completion_status' => $request->completion_status,
                     'actions_taken' => $request->actions_taken ?? 'Standard request completion'
                 ]);
+                
+                // Prepare data for notification
+                $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+                $serviceCategory = $serviceRequest->service_category;
+                $user = $serviceRequest->user;
+            }
+
+            // Send notification if user exists
+            if (isset($user) && $user) {
+                // Send the notification
+                Notification::route('mail', $user->email)
+                    ->notify(new ServiceRequestCompleted(
+                        $serviceRequest->id,
+                        $serviceCategory,
+                        $requestorName,
+                        $request->completion_status,
+                        $request->actions_taken,
+                        $request->completion_report
+                    ));
+                    
+                Log::info('Completion notification sent to: ' . $user->email, [
+                    'request_id' => $serviceRequest->id,
+                    'staff_id' => $currentStaffId,
+                    'completion_status' => $request->completion_status
+                ]);
+            } else {
+                Log::warning('Unable to send completion notification - user not found for request ID: ' . $request->request_id);
             }
 
             // Commit the transaction

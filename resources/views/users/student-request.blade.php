@@ -214,27 +214,74 @@
         </div>
 
         <script>
-            function showRequestSuccessModal(requestId) {
-                Swal.fire({
-                    title: 'Request Submitted Successfully',
-                    text: 'Your service request has been submitted successfully.\nRequest ID: ' + requestId,
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '{{ url('myrequests') }}';
-                    }
-                });
+    function formatServiceCategory(category) {
+        switch (category) {
+            case 'create':
+                return 'Create MS Office/TUP Email Account';
+            case 'reset_email_password':
+                return 'Reset MS Office/TUP Email Password';
+            case 'change_of_data_ms':
+                return 'Change of Data (MS Office)';
+            case 'reset_tup_web_password':
+                return 'Reset TUP Web Password';
+            case 'reset_ers_password':
+                return 'Reset ERS Password';
+            case 'change_of_data_portal':
+                return 'Change of Data (Portal)';
+            case 'dtr':
+                return 'Daily Time Record';
+            case 'biometric_record':
+                return 'Biometric Record';
+            case 'biometrics_enrollement':
+                return 'Biometrics Enrollment';
+            case 'new_internet':
+                return 'New Internet Connection';
+            case 'new_telephone':
+                return 'New Telephone Connection';
+            case 'repair_and_maintenance':
+                return 'Internet/Telephone Repair and Maintenance';
+            case 'computer_repair_maintenance':
+                return 'Computer Repair and Maintenance';
+            case 'printer_repair_maintenance':
+                return 'Printer Repair and Maintenance';
+            case 'request_led_screen':
+                return 'LED Screen Request';
+            case 'install_application':
+                return 'Install Application/Information System/Software';
+            case 'post_publication':
+                return 'Post Publication/Update of Information Website';
+            case 'data_docs_reports':
+                return 'Data, Documents and Reports';
+            case 'others':
+                return 'Other Service Request';
+            default:
+                return category;
+        }
+    }
+
+    function showRequestSuccessModal(requestId, serviceCategory) {
+        // Format the service category
+        const formattedCategory = formatServiceCategory(serviceCategory);
+        
+        Swal.fire({
+            title: 'Request Submitted Successfully',
+            html: 'Your service request for <strong>' + formattedCategory + '</strong> has been submitted successfully.<br>Request ID: <strong>' + requestId + '</strong>',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '{{ url('myrequests') }}';
             }
-        </script>
+        });
+    }
+</script>
 
-        @if(session('showSuccessModal'))
-            <script>
-                showRequestSuccessModal('{{ session('requestId') }}');
-            </script>
-        @endif
+@if(session('showSuccessModal'))
+    <script>
+        showRequestSuccessModal('{{ session('requestId') }}', '{{ session('serviceCategory') }}');
+    </script>
+@endif
 
-    </div>
     <!-- JavaScript -->
     <script>
         // Make showFormFields a global function

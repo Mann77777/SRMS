@@ -60,7 +60,7 @@ class ServiceRequestReceived extends Notification
             ->line('Request ID: ' . $this->requestId)
             ->line('Service: ' . $serviceCategoryTitle)
             ->line('Current Status: Pending')
-           // ->action('View Request', url('/student/requests/' . $this->requestId))
+            ->action('View Request', url('/myrequests'))
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
     }

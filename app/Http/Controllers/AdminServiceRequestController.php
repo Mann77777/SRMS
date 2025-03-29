@@ -10,6 +10,7 @@ use App\Models\StudentServiceRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use App\Notifications\ServiceRequestAssigned;
 use App\Notifications\ServiceRequestRejected;
 
 class AdminServiceRequestController extends Controller
@@ -346,41 +347,50 @@ class AdminServiceRequestController extends Controller
         ]);
     
         try {
+            // Get the UITC staff name for notification
+            $uitcStaff = Admin::find($validatedData['uitcstaff_id']);
+            $uitcStaffName = $uitcStaff ? $uitcStaff->name : 'UITC Staff';
+            
+            // Variable to store service request object
+            $serviceRequest = null;
+            $requestorName = '';
+            $serviceCategory = '';
+            $userEmail = '';
+            
             // Handle different request types
             switch ($validatedData['request_type']) {
                 case 'student':
                 case 'new_student_service':
                     // Verify student request exists
-                    $exists = DB::table('student_service_requests')
-                        ->where('id', $validatedData['request_id'])
-                        ->exists();
+                    $serviceRequest = StudentServiceRequest::with('user')->find($validatedData['request_id']);
                     
-                    if (!$exists) {
+                    if (!$serviceRequest) {
                         return response()->json([
                             'success' => false,
                             'message' => 'Student Service Request not found.'
                         ], 404);
                     }
                     
+                    // Get requestor details
+                    $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+                    $serviceCategory = $serviceRequest->service_category;
+                    $userEmail = $serviceRequest->user ? $serviceRequest->user->email : null;
+                    
                     // Update student request
-                    DB::table('student_service_requests')
-                        ->where('id', $validatedData['request_id'])
-                        ->update([
-                            'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-                            'status' => 'In Progress',
-                            'transaction_type' => $validatedData['transaction_type'],
-                            'admin_notes' => $validatedData['notes'] ?? null,
-                            'updated_at' => now()
-                        ]);
+                    $serviceRequest->update([
+                        'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+                        'status' => 'In Progress',
+                        'transaction_type' => $validatedData['transaction_type'],
+                        'admin_notes' => $validatedData['notes'] ?? null,
+                        'updated_at' => now()
+                    ]);
                     break;
                     
                 case 'faculty':
                     // Verify faculty request exists
-                    $exists = DB::table('faculty_service_requests')
-                        ->where('id', $validatedData['request_id'])
-                        ->exists();
+                    $serviceRequest = FacultyServiceRequest::with('user')->find($validatedData['request_id']);
                     
-                    if (!$exists) {
+                    if (!$serviceRequest) {
                         Log::error('Faculty Service Request not found', [
                             'request_id' => $validatedData['request_id']
                         ]);
@@ -390,6 +400,11 @@ class AdminServiceRequestController extends Controller
                         ], 404);
                     }
                     
+                    // Get requestor details
+                    $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+                    $serviceCategory = $serviceRequest->service_category;
+                    $userEmail = $serviceRequest->user ? $serviceRequest->user->email : null;
+                    
                     // Log before update
                     Log::info('Updating faculty service request', [
                         'request_id' => $validatedData['request_id'],
@@ -398,18 +413,16 @@ class AdminServiceRequestController extends Controller
                     ]);
                     
                     // Update faculty request
-                    $updated = DB::table('faculty_service_requests')
-                        ->where('id', $validatedData['request_id'])
-                        ->update([
-                            'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-                            'status' => 'In Progress',
-                            'transaction_type' => $validatedData['transaction_type'],
-                            'admin_notes' => $validatedData['notes'] ?? null,
-                            'updated_at' => now()
-                        ]);
+                    $serviceRequest->update([
+                        'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+                        'status' => 'In Progress',
+                        'transaction_type' => $validatedData['transaction_type'],
+                        'admin_notes' => $validatedData['notes'] ?? null,
+                        'updated_at' => now()
+                    ]);
                     
                     // Log update result
-                    Log::info('Faculty update result', ['updated' => $updated]);
+                    Log::info('Faculty update result', ['updated' => $serviceRequest->wasChanged()]);
                     
                     break;
                     
@@ -419,6 +432,30 @@ class AdminServiceRequestController extends Controller
                         'success' => false,
                         'message' => 'Invalid request type: ' . $validatedData['request_type']
                     ], 400);
+            }
+            
+            // Send notification to user if email is available
+            if ($userEmail) {
+               
+                
+                // Send the notification
+                \Illuminate\Support\Facades\Notification::route('mail', $userEmail)
+                    ->notify(new ServiceRequestAssigned(
+                        $serviceRequest->id,
+                        $serviceCategory,
+                        $requestorName,
+                        $uitcStaffName,
+                        $validatedData['transaction_type'],
+                        $validatedData['notes'] ?? ''
+                    ));
+                    
+                Log::info('Assignment notification sent to: ' . $userEmail, [
+                    'request_id' => $serviceRequest->id,
+                    'staff_id' => $validatedData['uitcstaff_id'],
+                    'staff_name' => $uitcStaffName
+                ]);
+            } else {
+                Log::warning('Unable to send assignment notification - user email not found for request ID: ' . $validatedData['request_id']);
             }
     
             Log::info('UITC Staff assigned successfully', [
@@ -445,7 +482,7 @@ class AdminServiceRequestController extends Controller
                 'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
             ], 500);
         }
-    }    
+    }
     
     public function deleteServiceRequests(Request $request)
     {

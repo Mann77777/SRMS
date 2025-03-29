@@ -65,9 +65,16 @@
                                     <span>{{ \Carbon\Carbon::parse($request['date'])->format('h:i A') }}</span>
                                 </td>
                                 <td>
-                                    @if($request['status'] == 'Completed' && isset($request['updated_at']))
-                                        <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('M d, Y') }}</span><br>
-                                        <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('h:i A') }}</span>
+                                    @if($request['status'] == 'Completed')
+                                        @if(isset($request['updated_at']))
+                                            <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('M d, Y') }}</span><br>
+                                            <span>{{ \Carbon\Carbon::parse($request['updated_at'])->format('h:i A') }}</span>
+                                        @else
+                                            <!-- If no updated_at field, display the date field or a placeholder -->
+                                            <span>{{ \Carbon\Carbon::parse($request['date'])->format('M d, Y') }}</span><br>
+                                            <span>{{ \Carbon\Carbon::parse($request['date'])->format('h:i A') }}</span>
+                                            <!-- Add a note or styling to indicate this is estimated -->
+                                        @endif
                                     @else
                                         –
                                     @endif
@@ -112,8 +119,6 @@
             </div>
         </div>
     </div>
-
-</div>
     
 
 

@@ -34,6 +34,7 @@ class AdminServiceRequestController extends Controller
                     'date' => $request->created_at,
                     'status' => $request->status,
                     'type' => 'student',
+                    'updated_at' => $request->updated_at, 
                 ];
             }
 
@@ -50,6 +51,7 @@ class AdminServiceRequestController extends Controller
                     'date' => $request->created_at,
                     'status' => $request->status ?? 'Pending',
                     'type' => 'new_student_service',
+                    'updated_at' => $request->updated_at,
                 ];
             }
 
@@ -62,10 +64,11 @@ class AdminServiceRequestController extends Controller
                     'user_id' => $request->user_id,
                     'role' => $user ? $user->role : 'Faculty',
                     'service' => $this->getServiceName($request, 'faculty'),
-                    'request_data' => $this->getRequestData($request),
+                    'request_data' => $this->formatFacultyServiceRequestData($request),
                     'date' => $request->created_at,
                     'status' => $request->status,
                     'type' => 'faculty',
+                    'updated_at' => $request->updated_at,
                 ];
             }
 
@@ -224,16 +227,18 @@ class AdminServiceRequestController extends Controller
         // Format the service category name
         $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
         
+        // Start with basic information all requests should have
         $data = [
             'Name' => $request->first_name . ' ' . $request->last_name,
             'Student ID' => $request->student_id,
             'Service' => $formattedServiceName,
         ];
     
-        // Add additional details based on service category
+        // Add fields based on service category
         switch($request->service_category) {
             case 'reset_email_password':
             case 'reset_tup_web_password':
+            case 'reset_ers_password':
                 $data['Account Email'] = $request->account_email ?? 'N/A';
                 break;
             
@@ -241,10 +246,9 @@ class AdminServiceRequestController extends Controller
             case 'change_of_data_portal':
                 $data['Data to be updated'] = $request->data_type ?? 'N/A';
                 $data['New Data'] = $request->new_data ?? 'N/A';
-    
-                // Add supporting document link if exists
-                if ($request->supporting_document) {
-                    $data['Supporting Document'] = 'Available';
+                
+                if ($request->additional_notes) {
+                    $data['Additional Notes'] = $request->additional_notes;
                 }
                 break;
             
@@ -257,12 +261,240 @@ class AdminServiceRequestController extends Controller
                 $data['Description'] = $request->description ?? 'N/A';
                 break;
         }
+        
+        // Add supporting document if it exists
+        if ($request->supporting_document) {
+            $data['Supporting Document'] = 'Available';
+        }
+        
+        // Add status information and other metadata
+        if ($request->assigned_uitc_staff_id) {
+            $staffName = Admin::find($request->assigned_uitc_staff_id)->name ?? 'Unknown';
+            $data['Assigned To'] = $staffName;
+        }
+        
+        if ($request->transaction_type) {
+            $data['Transaction Type'] = $request->transaction_type;
+        }
+        
+        if ($request->admin_notes) {
+            $data['Admin Notes'] = $request->admin_notes;
+        }
+        
+        if ($request->status == 'Rejected' && $request->rejection_reason) {
+            $data['Rejection Reason'] = $request->rejection_reason;
+        }
     
         // Convert data to HTML format
         $output = [];
-        foreach($data as $key => $value){
+        foreach($data as $key => $value) {
             if ($key === 'Supporting Document' && $value === 'Available') {
-                $output[] = '<strong>Supporting Document:</strong> ' . 
+                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . 
+                    sprintf('<a href="%s" target="_blank" class="document-link">View Document</a>', 
+                    route('admin.view-supporting-document', ['requestId' => $request->id])) . '<br>';
+            } else {
+                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
+            }
+        }
+        return implode('', $output);
+    }
+
+    private function formatFacultyServiceRequestData($request)
+    {
+        // Format the service category name
+        $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
+        
+        // Start with basic information
+        $data = [
+            'Name' => $request->first_name . ' ' . $request->last_name,
+            'Service' => $formattedServiceName,
+        ];
+        
+        // Add fields based on service category
+        switch($request->service_category) {
+            case 'reset_email_password':
+            case 'reset_tup_web_password':
+            case 'reset_ers_password':
+                if (isset($request->account_email)) {
+                    $data['Account Email'] = $request->account_email;
+                }
+                break;
+                
+            case 'change_of_data_ms':
+            case 'change_of_data_portal':
+                if (isset($request->data_type)) {
+                    $data['Data to be updated'] = $request->data_type;
+                }
+                if (isset($request->new_data)) {
+                    $data['New Data'] = $request->new_data;
+                }
+                if (isset($request->additional_notes)) {
+                    $data['Additional Notes'] = $request->additional_notes;
+                }
+                break;
+                
+            case 'dtr':
+                if (isset($request->dtr_months)) {
+                    $data['DTR Months'] = $request->dtr_months;
+                }
+                if (isset($request->dtr_with_details)) {
+                    $data['Include In/Out Details'] = $request->dtr_with_details ? 'Yes' : 'No';
+                }
+                break;
+                
+            case 'biometrics_enrollement':
+                Log::info('Biometrics request data:', [
+                    'request_id' => $request->id,
+                    'service_category' => $request->service_category,
+                    'all_attributes' => $request->getAttributes()  // This will show all available attributes
+                ]);
+                // Always include these fields in the displayed data, even if they're empty
+                $fieldsToInclude = [
+                    'middle_name' => 'Middle Name',
+                    'college' => 'College',
+                    'department' => 'Department',
+                    'plantilla_position' => 'Plantilla Position',
+                    'date_of_birth' => 'Date of Birth',
+                    'phone_number' => 'Phone Number',
+                    'address' => 'Address',
+                    'blood_type' => 'Blood Type',
+                    'emergency_contact_person' => 'Emergency Contact Person',
+                    'emergency_contact_number' => 'Emergency Contact Number'
+                ];
+                if (isset($request->middle_name)) {
+                    $data['Middle Name'] = $request->middle_name;
+                }
+                if (isset($request->college)) {
+                    $data['College'] = $request->college;
+                }
+                if (isset($request->department)) {
+                    $data['Department'] = $request->department;
+                }
+                if (isset($request->plantilla_position)) {
+                    $data['Plantilla Position'] = $request->plantilla_position;
+                }
+                if (isset($request->date_of_birth)) {
+                    $data['Date of Birth'] = $request->date_of_birth;
+                }
+                if (isset($request->phone_number)) {
+                    $data['Phone Number'] = $request->phone_number;
+                }
+                if (isset($request->address)) {
+                    $data['Address'] = $request->address;
+                }
+                if (isset($request->blood_type)) {
+                    $data['Blood Type'] = $request->blood_type;
+                }
+                if (isset($request->emergency_contact_person)) {
+                    $data['Emergency Contact Person'] = $request->emergency_contact_person;
+                }
+                if (isset($request->emergency_contact_number)) {
+                    $data['Emergency Contact Number'] = $request->emergency_contact_number;
+                }
+
+                foreach ($fieldsToInclude as $field => $label) {
+                    // Include the field even if it's null, showing "Not provided" for empty values
+                    $data[$label] = isset($request->$field) && !empty($request->$field) 
+                        ? $request->$field 
+                        : 'Not provided';
+                }
+                break;
+                
+            case 'new_internet':
+            case 'new_telephone':
+            case 'repair_and_maintenance':
+                if (isset($request->location)) {
+                    $data['Location'] = $request->location;
+                }
+                if (isset($request->problem_encountered)) {
+                    $data['Problems Encountered'] = $request->problem_encountered;
+                }
+                break;
+                
+            case 'computer_repair_maintenance':
+            case 'printer_repair_maintenance':
+                if (isset($request->location)) {
+                    $data['Location'] = $request->location;
+                }
+                if (isset($request->problem_encountered)) {
+                    $data['Problems Encountered'] = $request->problem_encountered;
+                }
+                break;
+                
+            case 'request_led_screen':
+                if (isset($request->preferred_date)) {
+                    $data['Preferred Date'] = $request->preferred_date;
+                }
+                if (isset($request->preferred_time)) {
+                    $data['Preferred Time'] = $request->preferred_time;
+                }
+                if (isset($request->led_screen_details)) {
+                    $data['Additional Details'] = $request->led_screen_details;
+                }
+                break;
+                
+            case 'install_application':
+                if (isset($request->application_name)) {
+                    $data['Application Name'] = $request->application_name;
+                }
+                if (isset($request->installation_purpose)) {
+                    $data['Purpose of Installation'] = $request->installation_purpose;
+                }
+                if (isset($request->installation_notes)) {
+                    $data['Additional Requirements'] = $request->installation_notes;
+                }
+                break;
+                
+            case 'post_publication':
+                if (isset($request->publication_author)) {
+                    $data['Author'] = $request->publication_author;
+                }
+                if (isset($request->publication_editor)) {
+                    $data['Editor'] = $request->publication_editor;
+                }
+                if (isset($request->publication_start_date)) {
+                    $data['Date of Publication'] = $request->publication_start_date;
+                }
+                if (isset($request->publication_end_date)) {
+                    $data['End of Publication'] = $request->publication_end_date;
+                }
+                break;
+                
+            case 'data_docs_reports':
+                if (isset($request->data_documents_details)) {
+                    $data['Details'] = $request->data_documents_details;
+                }
+                break;
+        }
+        
+        // Add supporting document if it exists
+        if (isset($request->supporting_document) && $request->supporting_document) {
+            $data['Supporting Document'] = 'Available';
+        }
+        
+        // Add status information and other metadata
+        if (isset($request->assigned_uitc_staff_id) && $request->assigned_uitc_staff_id) {
+            $staffName = Admin::find($request->assigned_uitc_staff_id)->name ?? 'Unknown';
+            $data['Assigned To'] = $staffName;
+        }
+        
+        if (isset($request->transaction_type) && $request->transaction_type) {
+            $data['Transaction Type'] = $request->transaction_type;
+        }
+        
+        if (isset($request->admin_notes) && $request->admin_notes) {
+            $data['Admin Notes'] = $request->admin_notes;
+        }
+        
+        if ($request->status == 'Rejected' && isset($request->rejection_reason)) {
+            $data['Rejection Reason'] = $request->rejection_reason;
+        }
+
+        // Convert data to HTML format
+        $output = [];
+        foreach($data as $key => $value) {
+            if ($key === 'Supporting Document' && $value === 'Available') {
+                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . 
                     sprintf('<a href="%s" target="_blank" class="document-link">View Document</a>', 
                     route('admin.view-supporting-document', ['requestId' => $request->id])) . '<br>';
             } else {

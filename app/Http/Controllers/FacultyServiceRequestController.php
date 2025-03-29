@@ -16,14 +16,14 @@ class FacultyServiceRequestController extends Controller
     {
         try {
             Log::info('Incoming request data:', $request->all());
-
+    
             // Basic validation for common required fields
             $request->validate([
                 'service_category' => 'required',
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
             ]);
-
+    
             // Get the ACTUAL database columns, not just what's in the model
             $tableColumns = Schema::getColumnListing('faculty_service_requests');
             
@@ -49,16 +49,16 @@ class FacultyServiceRequestController extends Controller
             if (Auth::check()) {
                 $filteredData['user_id'] = Auth::id();
             }
-
+    
             // Add default status
             $filteredData['status'] = 'Pending';
-
+    
             // Handle file upload
             if ($request->hasFile('supporting_document') && in_array('supporting_document', $tableColumns)) {
                 $path = $request->file('supporting_document')->store('documents', 'public');
                 $filteredData['supporting_document'] = $path;
             }
-
+    
             // Handle DTR specific fields
             if ($request->input('service_category') === 'dtr') {
                 if (in_array('dtr_months', $tableColumns)) {
@@ -68,38 +68,42 @@ class FacultyServiceRequestController extends Controller
                     $filteredData['dtr_with_details'] = $request->has('dtr_with_details') ? 1 : 0;
                 }
             }
-
+    
             // Log filtered data
             Log::info('Filtered data for submission:', $filteredData);
-
+    
             // Create the request with filtered data
             $serviceRequest = FacultyServiceRequest::create($filteredData);
-
+    
             Log::info('Service request created:', ['id' => $serviceRequest->id]);
-
+    
+            // Generate a unique display ID with FSR prefix
+            $displayId = 'FSR-' . date('Ymd') . '-' . str_pad($serviceRequest->id, 4, '0', STR_PAD_LEFT);
+    
             if (Auth::check() && $request->user()->email) {
                 Notification::route('mail', $request->user()->email)
                     ->notify(new ServiceRequestReceived(
-                        $serviceRequest->id, 
+                        $displayId, // Use the formatted display ID instead of raw database ID
                         $request->input('service_category'),
                         $filteredData['first_name'] . ' ' . $filteredData['last_name']
                     ));
                     
                 Log::info('Email notification sent to: ' . $request->user()->email);
             }
+            
             // Redirect back with success modal data
             return redirect()->back()->with([
                 'showSuccessModal' => true,
-                'requestId' => $serviceRequest->id,
+                'requestId' => $displayId, // Use the formatted display ID
                 'serviceCategory' => $request->input('service_category')
             ]);
-
+    
         } catch (\Exception $e) {
             Log::error('Error creating service request:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-
+    
             return redirect()->back()
                 ->with('error', 'Error submitting request: ' . $e->getMessage())
                 ->withInput();

@@ -6,22 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('year_level');
+            if (Schema::hasColumn('users', 'year_level')) {
+                $table->dropColumn('year_level');
+            }
         });
     }
-    /**
-     * Reverse the migrations.
-     */
+    
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('year_level')->nullable(); // Adjust the type as necessary
+            if (!Schema::hasColumn('users', 'year_level')) {
+                $table->string('year_level')->nullable(); // Adjust the column type as needed
+            }
         });
     }
 };

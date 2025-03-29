@@ -133,7 +133,7 @@
                 <div class="col-lg-8 mb-4">
                     <div class="chart-container">
                         <div class="chart-header">
-                            <h3 class="chart-title">Requests Over Time</h3>
+                            <h3 class="chart-title">Requests per Month</h3>
                             <!-- <div class="chart-actions">
                                 <button class="time-filter active" data-period="6months">6 Months</button>
                                 <button class="time-filter" data-period="year">1 Year</button>

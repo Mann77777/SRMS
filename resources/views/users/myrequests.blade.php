@@ -121,7 +121,13 @@ $(document).ready(function() {
                         <tbody>
                             @foreach ($requests as $request)
                             <tr>
-                                <td>{{ $request->id }}</td>
+                            <td>
+                                @if(Auth::user()->role == "Student")
+                                    {{ 'SSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT) }}
+                                @else
+                                    {{ 'FSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT) }}
+                                @endif
+                            </td>
                                 <td>
                                 @switch($request->service_category)
                                     @case('create')

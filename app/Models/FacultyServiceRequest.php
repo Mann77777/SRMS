@@ -36,7 +36,7 @@ class FacultyServiceRequest extends Model
         
         // Problem description
         'description',
-        'problem_encountered',  // Changed from problems_encountered to problem_encountered
+        'problem_encountered',
         'repair_maintenance',
         
         // LED screen request
@@ -66,6 +66,18 @@ class FacultyServiceRequest extends Model
         'transaction_type',
         'actions_taken',
         'completion_report',
+        
+        // Biometrics Enrollment fields
+        'middle_name',
+        'college',
+        'department',
+        'plantilla_position',
+        'date_of_birth',
+        'phone_number',
+        'address',
+        'blood_type',
+        'emergency_contact_person',
+        'emergency_contact_number',
     ];
 
     protected $casts = [
@@ -75,7 +87,7 @@ class FacultyServiceRequest extends Model
         'new_data' => 'string',
         'supporting_document' => 'string',
         'description' => 'string',
-        'problem_encountered' => 'string',  // Changed from problems_encountered to problem_encountered
+        'problem_encountered' => 'string',
         'location' => 'string',
         'led_screen_details' => 'string', 
         'application_name' => 'string',
@@ -86,6 +98,7 @@ class FacultyServiceRequest extends Model
         'publication_start_date' => 'date',
         'publication_end_date' => 'date',
         'data_documents_details' => 'string',
+        'date_of_birth' => 'date',
     ];
 
     public function user()

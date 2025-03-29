@@ -9,20 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::table('faculty_service_requests', function (Blueprint $table) {
-            $table->dropColumn('ms_options');
+            // Modify middle_name to be nullable
+            $table->string('middle_name')->nullable()->change();
         });
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down()
+    public function down(): void
     {
         Schema::table('faculty_service_requests', function (Blueprint $table) {
-            $table->json('ms_options')->nullable(); // Adjust the type as needed
+            // Change it back to required
+            $table->string('middle_name')->nullable(false)->change();
         });
-    }    
+    }
 };

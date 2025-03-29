@@ -227,6 +227,9 @@ class AdminServiceRequestController extends Controller
         // Format the service category name
         $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
         
+         // Generate a formatted display ID for the request
+        $displayId = 'SSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT);
+        
         // Start with basic information all requests should have
         $data = [
             'Name' => $request->first_name . ' ' . $request->last_name,
@@ -304,6 +307,9 @@ class AdminServiceRequestController extends Controller
         // Format the service category name
         $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
         
+        // Generate a formatted display ID for the request
+        $displayId = 'FSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT);
+
         // Start with basic information
         $data = [
             'Name' => $request->first_name . ' ' . $request->last_name,

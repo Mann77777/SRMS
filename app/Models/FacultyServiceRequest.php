@@ -64,6 +64,8 @@ class FacultyServiceRequest extends Model
         'assigned_uitc_staff_id',
         'admin_notes',
         'transaction_type',
+        'actions_taken',
+        'completion_report',
     ];
 
     protected $casts = [

@@ -15,7 +15,8 @@ class ServiceRequestCompleted extends Notification
     protected $requestorName;
     protected $actionsTaken;
     protected $completionReport;
-    protected $completionStatus;
+    protected $uitcStaffName;
+    protected $transactionType;
 
     private $serviceCategoryTitles = [
         'create' => 'Create MS Office/TUP Email Account',
@@ -39,20 +40,21 @@ class ServiceRequestCompleted extends Notification
         'others' => 'Other Service Request'
     ];
 
-    private $completionStatusTitles = [
-        'fully_completed' => 'Fully Completed',
-        'partially_completed' => 'Partially Completed',
-        'requires_follow_up' => 'Requires Follow-up'
+    private $transactionTypeTitles = [
+        'simple' => 'Simple Transaction',
+        'complex' => 'Complex Transaction',
+        'highly technical' => 'Highly Technical Transaction'
     ];
 
-    public function __construct($requestId, $serviceCategory, $requestorName, $completionStatus, $actionsTaken = '', $completionReport = '')
+    public function __construct($requestId, $serviceCategory, $requestorName, $actionsTaken = '', $completionReport = '', $uitcStaffName = '', $transactionType = '')
     {
         $this->requestId = $requestId;
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
-        $this->completionStatus = $completionStatus;
         $this->actionsTaken = $actionsTaken;
         $this->completionReport = $completionReport;
+        $this->uitcStaffName = $uitcStaffName;
+        $this->transactionType = $transactionType;
     }
 
     public function via($notifiable)
@@ -63,15 +65,26 @@ class ServiceRequestCompleted extends Notification
     public function toMail($notifiable)
     {
         $serviceCategoryTitle = $this->serviceCategoryTitles[$this->serviceCategory] ?? $this->serviceCategory;
-        $completionStatusTitle = $this->completionStatusTitles[$this->completionStatus] ?? $this->completionStatus;
+        $transactionTypeTitle = $this->transactionTypeTitles[$this->transactionType] ?? $this->transactionType;
 
         $mailMessage = (new MailMessage)
             ->subject('TUP SRMS - Service Request Completed')
             ->greeting('Dear ' . $this->requestorName . ',')
-            ->line('We are pleased to inform you that your service request has been completed.')
-            ->line('Request ID: ' . $this->requestId)
-            ->line('Service: ' . $serviceCategoryTitle)
-            ->line('Completion Status: ' . $completionStatusTitle);
+            ->line('We are pleased to inform you that your service request has been completed.');
+
+        // Request details
+        $mailMessage->line('Request ID: ' . $this->requestId)
+            ->line('Service: ' . $serviceCategoryTitle);
+
+        // Show assigned UITC staff
+        if (!empty($this->uitcStaffName)) {
+            $mailMessage->line('Assigned UITC Staff: ' . $this->uitcStaffName);
+        }
+
+        // Show transaction type
+        if (!empty($this->transactionType)) {
+            $mailMessage->line('Transaction Type: ' . $transactionTypeTitle);
+        }
 
         // Add actions taken if provided
         if (!empty($this->actionsTaken)) {
@@ -83,13 +96,9 @@ class ServiceRequestCompleted extends Notification
             $mailMessage->line('Completion Report: ' . $this->completionReport);
         }
 
-        // Add follow-up message for partially completed requests
-        if ($this->completionStatus === 'partially_completed' || $this->completionStatus === 'requires_follow_up') {
-            $mailMessage->line('Note: Your request requires additional follow-up. The UITC staff may contact you for further information or assistance.');
-        }
 
         $mailMessage->line('If you have any questions or concerns regarding this service, please contact the UITC office.')
-            ->action('Submit New Request', url('/service-request'))
+            ->action('View Request', url('/login'))
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
 

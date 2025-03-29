@@ -146,122 +146,124 @@ class UITCStaffController extends Controller
     }
 
     public function completeRequest(Request $request)
-    {
-        // Validate the request
-        $validatedData = $request->validate([
-            'request_id' => 'required',
-            'request_type' => 'required|in:student,faculty',
-            'actions_taken' => 'nullable|string|max:1000',
-            'completion_report' => 'nullable|string|max:2000',
-            'completion_status' => 'required|in:fully_completed,partially_completed,requires_follow_up'
+{
+    // Validate the request
+    $validatedData = $request->validate([
+        'request_id' => 'required',
+        'request_type' => 'required|in:student,faculty',
+        'actions_taken' => 'nullable|string|max:1000',
+        'completion_report' => 'nullable|string|max:2000',
+    ]);
+
+    try {
+        // Begin database transaction
+        DB::beginTransaction();
+
+        // Get the currently logged in UITC staff ID
+        $currentStaffId = Auth::guard('admin')->user()->id;
+        $staffName = Auth::guard('admin')->user()->name;
+        
+        // Based on request type, find the appropriate request
+        if ($validatedData['request_type'] === 'student') {
+            // Find the student service request
+            $serviceRequest = StudentServiceRequest::findOrFail($request->request_id);
+            
+            // Ensure the request is assigned to the current UITC staff
+            if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
+                return response()->json([
+                    'message' => 'Unauthorized to complete this request',
+                    'error' => 'Request not assigned to current staff'
+                ], 403);
+            }
+            
+            // Update the request status and add completion details
+            // FIX: Use the completion_report field correctly instead of admin_notes
+            $serviceRequest->update([
+                'status' => 'Completed',
+                'completion_report' => $request->completion_report ?? 'Request completed',
+                'actions_taken' => $request->actions_taken ?? 'Standard request completion'
+            ]);
+            
+            // Prepare data for notification
+            $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+            $serviceCategory = $serviceRequest->service_category;
+            $user = $serviceRequest->user;
+            $transactionType = $serviceRequest->transaction_type ?? '';
+        } else {
+            // Find the faculty service request
+            $serviceRequest = FacultyServiceRequest::findOrFail($request->request_id);
+            
+            // Ensure the request is assigned to the current UITC staff
+            if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
+                return response()->json([
+                    'message' => 'Unauthorized to complete this request',
+                    'error' => 'Request not assigned to current staff'
+                ], 403);
+            }
+            
+            // Update the request status and add completion details
+            // FIX: Use the completion_report field correctly instead of admin_notes
+            $serviceRequest->update([
+                'status' => 'Completed',
+                'completion_report' => $request->completion_report ?? 'Request completed',
+                'actions_taken' => $request->actions_taken ?? 'Standard request completion'
+            ]);
+            
+            // Prepare data for notification
+            $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+            $serviceCategory = $serviceRequest->service_category;
+            $user = $serviceRequest->user;
+            $transactionType = $serviceRequest->transaction_type ?? '';
+        }
+
+        // Send notification if user exists
+        if (isset($user) && $user) {
+            // Send the notification
+            Notification::route('mail', $user->email)
+                ->notify(new ServiceRequestCompleted(
+                    $serviceRequest->id,
+                    $serviceCategory,
+                    $requestorName,
+                    null,
+                    $request->actions_taken,
+                    $request->completion_report,
+                    $staffName,
+                    $transactionType
+                ));
+                
+            Log::info('Completion notification sent to: ' . $user->email, [
+                'request_id' => $serviceRequest->id,
+                'staff_id' => $currentStaffId,
+            ]);
+        } else {
+            Log::warning('Unable to send completion notification - user not found for request ID: ' . $request->request_id);
+        }
+
+        // Commit the transaction
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Request completed successfully',
+            'request' => $serviceRequest
+        ]);
+    } catch (\Exception $e) {
+        // Rollback the transaction
+        DB::rollBack();
+
+        // Log the error
+        Log::error('Error completing request: ' . $e->getMessage(), [
+            'request_id' => $request->request_id,
+            'request_type' => $validatedData['request_type'],
+            'staff_id' => $currentStaffId ?? 'Unknown',
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
         ]);
 
-        try {
-            // Begin database transaction
-            DB::beginTransaction();
-
-            // Get the currently logged in UITC staff ID
-            $currentStaffId = Auth::guard('admin')->user()->id;
-            $staffName = Auth::guard('admin')->user()->name;
-            
-            // Based on request type, find the appropriate request
-            if ($validatedData['request_type'] === 'student') {
-                // Find the student service request
-                $serviceRequest = StudentServiceRequest::findOrFail($request->request_id);
-                
-                // Ensure the request is assigned to the current UITC staff
-                if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
-                    return response()->json([
-                        'message' => 'Unauthorized to complete this request',
-                        'error' => 'Request not assigned to current staff'
-                    ], 403);
-                }
-                
-                // Update the request status and add completion details
-                $serviceRequest->update([
-                    'status' => 'Completed',
-                    'admin_notes' => $request->completion_report ?? 'Request completed',
-                    'completion_status' => $request->completion_status,
-                    'actions_taken' => $request->actions_taken ?? 'Standard request completion'
-                ]);
-                
-                // Prepare data for notification
-                $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
-                $serviceCategory = $serviceRequest->service_category;
-                $user = $serviceRequest->user;
-            } else {
-                // Find the faculty service request
-                $serviceRequest = FacultyServiceRequest::findOrFail($request->request_id);
-                
-                // Ensure the request is assigned to the current UITC staff
-                if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
-                    return response()->json([
-                        'message' => 'Unauthorized to complete this request',
-                        'error' => 'Request not assigned to current staff'
-                    ], 403);
-                }
-                
-                // Update the request status and add completion details
-                $serviceRequest->update([
-                    'status' => 'Completed',
-                    'admin_notes' => $request->completion_report ?? 'Request completed',
-                    'completion_status' => $request->completion_status,
-                    'actions_taken' => $request->actions_taken ?? 'Standard request completion'
-                ]);
-                
-                // Prepare data for notification
-                $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
-                $serviceCategory = $serviceRequest->service_category;
-                $user = $serviceRequest->user;
-            }
-
-            // Send notification if user exists
-            if (isset($user) && $user) {
-                // Send the notification
-                Notification::route('mail', $user->email)
-                    ->notify(new ServiceRequestCompleted(
-                        $serviceRequest->id,
-                        $serviceCategory,
-                        $requestorName,
-                        $request->completion_status,
-                        $request->actions_taken,
-                        $request->completion_report
-                    ));
-                    
-                Log::info('Completion notification sent to: ' . $user->email, [
-                    'request_id' => $serviceRequest->id,
-                    'staff_id' => $currentStaffId,
-                    'completion_status' => $request->completion_status
-                ]);
-            } else {
-                Log::warning('Unable to send completion notification - user not found for request ID: ' . $request->request_id);
-            }
-
-            // Commit the transaction
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Request completed successfully',
-                'request' => $serviceRequest
-            ]);
-        } catch (\Exception $e) {
-            // Rollback the transaction
-            DB::rollBack();
-
-            // Log the error
-            Log::error('Error completing request: ' . $e->getMessage(), [
-                'request_id' => $request->request_id,
-                'request_type' => $validatedData['request_type'],
-                'staff_id' => $currentStaffId ?? 'Unknown',
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'message' => 'Failed to complete request: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Failed to complete request: ' . $e->getMessage()
+        ], 500);
     }
+}
 
 
     private function formatServiceCategory($category)

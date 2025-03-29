@@ -32,7 +32,6 @@ class StudentServiceRequest extends Model
         'admin_notes',
         'actions_taken',
         'completion_report',
-        'completion_status'    
     ];
 
     // Use Carbon to handle timezone-aware timestamps

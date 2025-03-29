@@ -200,16 +200,6 @@
                                 required
                             ></textarea>
                         </div>
-
-                        <div class="form-group">
-                            <label for="completionStatus">Completion Status <span class="text-danger">*</span></label>
-                            <select class="form-control" id="completionStatus" name="completion_status" required>
-                                <option value="">Select Completion Status</option>
-                                <option value="fully_completed">Fully Completed</option>
-                                <option value="partially_completed">Partially Completed</option>
-                                <option value="requires_follow_up">Requires Follow-up</option>
-                            </select>
-                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -228,69 +218,69 @@
     <script src="{{ asset('js/assign-request.js') }}"></script>
 
     <script>
-  $(document).ready(function() {
-    // Set CSRF token for all AJAX requests
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-    
-    $('#completeRequestForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        // Validate form
-        if (this.checkValidity() === false) {
-            e.stopPropagation();
-            $(this).addClass('was-validated');
-            return;
-        }
-
-        // Get form data
-        const formData = $(this).serialize();
-
-        // AJAX call to complete the request
-        $.ajax({
-            url: '{{ route("uitc.complete.request") }}',
-            method: 'POST',
-            data: formData,
-            success: function(response) {
-                // Close the complete request modal
-                $('#completeRequestModal').modal('hide');
-                
-                // Show success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Request completed successfully',
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    // Refresh the page to show updated data
-                    window.location.reload();
-                });
-            },
-            error: function(xhr) {
-                // Show error message
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: xhr.responseJSON?.message || 'Failed to complete the request.'
-                });
+    $(document).ready(function() {
+        // Set CSRF token for all AJAX requests
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+    
+        $('#completeRequestForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (this.checkValidity() === false) {
+                e.stopPropagation();
+                $(this).addClass('was-validated');
+                return;
+            }
+
+            // Get form data
+            const formData = $(this).serialize();
+
+            // AJAX call to complete the request
+            $.ajax({
+                url: '{{ route("uitc.complete.request") }}',
+                method: 'POST',
+                data: formData,
+                success: function(response) {
+                    // Close the complete request modal
+                    $('#completeRequestModal').modal('hide');
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Request completed successfully',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        // Refresh the page to show updated data
+                        window.location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Failed to complete the request.'
+                    });
+                }
+            });
     });
 
-    // Add click event listener to Complete buttons
-    $('.btn-complete').on('click', function() {
-        const requestId = $(this).data('request-id');
-        const requestType = $(this).data('request-type') || 'student';
-        console.log('Complete button clicked for request ID: ' + requestId + ', type: ' + requestType);
-        
-        $('#completeRequestId').val(requestId);
-        $('#completeRequestType').val(requestType);
-        $('#completeRequestModal').modal('show');
+        // Add click event listener to Complete buttons
+        $('.btn-complete').on('click', function() {
+            const requestId = $(this).data('request-id');
+            const requestType = $(this).data('request-type') || 'student';
+            console.log('Complete button clicked for request ID: ' + requestId + ', type: ' + requestType);
+            
+            $('#completeRequestId').val(requestId);
+            $('#completeRequestType').val(requestType);
+            $('#completeRequestModal').modal('show');
+            });
     });
-});
     </script>
 </body>
 </html>

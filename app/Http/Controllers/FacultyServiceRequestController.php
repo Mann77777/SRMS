@@ -166,6 +166,53 @@ class FacultyServiceRequestController extends Controller
         return redirect()->back()->with('error', 'Unauthorized access');
     }
 
+    public function requestHistory()
+    {
+        $user = Auth::user();
+    
+        if($user->role === "Faculty & Staff")
+        {
+            $requests = FacultyServiceRequest::where('user_id', Auth::id())
+                ->where('status', 'Completed')
+                ->with('assignedUITCStaff')
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10);
+    
+            return view('users.request-history', compact('requests'));
+        }
+    
+        return redirect()->back()->with('error', 'Unauthorized access');
+    }
+
+    public function getRequestDetails($id)
+    {
+        try {
+            // Fetch the request with the assigned_uitc_staff relationship
+            $request = FacultyServiceRequest::with('assignedUITCStaff')
+                ->findOrFail($id);
+                
+            // Check if the request belongs to the current user
+            if ($request->user_id !== Auth::id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            
+            // Structure the response to include staff information properly
+            $responseData = $request->toArray();
+            
+            // Make sure the assigned staff data is properly included
+            if ($request->assignedUITCStaff) {
+                $responseData['assigned_uitc_staff'] = [
+                    'id' => $request->assignedUITCStaff->id,
+                    'name' => $request->assignedUITCStaff->name
+                ];
+            }
+            
+            return response()->json($responseData);
+        } catch (\Exception $e) {
+            \Log::error('Error getting request details: ' . $e->getMessage());
+            return response()->json(['error' => 'Request not found'], 404);
+        }
+    }
     public function show($id)
     {
         $request = FacultyServiceRequest::findOrFail($id);

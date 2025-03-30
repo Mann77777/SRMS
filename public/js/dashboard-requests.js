@@ -92,7 +92,6 @@ function updateRecentRequestsTable(requests) {
             <td>${formatDate(request.created_at)}</td>
             <td>${formatDate(request.updated_at)}</td>
             <td><span class="badge ${getBadgeClass(request.status)}">${request.status}</span></td>
-            <td><a href="/faculty/myrequests/${request.id}" class="btn-view">View</a></td>
         `;
         
         // Insert at the top of the table

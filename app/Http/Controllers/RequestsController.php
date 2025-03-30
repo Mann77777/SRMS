@@ -44,4 +44,30 @@ class RequestsController extends Controller
         // Handle unexpected role
         return redirect()->back()->with('error', 'Unauthorized access');
     }
+
+    public function requestHistory()
+    {
+        $user = Auth::user();
+        
+        if ($user->role === "Student") {
+            $requests = StudentServiceRequest::where('user_id', Auth::id())
+                ->where('status', 'Completed')
+                ->with('assignedUITCStaff')
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10);
+                
+            return view('users.request-history', compact('requests'));
+        } 
+        elseif ($user->role === "Faculty & Staff") {
+            $requests = FacultyServiceRequest::where('user_id', Auth::id())
+                ->where('status', 'Completed')
+                ->with('assignedUITCStaff')
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10);
+                
+            return view('users.request-history', compact('requests'));
+        }
+        
+        return redirect()->back()->with('error', 'Unauthorized access');
+    }
 }

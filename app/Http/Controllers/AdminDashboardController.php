@@ -475,6 +475,7 @@ class AdminDashboardController extends Controller
      * 
      * @return array Array of monthly request counts
      */
+
     private function getRequestsOverTime()
     {
         try {
@@ -482,22 +483,44 @@ class AdminDashboardController extends Controller
             $months = [];
             $requestCounts = [];
             
+            // Get the current date
+            $currentDate = Carbon::now();
+            
+            // Store the current month and year
+            $currentMonth = $currentDate->month;
+            $currentYear = $currentDate->year;
+            
+            // Generate exactly 6 months in sequence
             for ($i = 5; $i >= 0; $i--) {
-                $date = Carbon::now()->subMonths($i);
-                $months[] = $date->format('M Y'); // Format as "Jan 2023"
+                // Calculate the target month by subtracting from current month
+                $targetMonth = $currentMonth - $i;
+                $targetYear = $currentYear;
+                
+                // Adjust for month wrapping
+                while ($targetMonth <= 0) {
+                    $targetMonth += 12;
+                    $targetYear--;
+                }
+                
+                // Create a Carbon date for this specific month/year
+                $date = Carbon::createFromDate($targetYear, $targetMonth, 1);
+                $months[] = $date->format('M Y'); // Format as "Jan 2025"
                 
                 // Count student requests for this month/year
                 $studentCount = StudentServiceRequest::whereYear('created_at', $date->year)
-                               ->whereMonth('created_at', $date->month)
-                               ->count();
-                               
+                            ->whereMonth('created_at', $date->month)
+                            ->count();
+                            
                 // Count faculty requests for this month/year
                 $facultyCount = FacultyServiceRequest::whereYear('created_at', $date->year)
-                               ->whereMonth('created_at', $date->month)
-                               ->count();
-                               
+                            ->whereMonth('created_at', $date->month)
+                            ->count();
+                            
                 // Add the total for this month
                 $requestCounts[] = $studentCount + $facultyCount;
+                
+                // Debug log each month we're calculating
+                \Log::debug("Calculating month {$i}: {$date->format('M Y')} (Year: {$date->year}, Month: {$date->month})");
             }
             
             // Make sure we have data
@@ -505,7 +528,7 @@ class AdminDashboardController extends Controller
                 \Log::warning('Empty or zero requests over time data');
                 // Provide some default data to prevent errors
                 return [
-                    'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    'labels' => ['Oct 2024', 'Nov 2024', 'Dec 2024', 'Jan 2025', 'Feb 2025', 'Mar 2025'],
                     'data' => [0, 0, 0, 0, 0, 0]
                 ];
             }
@@ -681,72 +704,81 @@ class AdminDashboardController extends Controller
  * @param  \Illuminate\Http\Request  $request
  * @return \Illuminate\Http\Response
  */
-public function getTimeSeriesData(Request $request)
-{
-    $period = $request->input('period', '6months');
-    $labels = [];
-    $data = [];
-    
-    try {
-        if ($period === '6months') {
-            // Get data for the last 6 months
-            for ($i = 5; $i >= 0; $i--) {
-                $date = Carbon::now()->subMonths($i);
-                $labels[] = $date->format('M Y');
-                
-                $studentCount = StudentServiceRequest::whereYear('created_at', $date->year)
-                              ->whereMonth('created_at', $date->month)
-                              ->count();
-                              
-                $facultyCount = FacultyServiceRequest::whereYear('created_at', $date->year)
-                              ->whereMonth('created_at', $date->month)
-                              ->count();
-                              
-                $data[] = $studentCount + $facultyCount;
-            }
-        } else if ($period === 'year') {
-            // Get data for the last 12 months
-            for ($i = 11; $i >= 0; $i--) {
-                $date = Carbon::now()->subMonths($i);
-                $labels[] = $date->format('M Y');
-                
-                $studentCount = StudentServiceRequest::whereYear('created_at', $date->year)
-                              ->whereMonth('created_at', $date->month)
-                              ->count();
-                              
-                $facultyCount = FacultyServiceRequest::whereYear('created_at', $date->year)
-                              ->whereMonth('created_at', $date->month)
-                              ->count();
-                              
-                $data[] = $studentCount + $facultyCount;
-            }
-        }
+    public function getTimeSeriesData(Request $request)
+    {
+        $period = $request->input('period', '6months');
+        $labels = [];
+        $data = [];
         
-        // If no data, provide fallback
-        if (count($data) === 0 || array_sum($data) === 0) {
-            // Use fallback data
+        try {
+            // Get the current date
+            $currentDate = Carbon::now();
+            
+            // Store the current month and year
+            $currentMonth = $currentDate->month;
+            $currentYear = $currentDate->year;
+            
+            // Determine how many months to generate based on period
+            $monthCount = ($period === '6months') ? 6 : 12;
+            
+            // Generate the months in sequence
+            for ($i = $monthCount - 1; $i >= 0; $i--) {
+                // Calculate the target month by subtracting from current month
+                $targetMonth = $currentMonth - $i;
+                $targetYear = $currentYear;
+                
+                // Adjust for month wrapping
+                while ($targetMonth <= 0) {
+                    $targetMonth += 12;
+                    $targetYear--;
+                }
+                
+                // Create a Carbon date for this specific month/year
+                $date = Carbon::createFromDate($targetYear, $targetMonth, 1);
+                $labels[] = $date->format('M Y'); // Format as "Jan 2025"
+                
+                // Count student requests for this month/year
+                $studentCount = StudentServiceRequest::whereYear('created_at', $date->year)
+                            ->whereMonth('created_at', $date->month)
+                            ->count();
+                            
+                // Count faculty requests for this month/year
+                $facultyCount = FacultyServiceRequest::whereYear('created_at', $date->year)
+                            ->whereMonth('created_at', $date->month)
+                            ->count();
+                            
+                // Add the total for this month
+                $data[] = $studentCount + $facultyCount;
+                
+                // Debug log each month we're calculating
+                \Log::debug("getTimeSeriesData: Month {$i}: {$date->format('M Y')} (Year: {$date->year}, Month: {$date->month})");
+            }
+            
+            // If no data, provide fallback
+            if (count($data) === 0 || array_sum($data) === 0) {
+                // Use fallback data
+                $fallback = $this->generateFallbackData();
+                $labels = $fallback['requestsOverTime']['labels'];
+                $data = $fallback['requestsOverTime']['data'];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'labels' => $labels,
+                'values' => $data
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting time series data: ' . $e->getMessage());
+            
+            // Return fallback data on error
             $fallback = $this->generateFallbackData();
-            $labels = $fallback['requestsOverTime']['labels'];
-            $data = $fallback['requestsOverTime']['data'];
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Error retrieving data',
+                'labels' => $fallback['requestsOverTime']['labels'],
+                'values' => $fallback['requestsOverTime']['data']
+            ]);
         }
-        
-        return response()->json([
-            'success' => true,
-            'labels' => $labels,
-            'values' => $data
-        ]);
-    } catch (\Exception $e) {
-        \Log::error('Error getting time series data: ' . $e->getMessage());
-        
-        // Return fallback data on error
-        $fallback = $this->generateFallbackData();
-        
-        return response()->json([
-            'success' => false,
-            'error' => 'Error retrieving data',
-            'labels' => $fallback['requestsOverTime']['labels'],
-            'values' => $fallback['requestsOverTime']['data']
-        ]);
     }
-}
 }

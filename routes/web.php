@@ -250,6 +250,9 @@ Route::get('/request-history', [StudentServiceRequestController::class, 'request
     ->name('request.history')
     ->middleware('auth');
 
+    Route::get('/request-history', [FacultyServiceRequestController::class, 'requestHistory'])
+    ->name('request.history')
+    ->middleware('auth'); 
 
 Route::get('/service-survey/{requestId}', [StudentServiceRequestController::class, 'showServiceSurvey'])
     ->name('service.survey')
@@ -445,3 +448,13 @@ Route::get('/uitc-staff/assign-history', [UITCStaffController::class, 'getAssign
 
 Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');
 
+
+// Student request details route
+Route::get('/student/request/{id}', [StudentServiceRequestController::class, 'getRequestDetails'])
+    ->name('student.request.details')
+    ->middleware('auth');
+
+// Faculty request details route
+Route::get('/faculty/request/{id}', [FacultyServiceRequestController::class, 'getRequestDetails'])
+    ->name('faculty.request.details')
+    ->middleware('auth');

@@ -213,4 +213,34 @@ class StudentServiceRequestController extends Controller
 
         return redirect()->route('request.history')->with('success', 'Thank you for your feedback!');
     }
+
+    public function getRequestDetails($id)
+    {
+        try {
+            // Fetch the request with the assigned_uitc_staff relationship
+            $request = StudentServiceRequest::with('assignedUITCStaff')
+                ->findOrFail($id);
+                
+            // Check if the request belongs to the current user
+            if ($request->user_id !== Auth::id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            
+            // Structure the response to include staff information properly
+            $responseData = $request->toArray();
+            
+            // Make sure the assigned staff data is properly included
+            if ($request->assignedUITCStaff) {
+                $responseData['assigned_uitc_staff'] = [
+                    'id' => $request->assignedUITCStaff->id,
+                    'name' => $request->assignedUITCStaff->name
+                ];
+            }
+            
+            return response()->json($responseData);
+        } catch (\Exception $e) {
+            \Log::error('Error getting request details: ' . $e->getMessage());
+            return response()->json(['error' => 'Request not found'], 404);
+        }
+    }
 }

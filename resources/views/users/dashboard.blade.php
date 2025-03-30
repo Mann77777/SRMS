@@ -136,14 +136,21 @@
                             <th>Date Submitted</th>
                             <th>Last Update</th>
                             <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                     @forelse($recentRequests as $request)
                         <tr>
-                             <td>{{ $request['id'] }}</td>
-                             <td>{{ $request['service_type'] }}</td>
+                            <td>
+                                <span class="request-id-text">
+                                    @if(Auth::user()->role == "Student")
+                                        {{ 'SSR-' . date('Ymd', strtotime($request['created_at'])) . '-' . str_pad($request['id'], 4, '0', STR_PAD_LEFT) }}
+                                    @else
+                                        {{ 'FSR-' . date('Ymd', strtotime($request['created_at'])) . '-' . str_pad($request['id'], 4, '0', STR_PAD_LEFT) }}
+                                    @endif
+                                </span>
+                            </td>
+                            <td>{{ $request['service_type'] }}</td>
                             <td>{{ \Carbon\Carbon::parse($request['created_at'])->format('M d, Y h:i A') }}</td>
                             <td>{{ \Carbon\Carbon::parse($request['updated_at'])->format('M d, Y h:i A') }}</td>
                             <td>
@@ -151,19 +158,16 @@
                                     @if($request['status'] == 'Pending') badge-warning
                                     @elseif($request['status'] == 'In Progress') badge-info
                                     @elseif($request['status'] == 'Completed') badge-success
-                                     @elseif($request['status'] == 'Rejected') badge-danger
+                                    @elseif($request['status'] == 'Rejected') badge-danger
                                     @else badge-secondary
                                     @endif">
                                     {{ $request['status'] }}
                                 </span>
                             </td>
-                             <td>
-                                 <a href="@if($request['type'] === 'student') {{ route('student.myrequests.show', $request['id']) }} @else {{ route('faculty.myrequests.show', $request['id']) }} @endif" class="btn-view">View</a>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                          <td colspan="5" class="text-center"> No recent requests found</td>
+                            <td colspan="5" class="text-center"> No recent requests found</td>
                         </tr>
                     @endforelse
                     </tbody>

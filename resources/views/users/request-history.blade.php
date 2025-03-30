@@ -21,7 +21,7 @@
 
  
     <div class="content">
-        <h1>History</h1>
+        <h1>Request History</h1>
     <!--    <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p> -->
        
         <div class="history-table-container">
@@ -40,7 +40,13 @@
                     <tbody>
                         @forelse($requests as $request)
                         <tr>
-                            <td>{{ $request->id }}</td>
+                            <td>
+                                @if(Auth::user()->role == "Student")
+                                    {{ 'SSR-' . date('Ymd', strtotime($request['created_at'])) . '-' . str_pad($request['id'], 4, '0', STR_PAD_LEFT) }}
+                                @else
+                                    {{ 'FSR-' . date('Ymd', strtotime($request['created_at'])) . '-' . str_pad($request['id'], 4, '0', STR_PAD_LEFT) }}
+                                @endif
+                            </td>
                             <td>
                                 @switch($request->service_category)
                                     @case('create')

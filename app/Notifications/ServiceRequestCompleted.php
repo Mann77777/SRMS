@@ -46,9 +46,40 @@ class ServiceRequestCompleted extends Notification
         'highly technical' => 'Highly Technical Transaction'
     ];
 
+    /**
+     * Create a new notification instance.
+     * 
+     * @param string|int $requestId The request ID (will be formatted if numeric)
+     * @param string $serviceCategory The service category key
+     * @param string $requestorName The name of the requestor
+     * @param string $actionsTaken Actions taken by UITC staff
+     * @param string $completionReport Completion report details
+     * @param string $uitcStaffName The name of the UITC staff
+     * @param string $transactionType The transaction type
+     */
     public function __construct($requestId, $serviceCategory, $requestorName, $actionsTaken = '', $completionReport = '', $uitcStaffName = '', $transactionType = '')
     {
-        $this->requestId = $requestId;
+        // Handle ID formatting here
+        // If $requestId is already formatted (contains '-'), use it as is
+        if (is_string($requestId) && strpos($requestId, '-') !== false) {
+            $this->requestId = $requestId;
+        } else {
+            // Determine the prefix based on service category
+            $prefix = 'SR'; // Default prefix
+            
+            // Determine if it's a student or faculty request based on context clues
+            if (stripos($serviceCategory, 'student') !== false || 
+                in_array($serviceCategory, ['change_of_data_portal', 'reset_tup_web_password'])) {
+                $prefix = 'SSR'; // Student Service Request
+            } elseif (in_array($serviceCategory, ['dtr', 'biometric_record']) || 
+                     stripos($serviceCategory, 'faculty') !== false) {
+                $prefix = 'FSR'; // Faculty Service Request
+            }
+            
+            // Format: PREFIX-YYYYMMDD-0000
+            $this->requestId = $prefix . '-' . date('Ymd') . '-' . str_pad($requestId, 4, '0', STR_PAD_LEFT);
+        }
+
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
         $this->actionsTaken = $actionsTaken;
@@ -96,9 +127,9 @@ class ServiceRequestCompleted extends Notification
             $mailMessage->line('Completion Report: ' . $this->completionReport);
         }
 
-
         $mailMessage->line('If you have any questions or concerns regarding this service, please contact the UITC office.')
-            ->action('View Request', url('/login'))
+            ->action('View Request', url('/myrequests'))
+            ->line('Please consider providing feedback on your service experience through our satisfaction survey.')
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
 

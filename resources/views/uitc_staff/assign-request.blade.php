@@ -132,7 +132,7 @@
             </span>
         </td>
         <td class="btns">
-            <button class="btn-view" onclick="viewRequestDetails({{ $request->id }}, '{{ $request->request_type }}')">View</button>
+            <!-- <button class="btn-view" onclick="viewRequestDetails({{ $request->id }}, '{{ $request->request_type }}')">View</button> -->
             @if($request->status != 'Completed')
             <button 
                 class="btn-complete" 

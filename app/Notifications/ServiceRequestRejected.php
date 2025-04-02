@@ -46,9 +46,38 @@ class ServiceRequestRejected extends Notification
         'other' => 'Other Reason'
     ];
 
+    /**
+     * Create a new notification instance.
+     * 
+     * @param string|int $requestId The request ID (will be formatted if numeric)
+     * @param string $serviceCategory The service category key
+     * @param string $requestorName The name of the requestor
+     * @param string $rejectionReason The reason for rejection
+     * @param string $notes Additional notes (optional)
+     */
     public function __construct($requestId, $serviceCategory, $requestorName, $rejectionReason, $notes = '')
     {
-        $this->requestId = $requestId;
+        // Handle ID formatting here
+        // If $requestId is already formatted (contains '-'), use it as is
+        if (is_string($requestId) && strpos($requestId, '-') !== false) {
+            $this->requestId = $requestId;
+        } else {
+            // Determine the prefix based on service category
+            $prefix = 'SR'; // Default prefix
+            
+            // Determine if it's a student or faculty request based on context clues
+            if (stripos($serviceCategory, 'student') !== false || 
+                in_array($serviceCategory, ['change_of_data_portal', 'reset_tup_web_password'])) {
+                $prefix = 'SSR'; // Student Service Request
+            } elseif (in_array($serviceCategory, ['dtr', 'biometric_record']) || 
+                     stripos($serviceCategory, 'faculty') !== false) {
+                $prefix = 'FSR'; // Faculty Service Request
+            }
+            
+            // Format: PREFIX-YYYYMMDD-0000
+            $this->requestId = $prefix . '-' . date('Ymd') . '-' . str_pad($requestId, 4, '0', STR_PAD_LEFT);
+        }
+        
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
         $this->rejectionReason = $rejectionReason;

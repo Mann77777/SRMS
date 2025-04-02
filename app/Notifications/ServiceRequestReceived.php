@@ -5,7 +5,6 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-use App\Models\StudentServiceRequest;
 
 class ServiceRequestReceived extends Notification
 {
@@ -37,18 +36,56 @@ class ServiceRequestReceived extends Notification
         'others' => 'Other Service Request'
     ];
 
+    /**
+     * Create a new notification instance.
+     * 
+     * @param string|int $requestId The request ID (will be formatted if numeric)
+     * @param string $serviceCategory The service category key
+     * @param string $requestorName The name of the requestor
+     */
     public function __construct($requestId, $serviceCategory, $requestorName = '')
     {
-        $this->requestId = $requestId;
+        // Handle ID formatting here
+        // If $requestId is already formatted (contains '-'), use it as is
+        if (is_string($requestId) && strpos($requestId, '-') !== false) {
+            $this->requestId = $requestId;
+        } else {
+            // Determine the prefix based on service category
+            // This is a basic example - you might need to enhance this logic
+            $prefix = 'SR'; // Default prefix
+            
+            // Determine if it's a student or faculty request based on context clues
+            if ($serviceCategory == 'student_id' || $serviceCategory == 'change_of_data_portal') {
+                $prefix = 'SSR'; // Student Service Request
+            } elseif ($serviceCategory == 'dtr' || $serviceCategory == 'biometric_record') {
+                $prefix = 'FSR'; // Faculty Service Request
+            }
+            
+            // Format: PREFIX-YYYYMMDD-0000
+            $this->requestId = $prefix . '-' . date('Ymd') . '-' . str_pad($requestId, 4, '0', STR_PAD_LEFT);
+        }
+        
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
     }
 
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
     public function via($notifiable)
     {
         return ['mail'];
     }
 
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
     public function toMail($notifiable)
     {
         $serviceCategoryTitle = $this->serviceCategoryTitles[$this->serviceCategory] ?? $this->serviceCategory;

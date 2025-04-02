@@ -45,9 +45,39 @@ class ServiceRequestAssigned extends Notification
         'highly technical' => 'Highly Technical Transaction'
     ];
 
+    /**
+     * Create a new notification instance.
+     * 
+     * @param string|int $requestId The request ID (will be formatted if numeric)
+     * @param string $serviceCategory The service category key
+     * @param string $requestorName The name of the requestor
+     * @param string $uitcStaffName The name of the assigned UITC staff
+     * @param string $transactionType The transaction type
+     * @param string $notes Additional notes (optional)
+     */
     public function __construct($requestId, $serviceCategory, $requestorName, $uitcStaffName, $transactionType, $notes = '')
     {
-        $this->requestId = $requestId;
+        // Handle ID formatting here
+        // If $requestId is already formatted (contains '-'), use it as is
+        if (is_string($requestId) && strpos($requestId, '-') !== false) {
+            $this->requestId = $requestId;
+        } else {
+            // Determine the prefix based on service category
+            $prefix = 'SR'; // Default prefix
+            
+            // Determine if it's a student or faculty request based on context clues
+            if (stripos($serviceCategory, 'student') !== false || 
+                in_array($serviceCategory, ['change_of_data_portal', 'reset_tup_web_password'])) {
+                $prefix = 'SSR'; // Student Service Request
+            } elseif (in_array($serviceCategory, ['dtr', 'biometric_record']) || 
+                     stripos($serviceCategory, 'faculty') !== false) {
+                $prefix = 'FSR'; // Faculty Service Request
+            }
+            
+            // Format: PREFIX-YYYYMMDD-0000
+            $this->requestId = $prefix . '-' . date('Ymd') . '-' . str_pad($requestId, 4, '0', STR_PAD_LEFT);
+        }
+        
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
         $this->uitcStaffName = $uitcStaffName;
@@ -79,7 +109,7 @@ class ServiceRequestAssigned extends Notification
         $mailMessage->line('Additional Notes: ' . $notesText);
 
         $mailMessage->line('If you have any questions regarding your request, please contact the UITC office.')
-            ->action('Submit New Request', url('/login'))
+            ->action('View My Requests', url('/myrequests'))
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
 

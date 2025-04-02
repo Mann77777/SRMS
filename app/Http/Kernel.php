@@ -69,5 +69,7 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'staff' => \App\Http\Middleware\AuthenticateStaff::class,  //Add the staff middleware
         'check.student' => \App\Http\Middleware\CheckStudentAccess::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'role' => \App\Http\Middleware\CheckRole::class,
     ];
 }

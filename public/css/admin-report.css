@@ -1,0 +1,224 @@
+  /* Main content styles */
+  .main-content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+/* Report section styling */
+.report-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.filter-controls {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.chart-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 15px;
+    margin-bottom: 20px;
+    height: 400px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.chart-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.stat-card {
+    background: linear-gradient(to right, #4e73df, #224abe);
+    color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card.green {
+    background: linear-gradient(to right, #1cc88a, #13855c);
+}
+
+.stat-card.yellow {
+    background: linear-gradient(to right, #f6c23e, #dda20a);
+}
+
+.stat-card.red {
+    background: linear-gradient(to right, #e74a3b, #be2617);
+}
+
+.stat-card.purple {
+    background: linear-gradient(to right, #6f42c1, #4e2b89);
+}
+
+.stat-card h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-card p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.staff-performance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.staff-performance-table th {
+    background-color: #f8f9fa;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e3e6f0;
+}
+
+.staff-performance-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.staff-performance-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.progress {
+    height: 8px;
+}
+
+.service-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.tag-hardware {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.tag-software {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.tag-network {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.tag-account {
+    background-color: #f3e5f5;
+    color: #6a1b9a;
+}
+
+.tag-misc {
+    background-color: #eeeeee;
+    color: #424242;
+}
+
+/* Export button styling */
+.export-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+}
+
+.export-btn:hover {
+    background-color: #3e8e41;
+}
+
+.export-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.export-btn:hover {
+    background-color: #388e3c;
+}
+
+#export-report {
+    background-color: #2196f3;
+}
+
+#export-report:hover {
+    background-color: #1976d2;
+}
+
+#export-pdf {
+    background-color: #f44336;
+}
+
+#export-pdf:hover {
+    background-color: #d32f2f;
+}
+
+.export-btn i {
+    margin-right: 5px;
+}
+
+.export-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+}

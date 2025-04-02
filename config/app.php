@@ -122,4 +122,11 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    
+// Add to the 'providers' array in config/app.php
+Barryvdh\DomPDF\ServiceProvider::class,
+
+// Add to the 'aliases' array in config/app.php
+'PDF' => Barryvdh\DomPDF\Facade::class,
 ];

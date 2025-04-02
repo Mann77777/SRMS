@@ -28,7 +28,7 @@ use App\Http\Controllers\BotManController;
 use App\Http\Controllers\UITCStaffController;
 use App\Http\Controllers\RequestsController;
 use App\Http\Controllers\AdminDashboardController;
-
+use App\Http\Controllers\AdminReportController;
 
 
 Route::get('/', function () {
@@ -458,3 +458,12 @@ Route::get('/student/request/{id}', [StudentServiceRequestController::class, 'ge
 Route::get('/faculty/request/{id}', [FacultyServiceRequestController::class, 'getRequestDetails'])
     ->name('faculty.request.details')
     ->middleware('auth');
+
+
+    Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
+        Route::get('/report', [AdminReportController::class, 'index'])->name('admin.report');
+        Route::post('/report-data', [AdminReportController::class, 'getReportData'])->name('admin.report.data');
+        Route::post('/export-report', [AdminReportController::class, 'exportReport'])->name('admin.export.excel');
+        Route::post('/export-pdf', [AdminReportController::class, 'exportPDF'])->name('admin.export.pdf');
+        Route::get('/get-uitc-staff', [AdminServiceRequestController::class, 'getUITCStaff'])->name('admin.get.uitc.staff');
+    });

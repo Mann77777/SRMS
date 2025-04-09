@@ -285,4 +285,21 @@ class FacultyServiceRequestController extends Controller
         // Redirect to store method
         return $this->store($request);
     }
+
+    public function showServiceSurvey($requestId)
+    {
+        $request = FacultyServiceRequest::findOrFail($requestId);
+        
+        // Ensure only the request owner can access the survey
+        if ($request->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+
+        // Ensure only completed requests can be surveyed
+        if ($request->status !== 'Completed') {
+            return redirect()->back()->with('error', 'Survey is only available for completed requests');
+        }
+
+        return view('users.service-survey', compact('request'));
+    }
 }

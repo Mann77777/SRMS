@@ -74,26 +74,20 @@ class AdminDashboardController extends Controller
         $data = [];
 
         if ($isUitcStaff) {
-            // Get today's assigned requests for this UITC staff
-            $today = Carbon::today();
-            
+            // Get all assigned requests for this UITC staff (not just today's)
             $data['assignedRequests'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
                             ->where('status', 'In Progress')
-                            ->whereDate('created_at', $today)
                             ->count() +
                         FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
                             ->where('status', 'In Progress')
-                            ->whereDate('created_at', $today)
                             ->count();
             
-            // Get today's completed requests for this UITC staff
+            // Get all completed requests for this UITC staff (not just today's)
             $data['servicesCompleted'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
                             ->where('status', 'Completed')
-                            ->whereDate('updated_at', $today)
                             ->count() +
                         FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
                             ->where('status', 'Completed')
-                            ->whereDate('updated_at', $today)
                             ->count();
             
             // Get average rating for this UITC staff
@@ -113,7 +107,7 @@ class AdminDashboardController extends Controller
             
             // Completed requests - completed today
             $data['servicesCompleted'] = $this->countRequestsByStatusAndDate('Completed', $today);
-             
+            
             // Rejected requests - rejected today
             $data['rejectedRequests'] = $this->countRequestsByStatusAndDate('Rejected', $today);
 

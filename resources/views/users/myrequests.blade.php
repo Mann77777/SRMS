@@ -18,7 +18,7 @@ $(document).ready(function() {
             $('#viewServiceName').text(data.service_category);
             $('#viewServiceStatus').text(data.status);
               $('#viewServiceSubmittedDate').text(new Date(data.created_at).toLocaleString());
-        $('#viewServiceCompletedDate').text(data.status == 'Completed' ? new Date(data.updated_at).toLocaleString() : 'N/A')
+        $('#viewServiceCompletedDate').text(data.status == 'Completed' ? new Date(data.updated_at).toLocaleString() : '-')
             
             // Add more fields as needed
             const modalBody = $('#viewServiceModal .modal-body');
@@ -29,7 +29,7 @@ $(document).ready(function() {
                 <p><strong>First Name:</strong> ${data.first_name}</p>
                 <p><strong>Last Name:</strong> ${data.last_name}</p>
                 <p><strong>Date Submitted:</strong> ${new Date(data.created_at).toLocaleString()}</p>
-                <p><strong>Date Completed:</strong> ${data.status == 'Completed' ? new Date(data.updated_at).toLocaleString() : 'N/A'}</p>
+                <p><strong>Date Completed:</strong> ${data.status == 'Completed' ? new Date(data.updated_at).toLocaleString() : '-'}</p>
                 <p><strong>Date Submitted:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
                 ${data.description ? `<p><strong>Description:</strong> ${data.description}</p>` : ''}
             `);
@@ -187,7 +187,7 @@ $(document).ready(function() {
                                         Data, Documents and Reports
                                         @break
                                     @case('others')
-                                        {{ $request->description ?? 'Other Service' }}
+                                        Other Service
                                         @break
                                     @default
                                         {{ $request->service_category }}
@@ -574,7 +574,7 @@ $(document).ready(function() {
                     const submittedDate = new Date(response.created_at).toLocaleString();
                     const completedDate = response.status === 'Completed' && response.updated_at 
                         ? new Date(response.updated_at).toLocaleString() 
-                        : 'N/A';
+                        : '-';
                     
                     $('#detailsSubmitted').text(submittedDate);
                     $('#detailsCompleted').text(completedDate);
@@ -593,7 +593,7 @@ $(document).ready(function() {
                         console.log('Assigned staff data:', response.assigned_uitc_staff);
                         
                         // Properly handle the assigned staff name
-                        let staffName = 'N/A';
+                        let staffName = '-';
                         
                         if (response.assigned_uitc_staff && response.assigned_uitc_staff.name) {
                             // If the response has nested assigned_uitc_staff object with name
@@ -604,7 +604,7 @@ $(document).ready(function() {
                         }
                         
                         $('#detailsAssignedTo').text(staffName);
-                        $('#detailsTransactionType').text(response.transaction_type || 'N/A');
+                        $('#detailsTransactionType').text(response.transaction_type || '-');
                         $('#detailsAdminNotes').text(response.admin_notes || 'No notes');
                     } else {
                         $('#assignmentSection').hide();
@@ -613,9 +613,9 @@ $(document).ready(function() {
                     // Rejection information (show if rejected)
                     if (response.status === 'Rejected') {
                         $('#rejectionSection').show();
-                        $('#detailsRejectionReason').text(response.rejection_reason || 'N/A');
+                        $('#detailsRejectionReason').text(response.rejection_reason || '-');
                         $('#detailsRejectionNotes').text(response.admin_notes || 'No notes');
-                        $('#detailsRejectedDate').text(response.updated_at ? new Date(response.updated_at).toLocaleString() : 'N/A');
+                        $('#detailsRejectedDate').text(response.updated_at ? new Date(response.updated_at).toLocaleString() : '-');
                     } else {
                         $('#rejectionSection').hide();
                     }
@@ -656,7 +656,7 @@ $(document).ready(function() {
         
         // Add student-specific fields
         if (userRole === 'Student') {
-            infoHtml += `<p><strong>Student ID:</strong> ${response.student_id || 'N/A'}</p>`;
+            infoHtml += `<p><strong>Student ID:</strong> ${response.student_id || '-'}</p>`;
         }
         
         // Add service-specific fields based on service category

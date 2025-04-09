@@ -380,7 +380,7 @@ class AdminServiceRequestController extends Controller
                     $data['Plantilla Position'] = $request->plantilla_position;
                 }
                 if (isset($request->date_of_birth)) {
-                    $data['Date of Birth'] = $request->date_of_birth;
+                    $data['Date of Birth'] = $this->formatDate($request->date_of_birth);
                 }
                 if (isset($request->phone_number)) {
                     $data['Phone Number'] = $request->phone_number;
@@ -429,7 +429,7 @@ class AdminServiceRequestController extends Controller
                 
             case 'request_led_screen':
                 if (isset($request->preferred_date)) {
-                    $data['Preferred Date'] = $request->preferred_date;
+                    $data['Preferred Date'] = $this->formatDate($request->preferred_date);
                 }
                 if (isset($request->preferred_time)) {
                     $data['Preferred Time'] = $request->preferred_time;
@@ -459,10 +459,10 @@ class AdminServiceRequestController extends Controller
                     $data['Editor'] = $request->publication_editor;
                 }
                 if (isset($request->publication_start_date)) {
-                    $data['Date of Publication'] = $request->publication_start_date;
+                    $data['Date of Publication'] = $this->formatDate($request->publication_start_date);
                 }
                 if (isset($request->publication_end_date)) {
-                    $data['End of Publication'] = $request->publication_end_date;
+                    $data['End of Publication'] = $this->formatDate($request->publication_end_date);
                 }
                 break;
                 
@@ -862,5 +862,24 @@ class AdminServiceRequestController extends Controller
                 'message' => 'Failed to reject service request: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+        /**
+     * Format a date to remove time component
+     *
+     * @param string|null $date The date to format
+     * @return string Formatted date or default text if null
+     */
+    private function formatDate($date)
+    {
+        if (!$date) {
+            return 'Not provided';
+        }
+        
+        // Convert to Carbon instance if not already
+        $carbonDate = $date instanceof \Carbon\Carbon ? $date : \Carbon\Carbon::parse($date);
+        
+        // Format only as date without time
+        return $carbonDate->format('M d, Y');
     }
 }

@@ -555,7 +555,7 @@
             if (requestData.status === 'Completed' && requestData.updated_at) {
                 $('#detailsRequestCompleted').text(moment(requestData.updated_at).format('MMM D, YYYY h:mm A'));
             } else {
-                $('#detailsRequestCompleted').text('N/A');
+                $('#detailsRequestCompleted').text('-');
             }
             
             // Show/hide action buttons based on status
@@ -608,8 +608,8 @@
     let completedDate = null;
     const completedDateCell = row.find('td:eq(5)');
     
-    // Check if the status is completed and the cell doesn't just contain "N/A"
-    if (statusText === 'Completed' && !completedDateCell.text().trim().includes('N/A')) {
+    // Check if the status is completed and the cell doesn't just contain "-"
+    if (statusText === 'Completed' && !completedDateCell.text().trim().includes('-')) {
         // Try to combine date and time from spans
         const dateSpan = completedDateCell.find('span:first').text().trim();
         const timeSpan = completedDateCell.find('span:last').text().trim();

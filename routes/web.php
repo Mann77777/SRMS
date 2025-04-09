@@ -241,18 +241,19 @@ Route::get('/admin/verify-students', [UserController::class, 'getPendingVerifica
 
 // Route to get faculty/staff user details for verification
 Route::get('/admin/get-facultystaff-details/{id}', [UserController::class, 'getFacultyStaffDetails'])->name('admin.get-facultystaff-details');
+
+
 Route::get('/request-history', function () {
-    return view('users.request-history');
-})->name('request-history');
-
-
-Route::get('/request-history', [StudentServiceRequestController::class, 'requestHistory'])
-    ->name('request.history')
-    ->middleware('auth');
-
-    Route::get('/request-history', [FacultyServiceRequestController::class, 'requestHistory'])
-    ->name('request.history')
-    ->middleware('auth'); 
+    $user = Auth::user();
+    
+    if ($user->role === "Student") {
+        return app(StudentServiceRequestController::class)->requestHistory();
+    } elseif ($user->role === "Faculty & Staff") {
+        return app(FacultyServiceRequestController::class)->requestHistory();
+    } else {
+        return redirect()->back()->with('error', 'Unauthorized access');
+    }
+})->name('request.history')->middleware('auth');
 
 Route::get('/service-survey/{requestId}', [StudentServiceRequestController::class, 'showServiceSurvey'])
     ->name('service.survey')
@@ -467,3 +468,11 @@ Route::get('/faculty/request/{id}', [FacultyServiceRequestController::class, 'ge
         Route::post('/export-pdf', [AdminReportController::class, 'exportPDF'])->name('admin.export.pdf');
         Route::get('/get-uitc-staff', [AdminServiceRequestController::class, 'getUITCStaff'])->name('admin.get.uitc.staff');
     });
+
+    Route::get('/service-survey/{requestId}', [RequestsController::class, 'showServiceSurvey'])
+    ->name('service.survey')
+    ->middleware('auth');
+
+Route::post('/submit-survey', [RequestsController::class, 'submitServiceSurvey'])
+    ->name('submit.survey')
+    ->middleware('auth');

@@ -77,7 +77,7 @@
                             <td>Completed</td>
                             <td class="b">
                                 <button class="btn-edit" title="Edit">View</button>
-                                <button class="btn-status" title="Toggle Status">Download</button>
+                                <!-- <button class="btn-status" title="Toggle Status">Download</button> -->
                             </td>
                         </tr>
                     </tbody>

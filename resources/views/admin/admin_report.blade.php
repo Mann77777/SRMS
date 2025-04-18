@@ -209,7 +209,7 @@
                 </div>
             </div>
             
-            <!-- Request Status Distribution -->
+            <!-- Request Status Distribution 
             <div class="report-section">
                 <div class="section-header">
                     <h2>Request Status Distribution</h2>
@@ -232,7 +232,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
             
             <!-- Detailed Request Table -->
             <div class="report-section">

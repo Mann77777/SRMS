@@ -90,6 +90,10 @@
                         <optgroup label="Data, Documents and Reports Handled by the UITC">
                             <option value="data_docs_reports">Data, Documents and Reports</option>
                         </optgroup>
+                        <!-- Other Services -->
+                        <optgroup label="Other Services">
+                            <option value="others">Others</option>
+                        </optgroup>
                     </select>
                 </div>
 
@@ -209,19 +213,22 @@
                                     <label>College</label>
                                     <select class="form-control" name="college">
                                         <option value="">Select College</option>
-                                        <option value="CEIT">College of Engineering and Information Technology</option>
-                                        <option value="CAS">College of Arts and Sciences</option>
-                                        <option value="COED">College of Education</option>
-                                        <option value="COET">College of Engineering and Technology</option>
-                                        <option value="COBA">College of Business Administration</option>
-                                        <option value="OTHER">Other</option>
+                                        <option value="COE">College of Engineering</option>             
+                                        <option value="CIT">College of Industrial Technology</option>
+                                        <option value="CIE">College of Industrial Education</option>
+                                        <option value="CAFA">College of Architecture and Fine Arts</option>
+                                        <option value="COS">College of Science</option>
+                                        <option value="CLA">College of Liberal Arts</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Department</label>
-                                    <input type="text" class="form-control" name="department" placeholder="Enter Department">
+                                    <select class="form-control" name="department" id="department-select">
+                                        <option value="">Select Department</option>
+                                        <!-- Options will be populated by JavaScript -->
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -307,7 +314,7 @@
                     </div>
                 </div>
                 
-                            <div id="add_info" style="display: none;">
+                <div id="add_info" style="display: none;">
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-12">
@@ -341,7 +348,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label>Additional Details (Optional)</label>
+                                    <label>Additional Details</label>
                                     <textarea class="form-control" name="led_screen_details" rows="3" placeholder="Provide any additional information about your LED screen request"></textarea>
                                 </div>
                             </div>
@@ -357,7 +364,7 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Name of Application/Information System/Software</label>
-                                    <input type="text" class="form-control" name="application_name" placeholder="Enter the full name of the application or software">
+                                    <input type="text" class="form-control" name="application_name" placeholder="Name of the application/software">
                                 </div>
                             </div>
                         </div>
@@ -423,7 +430,7 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Please Specify</label>
-                                    <textarea class="form-control" name="data_documents_details" rows="4" placeholder="Provide detailed information about the data, documents, or reports you need assistance with"></textarea>
+                                    <textarea class="form-control" name="data_documents_details" rows="4" placeholder="Provide detailed information about the data, documents, or reports you need"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -438,7 +445,7 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Service Description</label>
-                                    <textarea class="form-control" name="other_service_details" rows="4" placeholder="Provide detailed information about your request"></textarea>
+                                    <textarea class="form-control" name="description" rows="4" placeholder="Describe Your Request"></textarea>
                                 </div>
                             </div>
                         </div>

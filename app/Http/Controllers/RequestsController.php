@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\StudentServiceRequestController;
 use App\Http\Controllers\FacultyServiceRequestController;
+use App\Models\StudentServiceRequest;
+use App\Models\FacultyServiceRequest;
 
 class RequestsController extends Controller
 {
@@ -69,5 +71,42 @@ class RequestsController extends Controller
         }
         
         return redirect()->back()->with('error', 'Unauthorized access');
+    }
+
+    public function showServiceSurvey($requestId)
+    {
+        $user = Auth::user();
+        
+        if ($user->role === "Student") {
+            $request = StudentServiceRequest::findOrFail($requestId);
+            
+            // Ensure only the request owner can access the survey
+            if ($request->user_id !== Auth::id()) {
+                return redirect()->back()->with('error', 'Unauthorized access');
+            }
+            
+            // Ensure only completed requests can be surveyed
+            if ($request->status !== 'Completed') {
+                return redirect()->back()->with('error', 'Survey is only available for completed requests');
+            }
+            
+        } elseif ($user->role === "Faculty & Staff") {
+            $request = FacultyServiceRequest::findOrFail($requestId);
+            
+            // Ensure only the request owner can access the survey
+            if ($request->user_id !== Auth::id()) {
+                return redirect()->back()->with('error', 'Unauthorized access');
+            }
+            
+            // Ensure only completed requests can be surveyed
+            if ($request->status !== 'Completed') {
+                return redirect()->back()->with('error', 'Survey is only available for completed requests');
+            }
+            
+        } else {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+        
+        return view('users.service-survey', compact('request'));
     }
 }

@@ -139,7 +139,7 @@
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <label>Preferred Date</label>
-                                <input type="date" class="form-control" name="preferred_date" required>
+                                <input type="date" class="form-control" name="preferred_date"  id="preferred_date" min=""  required>
                             </div>
 
                             <div class="col-md-6">
@@ -151,11 +151,11 @@
                 </div>
                 <div id="otherServicesForm" style="display: none;">
                     <div class="form-section">
-                        <h5>Other Services</h5>
+                        <h5>Other Services Details</h5>
                         <div class="row">
-                            <div class="col-md-6">
-                                <label>Describe Your Request</label>
-                                <textarea class="form-control" name="description" placeholder="Describe Your Request" required></textarea>
+                            <div class="col-md-12">
+                                <label>Service Description</label>
+                                <textarea class="form-control" name="description" rows="4" placeholder="Describe Your Request" required></textarea>
                             </div>
                         </div>
                     </div>
@@ -345,6 +345,9 @@
                     // Add required to specific fields
                     document.querySelector('[name="preferred_date"]').setAttribute('required', 'required');
                     document.querySelector('[name="preferred_time"]').setAttribute('required', 'required');
+
+                    // Set minimum date for the date picker
+                    setMinimumDate();
                     break;
                 case 'others':
                     document.getElementById('personalInfoForm').style.display = 'block';
@@ -362,12 +365,26 @@
 
             // Trigger initial form setup
             showFormFields();
+
+            // Set minimum date for preferred_date to today
+            setMinimumDate();
         });
 
-           function closeSuccessModal() {
+        // Function to set minimum date to today
+        function setMinimumDate() {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+            var yyyy = today.getFullYear();
+            
+            today = yyyy + '-' + mm + '-' + dd;
+            document.getElementById('preferred_date').min = today;
+        }
+
+        function closeSuccessModal() {
         $('#serviceRequestSuccessModal').modal('hide');
         window.location.href = "{{ route('myrequests') }}";
-    }
+        }
 
         $(document).ready(function() {
             @if(session('showSuccessModal'))

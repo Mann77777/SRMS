@@ -357,11 +357,42 @@ class AdminServiceRequestController extends Controller
                     'emergency_contact_person' => 'Emergency Contact Person',
                     'emergency_contact_number' => 'Emergency Contact Number'
                 ];
-                foreach ($bioFields as $field => $label) {
-                    $data[$label] = $request->$field ?? 'Not provided'; // Show 'Not provided' if null/empty
-                    if ($field === 'date_of_birth' && $request->date_of_birth) {
-                         $data[$label] = date('Y-m-d', strtotime($request->date_of_birth)); // Format date
-                    }
+                if (isset($request->middle_name)) {
+                    $data['Middle Name'] = $request->middle_name;
+                }
+                if (isset($request->college)) {
+                    $data['College'] = $request->college;
+                }
+                if (isset($request->department)) {
+                    $data['Department'] = $request->department;
+                }
+                if (isset($request->plantilla_position)) {
+                    $data['Plantilla Position'] = $request->plantilla_position;
+                }
+                if (isset($request->date_of_birth)) {
+                    $data['Date of Birth'] = $this->formatDate($request->date_of_birth);
+                }
+                if (isset($request->phone_number)) {
+                    $data['Phone Number'] = $request->phone_number;
+                }
+                if (isset($request->address)) {
+                    $data['Address'] = $request->address;
+                }
+                if (isset($request->blood_type)) {
+                    $data['Blood Type'] = $request->blood_type;
+                }
+                if (isset($request->emergency_contact_person)) {
+                    $data['Emergency Contact Person'] = $request->emergency_contact_person;
+                }
+                if (isset($request->emergency_contact_number)) {
+                    $data['Emergency Contact Number'] = $request->emergency_contact_number;
+                }
+
+                foreach ($fieldsToInclude as $field => $label) {
+                    // Include the field even if it's null, showing "Not provided" for empty values
+                    $data[$label] = isset($request->$field) && !empty($request->$field) 
+                        ? $request->$field 
+                        : 'Not provided';
                 }
                 break;
 
@@ -375,9 +406,15 @@ class AdminServiceRequestController extends Controller
                 break;
 
             case 'request_led_screen':
-                $data['Preferred Date'] = $request->preferred_date ? date('Y-m-d', strtotime($request->preferred_date)) : 'N/A';
-                $data['Preferred Time'] = $request->preferred_time ?? 'N/A';
-                $data['Additional Details'] = $request->led_screen_details ?? 'N/A';
+                if (isset($request->preferred_date)) {
+                    $data['Preferred Date'] = $this->formatDate($request->preferred_date);
+                }
+                if (isset($request->preferred_time)) {
+                    $data['Preferred Time'] = $request->preferred_time;
+                }
+                if (isset($request->led_screen_details)) {
+                    $data['Additional Details'] = $request->led_screen_details;
+                }
                 break;
 
             case 'install_application':
@@ -387,10 +424,18 @@ class AdminServiceRequestController extends Controller
                 break;
 
             case 'post_publication':
-                $data['Author'] = $request->publication_author ?? 'N/A';
-                $data['Editor'] = $request->publication_editor ?? 'N/A';
-                $data['Date of Publication'] = $request->publication_start_date ? date('Y-m-d', strtotime($request->publication_start_date)) : 'N/A';
-                $data['End of Publication'] = $request->publication_end_date ? date('Y-m-d', strtotime($request->publication_end_date)) : 'N/A';
+                if (isset($request->publication_author)) {
+                    $data['Author'] = $request->publication_author;
+                }
+                if (isset($request->publication_editor)) {
+                    $data['Editor'] = $request->publication_editor;
+                }
+                if (isset($request->publication_start_date)) {
+                    $data['Date of Publication'] = $this->formatDate($request->publication_start_date);
+                }
+                if (isset($request->publication_end_date)) {
+                    $data['End of Publication'] = $this->formatDate($request->publication_end_date);
+                }
                 break;
 
             case 'data_docs_reports':
@@ -935,5 +980,24 @@ class AdminServiceRequestController extends Controller
                 // Avoid exposing raw error messages
             ], 500);
         }
+    }
+
+        /**
+     * Format a date to remove time component
+     *
+     * @param string|null $date The date to format
+     * @return string Formatted date or default text if null
+     */
+    private function formatDate($date)
+    {
+        if (!$date) {
+            return 'Not provided';
+        }
+        
+        // Convert to Carbon instance if not already
+        $carbonDate = $date instanceof \Carbon\Carbon ? $date : \Carbon\Carbon::parse($date);
+        
+        // Format only as date without time
+        return $carbonDate->format('M d, Y');
     }
 }

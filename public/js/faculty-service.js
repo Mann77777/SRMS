@@ -1,3 +1,274 @@
+// Define the departments for each college
+const collegeDepartments = {
+    'COE': ['Civil Engineering', 'Electrical Engineering', 'Electronics Communication Engineering', 'Mechanical Engineering'],
+    'CIT': ['Basic Industrial Technology', 'Civil Engineering Technology', 'Food and Apparel Technology', 'Graphic Arts and Printing Technology', 'Power Plant Engineering Technology', 'Electronics Engineering Technology', 'Student Teaching', 'Electrical Engineering Technology'],
+    'CIE': ['Student Teaching', 'Technical Arts', 'Home Economics', 'Professional Industrial Education'],
+    'CAFA': ['Architecture', 'Fine Arts Department', 'Graphics Department'],
+    'COS': ['Mathematics', 'Chemistry', 'Physics', 'Computer Studies'],
+    'CLA': ['Languages Department', 'Entrepreneurship and Management Department', 'Social Science', 'Physical Education']
+};
+
+// Function to populate department dropdown based on selected college
+function populateDepartmentDropdown() {
+    const collegeSelect = document.querySelector('select[name="college"]');
+    const departmentSelect = document.querySelector('select[name="department"]');
+    
+    if (!collegeSelect || !departmentSelect) return;
+    
+    const selectedCollege = collegeSelect.value;
+    
+    // Clear existing options except the first one
+    while (departmentSelect.options.length > 1) {
+        departmentSelect.remove(1);
+    }
+    
+    // Add department options if a college is selected
+    if (selectedCollege && collegeDepartments[selectedCollege]) {
+        collegeDepartments[selectedCollege].forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept;
+            option.textContent = dept;
+            departmentSelect.appendChild(option);
+        });
+    }
+}
+
+// Phone number validation - 11 digits only
+function validatePhoneNumber(phoneInput) {
+    const phoneNumber = phoneInput.value.replace(/\D/g, ''); // Remove non-digits
+    
+    if (phoneNumber.length !== 11) {
+        phoneInput.setCustomValidity('Phone number must be exactly 11 digits');
+        return false;
+    } else {
+        phoneInput.setCustomValidity('');
+        return true;
+    }
+}
+
+// Date of birth validation - must be 21+ years old
+function validateDateOfBirth(dobInput) {
+    const dob = new Date(dobInput.value);
+    const today = new Date();
+    
+    // Calculate age
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+    
+    if (age < 21) {
+        dobInput.setCustomValidity('You must be at least 21 years old');
+        return false;
+    } else {
+        dobInput.setCustomValidity('');
+        return true;
+    }
+}
+
+// Preferred date validation - prevent selecting past dates
+function setupPreferredDateValidation(dateInput) {
+    if (!dateInput) return;
+    
+    // Set min attribute to today's date
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    const todayFormatted = `${year}-${month}-${day}`;
+    dateInput.setAttribute('min', todayFormatted);
+    
+    // Add validation function
+    dateInput.addEventListener('input', function() {
+        const selectedDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
+        
+        if (selectedDate < today) {
+            this.setCustomValidity('Please select today or a future date');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+}
+
+// Phone number validation - 11 digits only
+function validatePhoneNumber(phoneInput) {
+    const phoneNumber = phoneInput.value.replace(/\D/g, ''); // Remove non-digits
+    
+    if (phoneNumber.length !== 11) {
+        phoneInput.setCustomValidity('Phone number must be exactly 11 digits');
+        return false;
+    } else {
+        phoneInput.setCustomValidity('');
+        return true;
+    }
+}
+
+// Date of birth validation - must be 21+ years old
+function validateDateOfBirth(dobInput) {
+    const dob = new Date(dobInput.value);
+    const today = new Date();
+    
+    // Calculate age
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+    
+    if (age < 21) {
+        dobInput.setCustomValidity('You must be at least 21 years old');
+        return false;
+    } else {
+        dobInput.setCustomValidity('');
+        return true;
+    }
+}
+
+// Preferred date validation - prevent selecting past dates
+function setupPreferredDateValidation(dateInput) {
+    if (!dateInput) return;
+    
+    // Set min attribute to today's date
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    const todayFormatted = `${year}-${month}-${day}`;
+    dateInput.setAttribute('min', todayFormatted);
+    
+    // Add validation function
+    dateInput.addEventListener('input', function() {
+        const selectedDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
+        
+        if (selectedDate < today) {
+            this.setCustomValidity('Please select today or a future date');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+}
+
+// Add form validation 
+document.addEventListener('DOMContentLoaded', function() {
+    // Get references to form elements
+    const form = document.getElementById('facultyServiceForm');
+    const phoneNumberInput = document.querySelector('input[name="phone_number"]');
+    const emergencyContactInput = document.querySelector('input[name="emergency_contact_number"]');
+    const dobInput = document.querySelector('input[name="date_of_birth"]');
+    const preferredDateInput = document.querySelector('input[name="preferred_date"]');
+    
+    // Setup preferred date validation immediately
+    setupPreferredDateValidation(preferredDateInput);
+    
+    // Add validation event listeners for phone number
+    if (phoneNumberInput) {
+        phoneNumberInput.addEventListener('input', function() {
+            validatePhoneNumber(this);
+        });
+        
+        phoneNumberInput.addEventListener('blur', function() {
+            validatePhoneNumber(this);
+        });
+    }
+    
+    // Add validation event listeners for emergency contact number
+    if (emergencyContactInput) {
+        emergencyContactInput.addEventListener('input', function() {
+            const phoneNumber = this.value.replace(/\D/g, '');
+            if (phoneNumber.length !== 11) {
+                this.setCustomValidity('Emergency contact number must be exactly 11 digits');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        emergencyContactInput.addEventListener('blur', function() {
+            const phoneNumber = this.value.replace(/\D/g, '');
+            if (phoneNumber.length !== 11) {
+                this.setCustomValidity('Emergency contact number must be exactly 11 digits');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+    
+    if (dobInput) {
+        dobInput.addEventListener('change', function() {
+            validateDateOfBirth(this);
+        });
+        
+        dobInput.addEventListener('blur', function() {
+            validateDateOfBirth(this);
+        });
+    }
+    
+    // Add form submission validation
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Only validate visible fields that are currently shown in the form
+            const serviceCategory = document.getElementById('serviceCategory').value;
+            
+            // Validate phone number (for biometrics enrollment)
+            if (serviceCategory === 'biometrics_enrollement' && phoneNumberInput && phoneNumberInput.offsetParent !== null) {
+                if (!validatePhoneNumber(phoneNumberInput)) {
+                    e.preventDefault();
+                    alert('Please enter a valid 11-digit phone number');
+                    phoneNumberInput.focus();
+                    return;
+                }
+            }
+            
+            // Validate emergency contact number (for biometrics enrollment)
+            const emergencyContactInput = document.querySelector('input[name="emergency_contact_number"]');
+            if (serviceCategory === 'biometrics_enrollement' && emergencyContactInput && emergencyContactInput.offsetParent !== null) {
+                const emergencyNumber = emergencyContactInput.value.replace(/\D/g, ''); // Remove non-digits
+                if (emergencyNumber.length !== 11) {
+                    e.preventDefault();
+                    alert('Emergency contact number must be exactly 11 digits');
+                    emergencyContactInput.focus();
+                    return;
+                }
+            }
+            
+            // Validate date of birth (for biometrics enrollment)
+            if (serviceCategory === 'biometrics_enrollement' && dobInput && dobInput.offsetParent !== null) {
+                if (!validateDateOfBirth(dobInput)) {
+                    e.preventDefault();
+                    alert('You must be at least 21 years old to register');
+                    dobInput.focus();
+                    return;
+                }
+            }
+            
+            // Validate preferred date (for LED screen requests)
+            if (serviceCategory === 'request_led_screen' && preferredDateInput && preferredDateInput.offsetParent !== null) {
+                const selectedDate = new Date(preferredDateInput.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < today) {
+                    e.preventDefault();
+                    alert('Please select today or a future date for your LED screen request');
+                    preferredDateInput.focus();
+                    return;
+                }
+            }
+        });
+    }
+});
+
+
 function showFormFields() {
     var serviceCategory = document.getElementById('serviceCategory').value;
     var selectedServiceCategory = document.getElementById('selectedServiceCategory');
@@ -85,6 +356,33 @@ function showFormFields() {
             showElement('biometricsEnrollmentForm');
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
+            setFieldRequired('middle_name', true);
+            setFieldRequired('college', true);
+            setFieldRequired('department', true);
+            setFieldRequired('plantilla_position', true);
+            setFieldRequired('date_of_birth', true);
+            setFieldRequired('phone_number', true);
+            setFieldRequired('address', true);
+            setFieldRequired('blood_type', true);
+            setFieldRequired('emergency_contact_person', true);
+            setFieldRequired('emergency_contact_number', true);
+            
+            // Initialize the department dropdown relationship
+            setTimeout(function() {
+                const collegeSelect = document.querySelector('select[name="college"]');
+                if (collegeSelect) {
+                    // Set up the change event listener once
+                    if (!collegeSelect.hasAttribute('data-has-listener')) {
+                        collegeSelect.addEventListener('change', populateDepartmentDropdown);
+                        collegeSelect.setAttribute('data-has-listener', 'true');
+                    }
+                    
+                    // If college already has a value, populate departments
+                    if (collegeSelect.value) {
+                        populateDepartmentDropdown();
+                    }
+                }
+            }, 100);
             break;
 
         case 'new_internet':
@@ -107,7 +405,6 @@ function showFormFields() {
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('location', true);
-            // Changed from problems_encountered to problem_encountered to match the database
             setFieldRequired('problem_encountered', true);
             break;
 
@@ -119,6 +416,7 @@ function showFormFields() {
             setFieldRequired('last_name', true);
             setFieldRequired('preferred_date', true);
             setFieldRequired('preferred_time', true);
+            setFieldRequired('led_screen_details', true);
             break;
 
         case 'install_application':
@@ -130,6 +428,7 @@ function showFormFields() {
             setFieldRequired('last_name', true);
             setFieldRequired('application_name', true);
             setFieldRequired('location', true);
+            setFieldRequired('installation_purpose', true);
             break;
 
         case 'post_publication':
@@ -139,6 +438,7 @@ function showFormFields() {
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
             setFieldRequired('publication_author', true);
+            setFieldRequired('publication_editor', true);   
             setFieldRequired('publication_start_date', true);
             setFieldRequired('publication_end_date', true);
             break;
@@ -157,6 +457,7 @@ function showFormFields() {
             showElement('otherServicesForm');
             setFieldRequired('first_name', true);
             setFieldRequired('last_name', true);
+            setFieldRequired('description', true);
             break;
     }
 }
@@ -229,7 +530,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-
             // Validate required fields
             const firstName = document.querySelector('input[name="first_name"]');
             const lastName = document.querySelector('input[name="last_name"]');

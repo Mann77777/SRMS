@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
+    <script src="{{ asset('js/notifications.js') }}"></script>
+    
+    
     <title>Dashboard</title>
 </head>
 <body>

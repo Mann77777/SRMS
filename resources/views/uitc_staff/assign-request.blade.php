@@ -14,7 +14,7 @@
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Assigned Request</title>
 </head>
-<body>
+<body data-user-role="UITC Staff">
     <!-- Include Navbar -->
     @include('layouts.admin-navbar')
     

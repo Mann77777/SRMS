@@ -11,7 +11,7 @@
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Service Request Form</title>
 </head>
-<body>
+<body data-user-role="Faculty & Staff">
 
     <!-- Include Navbar -->
     @include('layouts.navbar')
@@ -521,6 +521,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ asset('js/notification-user.js') }}"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/faculty-service.js') }}"></script>
     <script>

@@ -13,7 +13,7 @@
 
     <title>Admin - Service Request</title>
 </head>
-<body>
+<body data-user-role="Admin">
     @include('layouts.admin-navbar')
     @include('layouts.admin-sidebar')
 

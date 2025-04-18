@@ -1,4 +1,6 @@
-<!-- resources/views/layouts/admin-navbar.blade.php -->
+<!-- Add this to your head section -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link href="{{ asset('css/notifications.css') }}" rel="stylesheet">
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 
 <!-- NAVBAR -->
@@ -12,7 +14,24 @@
     </div>
     
     <div class="navbar-content">
-        <a href="{{ url('/notifications') }}" class="notification-icon"><i class="bx bx-bell"></i></a>
+        <!-- ✅ Notification Dropdown Start -->
+        <div class="notification-dropdown">
+            <a href="#" class="notification-icon" id="notificationButton">
+                <i class="bx bx-bell"></i>
+                <span id="notification-badge" class="badge" style="display: none;">0</span>
+            </a>
+            <div id="notificationDropdown" class="notification-dropdown-content" style="display: none;">
+                <div class="notification-header">
+                    <h5>Notifications</h5>
+                    <button id="markAllReadBtn" class="mark-all-button">Mark all as read</button>
+                </div>
+                <div id="notificationList" class="notification-list">
+                    <div class="loading-spinner">Loading...</div>
+                </div>
+            </div>
+        </div>
+        <!-- ✅ Notification Dropdown End -->
+
         <li class="dropdown">
             <a href="#" class="profile-icon">
                 @if(Auth::check() && Auth::user()->profile_image)
@@ -34,4 +53,5 @@
             @endif
         </li>
     </div>
+    <script src="{{ asset('js/notifications.js') }}"></script>
 </nav>

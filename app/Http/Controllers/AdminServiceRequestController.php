@@ -10,33 +10,36 @@ use App\Models\StudentServiceRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\ServiceRequestAssigned;
+use App\Notifications\ServiceRequestAssigned; // Keep if used elsewhere (e.g., rejection potentially)
 use App\Notifications\ServiceRequestRejected;
+use App\Notifications\StaffAssignedToRequest;
+use App\Notifications\ServiceRequestAssignedToUser; // Import the new notification class
 
 class AdminServiceRequestController extends Controller
 {
- 
+
     public function index()
     {
         $requests = [];
 
         try {
-            // Fetch all student requests
-            $studentRequests = ServiceRequest::with('user')->get();
-            foreach($studentRequests as $request) {
-                $user = $request->user;
-                $requests[] = [
-                    'id' => $request->id,
-                    'user_id' => $request->user_id,
-                    'role' => $user ? $user->role : 'Student',
-                    'service' => $this->getServiceName($request, 'student'),
-                    'request_data' => $this->getRequestData($request),
-                    'date' => $request->created_at,
-                    'status' => $request->status,
-                    'type' => 'student',
-                    'updated_at' => $request->updated_at, 
-                ];
-            }
+            // Fetch all student requests (Assuming this is an older model or type)
+            // Consider if this fetch is still necessary if StudentServiceRequest covers all student cases
+            // $studentRequests = ServiceRequest::with('user')->get();
+            // foreach($studentRequests as $request) {
+            //     $user = $request->user;
+            //     $requests[] = [
+            //         'id' => $request->id,
+            //         'user_id' => $request->user_id,
+            //         'role' => $user ? $user->role : 'Student', // Might need refinement based on actual user setup
+            //         'service' => $this->getServiceName($request, 'student'),
+            //         'request_data' => $this->getRequestData($request),
+            //         'date' => $request->created_at,
+            //         'status' => $request->status,
+            //         'type' => 'student', // Legacy type?
+            //         'updated_at' => $request->updated_at,
+            //     ];
+            // }
 
             // Fetch new student service requests
             $newStudentRequests = StudentServiceRequest::with('user')->get();
@@ -45,12 +48,12 @@ class AdminServiceRequestController extends Controller
                 $requests[] = [
                     'id' => $request->id,
                     'user_id' => $request->user_id,
-                    'role' => $user ? $user->role : 'Student',
-                    'service' => $request->service_category,
+                    'role' => $user ? $user->role : 'Student', // Assumes user relationship exists and has role
+                    'service' => $request->service_category, // Use raw category here, format later if needed
                     'request_data' => $this->formatStudentServiceRequestData($request),
                     'date' => $request->created_at,
                     'status' => $request->status ?? 'Pending',
-                    'type' => 'new_student_service',
+                    'type' => 'new_student_service', // Specific type
                     'updated_at' => $request->updated_at,
                 ];
             }
@@ -62,33 +65,34 @@ class AdminServiceRequestController extends Controller
                 $requests[] = [
                     'id' => $request->id,
                     'user_id' => $request->user_id,
-                    'role' => $user ? $user->role : 'Faculty',
-                    'service' => $this->getServiceName($request, 'faculty'),
+                    'role' => $user ? $user->role : 'Faculty', // Assumes user relationship exists and has role
+                    'service' => $request->service_category, // Use raw category here, format later if needed
                     'request_data' => $this->formatFacultyServiceRequestData($request),
                     'date' => $request->created_at,
-                    'status' => $request->status,
-                    'type' => 'faculty',
+                    'status' => $request->status ?? 'Pending', // Default status if null
+                    'type' => 'faculty', // Specific type
                     'updated_at' => $request->updated_at,
                 ];
             }
 
         } catch (\Exception $e) {
             Log::error('Error fetching service requests: ' . $e->getMessage());
+            // Optionally, return an error view or message
         }
 
-        // Sort requests by date
+        // Sort requests by date (latest first)
         $allRequests = collect($requests)->sortByDesc('date');
-        
+
         // Get current page from request query string
         $page = request()->get('page', 1);
-        $perPage = 10;
-        
+        $perPage = 10; // Or get from config/request
+
         // Paginate the collection manually
         $items = $allRequests->forPage($page, $perPage);
-        
+
         // Create a new paginator instance
         $paginatedRequests = new \Illuminate\Pagination\LengthAwarePaginator(
-            $items,
+            $items->values(), // Ensure it's a non-associative array
             $allRequests->count(),
             $perPage,
             $page,
@@ -100,201 +104,198 @@ class AdminServiceRequestController extends Controller
 
 
     /**
-     * Get formatted request data for display
-     * 
+     * Get formatted request data for display (Potentially legacy for ServiceRequest model)
+     * Consider removing if ServiceRequest model is not used for active display
+     *
      * @param object $request The request object
      * @return string HTML output
      */
     private function getRequestData($request)
     {
         $output = [];
-        
+
         if ($request->user) {
             $output[] = '<strong>Name:</strong> ' . htmlspecialchars($request->user->name) . '<br>';
         }
-        
+
         if (isset($request->service_category)) {
             // Format the service category name
-            $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
+            $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description ?? null);
             $output[] = '<strong>Service:</strong> ' . htmlspecialchars($formattedServiceName) . '<br>';
         }
-        
+
         if (isset($request->description)) {
             $output[] = '<strong>Description:</strong> ' . htmlspecialchars($request->description) . '<br>';
         }
-        
-        // Add additional data based on request type
+
+        // Add additional data based on request type (if applicable to this model)
         if (method_exists($request, 'getAdditionalData')) {
             $additionalData = $request->getAdditionalData();
             foreach ($additionalData as $key => $value) {
-                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
+                $output[] = '<strong>' . htmlspecialchars(ucwords(str_replace('_', ' ', $key))) . ':</strong> ' . htmlspecialchars($value) . '<br>';
             }
         }
-        
+
         return implode('', $output);
     }
 
     /**
-     * Format service category to human-readable name
-     * 
+     * Format service category code to human-readable name
+     *
      * @param string $category The service category code
      * @param string|null $description Optional description for "others" category
      * @return string The formatted service name
      */
     private function formatServiceCategory($category, $description = null)
     {
-        switch ($category) {
-            case 'create':
-                return 'Create MS Office/TUP Email Account';
-            case 'reset_email_password':
-                return 'Reset MS Office/TUP Email Password';
-            case 'change_of_data_ms':
-                return 'Change of Data (MS Office)';
-            case 'reset_tup_web_password':
-                return 'Reset TUP Web Password';
-            case 'reset_ers_password':
-                return 'Reset ERS Password';
-            case 'change_of_data_portal':
-                return 'Change of Data (Portal)';
-            case 'dtr':
-                return 'Daily Time Record';
-            case 'biometric_record':
-                return 'Biometric Record';
-            case 'biometrics_enrollement':
-                return 'Biometrics Enrollment';
-            case 'new_internet':
-                return 'New Internet Connection';
-            case 'new_telephone':
-                return 'New Telephone Connection';
-            case 'repair_and_maintenance':
-                return 'Internet/Telephone Repair and Maintenance';
-            case 'computer_repair_maintenance':
-                return 'Computer Repair and Maintenance';
-            case 'printer_repair_maintenance':
-                return 'Printer Repair and Maintenance';
-            case 'request_led_screen':
-                return 'LED Screen Request';
-            case 'install_application':
-                return 'Install Application/Information System/Software';
-            case 'post_publication':
-                return 'Post Publication/Update of Information Website';
-            case 'data_docs_reports':
-                return 'Data, Documents and Reports';
-            case 'others':
-                return $description ?? 'Other Service';
-            default:
-                return $category;
-        }
+        // Consider moving this mapping to a config file or a dedicated helper/service class
+        // for better organization and maintainability
+        $mapping = [
+            'create' => 'Create MS Office/TUP Email Account',
+            'reset_email_password' => 'Reset MS Office/TUP Email Password',
+            'change_of_data_ms' => 'Change of Data (MS Office)',
+            'reset_tup_web_password' => 'Reset TUP Web Password',
+            'reset_ers_password' => 'Reset ERS Password',
+            'change_of_data_portal' => 'Change of Data (Portal)',
+            'dtr' => 'Daily Time Record',
+            'biometric_record' => 'Biometric Record',
+            'biometrics_enrollement' => 'Biometrics Enrollment', // Typo: enrollment
+            'new_internet' => 'New Internet Connection',
+            'new_telephone' => 'New Telephone Connection',
+            'repair_and_maintenance' => 'Internet/Telephone Repair and Maintenance',
+            'computer_repair_maintenance' => 'Computer Repair and Maintenance',
+            'printer_repair_maintenance' => 'Printer Repair and Maintenance',
+            'request_led_screen' => 'LED Screen Request',
+            'install_application' => 'Install Application/Information System/Software',
+            'post_publication' => 'Post Publication/Update of Information Website',
+            'data_docs_reports' => 'Data, Documents and Reports',
+            'others' => $description ?: 'Other Service',
+        ];
+
+        return $mapping[$category] ?? ucfirst(str_replace('_', ' ', $category)); // Fallback for unknown categories
     }
 
 
     /**
-     * Get formatted service name based on request type
-     * 
+     * Get formatted service name based on request object and type.
+     * This seems redundant if the index method directly uses service_category
+     * and formatStudent/FacultyServiceRequestData already format the name.
+     * Consider simplifying or removing if not strictly needed.
+     *
      * @param object $request The request object
      * @param string $type The type of request (student, faculty)
      * @return string Formatted service name
      */
     private function getServiceName($request, $type)
     {
+        $category = null;
+        $description = null;
+
+        // Determine category and description based on type and potential fields
         switch ($type) {
-            case 'student':
-                return $this->formatServiceCategory(
-                    $request->service_category ?? 'Unspecified Service',
-                    $request->description ?? null
-                );
-                
-            case 'faculty':
-                return $this->formatServiceCategory(
-                    $request->service_type ?? 'Unspecified Service',
-                    $request->description ?? null
-                );
-                
-            default:
-                return 'Unknown Service';
+            case 'student': // Legacy ServiceRequest?
+            case 'new_student_service': // StudentServiceRequest
+                $category = $request->service_category ?? null;
+                $description = $request->description ?? null;
+                break;
+
+            case 'faculty': // FacultyServiceRequest
+                 // Assuming faculty requests also use 'service_category' now based on formatFacultyServiceRequestData
+                $category = $request->service_category ?? ($request->service_type ?? null);
+                $description = $request->description ?? null;
+                break;
         }
+
+        if ($category) {
+            return $this->formatServiceCategory($category, $description);
+        }
+
+        return 'Unspecified Service';
     }
 
 
     /**
      * Format student service request data for display
-     * 
+     *
      * @param StudentServiceRequest $request
-     * @return string
+     * @return string HTML string
      */
-    private function formatStudentServiceRequestData($request)
+    private function formatStudentServiceRequestData(StudentServiceRequest $request)
     {
-        // Format the service category name
         $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
-        
-         // Generate a formatted display ID for the request
-        $displayId = 'SSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT);
-        
-        // Start with basic information all requests should have
+
+        // Generate a formatted display ID (optional, but good for user reference)
+        // $displayId = 'SSR-' . $request->created_at->format('Ymd') . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT);
+
         $data = [
             'Name' => $request->first_name . ' ' . $request->last_name,
             'Student ID' => $request->student_id,
             'Service' => $formattedServiceName,
         ];
-    
+
         // Add fields based on service category
-        switch($request->service_category) {
+        switch ($request->service_category) {
             case 'reset_email_password':
             case 'reset_tup_web_password':
             case 'reset_ers_password':
                 $data['Account Email'] = $request->account_email ?? 'N/A';
                 break;
-            
+
             case 'change_of_data_ms':
             case 'change_of_data_portal':
                 $data['Data to be updated'] = $request->data_type ?? 'N/A';
                 $data['New Data'] = $request->new_data ?? 'N/A';
-                
                 if ($request->additional_notes) {
                     $data['Additional Notes'] = $request->additional_notes;
                 }
                 break;
-            
+
             case 'request_led_screen':
-                $data['Preferred Date'] = $request->preferred_date ?? 'N/A';
+                $data['Preferred Date'] = $request->preferred_date ? date('Y-m-d', strtotime($request->preferred_date)) : 'N/A';
                 $data['Preferred Time'] = $request->preferred_time ?? 'N/A';
                 break;
-            
+
             case 'others':
-                $data['Description'] = $request->description ?? 'N/A';
+                if ($request->description) { // Only show description if provided for 'others'
+                   $data['Description'] = $request->description;
+                }
                 break;
+            // Add cases for other student-specific services if needed
         }
-        
-        // Add supporting document if it exists
+
+        // Add supporting document link if it exists
         if ($request->supporting_document) {
-            $data['Supporting Document'] = 'Available';
+             $data['Supporting Document'] = sprintf(
+                '<a href="%s" target="_blank" class="document-link btn btn-sm btn-outline-primary">View Document</a>',
+                route('admin.view-supporting-document', ['requestId' => $request->id, 'type' => 'student']) // Add type hint for routing
+             );
         }
-        
+
         // Add status information and other metadata
         if ($request->assigned_uitc_staff_id) {
-            $staffName = Admin::find($request->assigned_uitc_staff_id)->name ?? 'Unknown';
+            // Eager load staff name if possible during initial query for performance
+            $staffName = Admin::find($request->assigned_uitc_staff_id)->name ?? 'Unknown Staff';
             $data['Assigned To'] = $staffName;
         }
-        
+
         if ($request->transaction_type) {
-            $data['Transaction Type'] = $request->transaction_type;
+            $data['Transaction Type'] = ucfirst($request->transaction_type); // Capitalize first letter
         }
-        
+
         if ($request->admin_notes) {
             $data['Admin Notes'] = $request->admin_notes;
         }
-        
-        if ($request->status == 'Rejected' && $request->rejection_reason) {
+
+        if ($request->status === 'Rejected' && $request->rejection_reason) {
             $data['Rejection Reason'] = $request->rejection_reason;
         }
-    
+
         // Convert data to HTML format
         $output = [];
-        foreach($data as $key => $value) {
-            if ($key === 'Supporting Document' && $value === 'Available') {
-                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . 
-                    sprintf('<a href="%s" target="_blank" class="document-link">View Document</a>', 
-                    route('admin.view-supporting-document', ['requestId' => $request->id])) . '<br>';
+        foreach ($data as $key => $value) {
+            // Handle the HTML link for the document directly
+            if ($key === 'Supporting Document') {
+                 $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . $value . '<br>';
             } else {
                 $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
             }
@@ -302,60 +303,49 @@ class AdminServiceRequestController extends Controller
         return implode('', $output);
     }
 
-    private function formatFacultyServiceRequestData($request)
+    /**
+     * Format faculty service request data for display
+     *
+     * @param FacultyServiceRequest $request
+     * @return string HTML string
+     */
+    private function formatFacultyServiceRequestData(FacultyServiceRequest $request)
     {
-        // Format the service category name
         $formattedServiceName = $this->formatServiceCategory($request->service_category, $request->description);
-        
-        // Generate a formatted display ID for the request
-        $displayId = 'FSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT);
 
-        // Start with basic information
+        // Generate a formatted display ID (optional)
+        // $displayId = 'FSR-' . $request->created_at->format('Ymd') . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT);
+
         $data = [
             'Name' => $request->first_name . ' ' . $request->last_name,
             'Service' => $formattedServiceName,
         ];
-        
+
         // Add fields based on service category
-        switch($request->service_category) {
+        switch ($request->service_category) {
             case 'reset_email_password':
             case 'reset_tup_web_password':
             case 'reset_ers_password':
-                if (isset($request->account_email)) {
-                    $data['Account Email'] = $request->account_email;
-                }
+                $data['Account Email'] = $request->account_email ?? 'N/A';
                 break;
-                
+
             case 'change_of_data_ms':
             case 'change_of_data_portal':
-                if (isset($request->data_type)) {
-                    $data['Data to be updated'] = $request->data_type;
-                }
-                if (isset($request->new_data)) {
-                    $data['New Data'] = $request->new_data;
-                }
-                if (isset($request->additional_notes)) {
+                $data['Data to be updated'] = $request->data_type ?? 'N/A';
+                $data['New Data'] = $request->new_data ?? 'N/A';
+                if ($request->additional_notes) {
                     $data['Additional Notes'] = $request->additional_notes;
                 }
                 break;
-                
+
             case 'dtr':
-                if (isset($request->dtr_months)) {
-                    $data['DTR Months'] = $request->dtr_months;
-                }
-                if (isset($request->dtr_with_details)) {
-                    $data['Include In/Out Details'] = $request->dtr_with_details ? 'Yes' : 'No';
-                }
+                $data['DTR Months'] = $request->dtr_months ?? 'N/A';
+                $data['Include In/Out Details'] = isset($request->dtr_with_details) ? ($request->dtr_with_details ? 'Yes' : 'No') : 'N/A';
                 break;
-                
-            case 'biometrics_enrollement':
-                Log::info('Biometrics request data:', [
-                    'request_id' => $request->id,
-                    'service_category' => $request->service_category,
-                    'all_attributes' => $request->getAttributes()  // This will show all available attributes
-                ]);
-                // Always include these fields in the displayed data, even if they're empty
-                $fieldsToInclude = [
+
+            case 'biometrics_enrollement': // Typo: enrollment
+                // List all expected fields for clarity
+                $bioFields = [
                     'middle_name' => 'Middle Name',
                     'college' => 'College',
                     'department' => 'Department',
@@ -367,194 +357,170 @@ class AdminServiceRequestController extends Controller
                     'emergency_contact_person' => 'Emergency Contact Person',
                     'emergency_contact_number' => 'Emergency Contact Number'
                 ];
-                if (isset($request->middle_name)) {
-                    $data['Middle Name'] = $request->middle_name;
-                }
-                if (isset($request->college)) {
-                    $data['College'] = $request->college;
-                }
-                if (isset($request->department)) {
-                    $data['Department'] = $request->department;
-                }
-                if (isset($request->plantilla_position)) {
-                    $data['Plantilla Position'] = $request->plantilla_position;
-                }
-                if (isset($request->date_of_birth)) {
-                    $data['Date of Birth'] = $request->date_of_birth;
-                }
-                if (isset($request->phone_number)) {
-                    $data['Phone Number'] = $request->phone_number;
-                }
-                if (isset($request->address)) {
-                    $data['Address'] = $request->address;
-                }
-                if (isset($request->blood_type)) {
-                    $data['Blood Type'] = $request->blood_type;
-                }
-                if (isset($request->emergency_contact_person)) {
-                    $data['Emergency Contact Person'] = $request->emergency_contact_person;
-                }
-                if (isset($request->emergency_contact_number)) {
-                    $data['Emergency Contact Number'] = $request->emergency_contact_number;
-                }
-
-                foreach ($fieldsToInclude as $field => $label) {
-                    // Include the field even if it's null, showing "Not provided" for empty values
-                    $data[$label] = isset($request->$field) && !empty($request->$field) 
-                        ? $request->$field 
-                        : 'Not provided';
+                foreach ($bioFields as $field => $label) {
+                    $data[$label] = $request->$field ?? 'Not provided'; // Show 'Not provided' if null/empty
+                    if ($field === 'date_of_birth' && $request->date_of_birth) {
+                         $data[$label] = date('Y-m-d', strtotime($request->date_of_birth)); // Format date
+                    }
                 }
                 break;
-                
+
             case 'new_internet':
             case 'new_telephone':
             case 'repair_and_maintenance':
-                if (isset($request->location)) {
-                    $data['Location'] = $request->location;
-                }
-                if (isset($request->problem_encountered)) {
-                    $data['Problems Encountered'] = $request->problem_encountered;
-                }
-                break;
-                
             case 'computer_repair_maintenance':
             case 'printer_repair_maintenance':
-                if (isset($request->location)) {
-                    $data['Location'] = $request->location;
-                }
-                if (isset($request->problem_encountered)) {
-                    $data['Problems Encountered'] = $request->problem_encountered;
-                }
+                $data['Location'] = $request->location ?? 'N/A';
+                $data['Problems Encountered'] = $request->problem_encountered ?? 'N/A';
                 break;
-                
+
             case 'request_led_screen':
-                if (isset($request->preferred_date)) {
-                    $data['Preferred Date'] = $request->preferred_date;
-                }
-                if (isset($request->preferred_time)) {
-                    $data['Preferred Time'] = $request->preferred_time;
-                }
-                if (isset($request->led_screen_details)) {
-                    $data['Additional Details'] = $request->led_screen_details;
-                }
+                $data['Preferred Date'] = $request->preferred_date ? date('Y-m-d', strtotime($request->preferred_date)) : 'N/A';
+                $data['Preferred Time'] = $request->preferred_time ?? 'N/A';
+                $data['Additional Details'] = $request->led_screen_details ?? 'N/A';
                 break;
-                
+
             case 'install_application':
-                if (isset($request->application_name)) {
-                    $data['Application Name'] = $request->application_name;
-                }
-                if (isset($request->installation_purpose)) {
-                    $data['Purpose of Installation'] = $request->installation_purpose;
-                }
-                if (isset($request->installation_notes)) {
-                    $data['Additional Requirements'] = $request->installation_notes;
-                }
+                $data['Application Name'] = $request->application_name ?? 'N/A';
+                $data['Purpose of Installation'] = $request->installation_purpose ?? 'N/A';
+                $data['Additional Requirements'] = $request->installation_notes ?? 'N/A';
                 break;
-                
+
             case 'post_publication':
-                if (isset($request->publication_author)) {
-                    $data['Author'] = $request->publication_author;
-                }
-                if (isset($request->publication_editor)) {
-                    $data['Editor'] = $request->publication_editor;
-                }
-                if (isset($request->publication_start_date)) {
-                    $data['Date of Publication'] = $request->publication_start_date;
-                }
-                if (isset($request->publication_end_date)) {
-                    $data['End of Publication'] = $request->publication_end_date;
-                }
+                $data['Author'] = $request->publication_author ?? 'N/A';
+                $data['Editor'] = $request->publication_editor ?? 'N/A';
+                $data['Date of Publication'] = $request->publication_start_date ? date('Y-m-d', strtotime($request->publication_start_date)) : 'N/A';
+                $data['End of Publication'] = $request->publication_end_date ? date('Y-m-d', strtotime($request->publication_end_date)) : 'N/A';
                 break;
-                
+
             case 'data_docs_reports':
-                if (isset($request->data_documents_details)) {
-                    $data['Details'] = $request->data_documents_details;
+                $data['Details'] = $request->data_documents_details ?? 'N/A';
+                break;
+
+             case 'others':
+                if ($request->description) { // Only show description if provided for 'others'
+                   $data['Description'] = $request->description;
                 }
                 break;
         }
-        
-        // Add supporting document if it exists
-        if (isset($request->supporting_document) && $request->supporting_document) {
-            $data['Supporting Document'] = 'Available';
+
+        // Add supporting document link if it exists
+        if ($request->supporting_document) {
+            $data['Supporting Document'] = sprintf(
+               '<a href="%s" target="_blank" class="document-link btn btn-sm btn-outline-primary">View Document</a>',
+               route('admin.view-supporting-document', ['requestId' => $request->id, 'type' => 'faculty']) // Add type hint
+            );
         }
-        
+
         // Add status information and other metadata
-        if (isset($request->assigned_uitc_staff_id) && $request->assigned_uitc_staff_id) {
-            $staffName = Admin::find($request->assigned_uitc_staff_id)->name ?? 'Unknown';
+        if ($request->assigned_uitc_staff_id) {
+            $staffName = Admin::find($request->assigned_uitc_staff_id)->name ?? 'Unknown Staff';
             $data['Assigned To'] = $staffName;
         }
-        
-        if (isset($request->transaction_type) && $request->transaction_type) {
-            $data['Transaction Type'] = $request->transaction_type;
+
+        if ($request->transaction_type) {
+            $data['Transaction Type'] = ucfirst($request->transaction_type);
         }
-        
-        if (isset($request->admin_notes) && $request->admin_notes) {
+
+        if ($request->admin_notes) {
             $data['Admin Notes'] = $request->admin_notes;
         }
-        
-        if ($request->status == 'Rejected' && isset($request->rejection_reason)) {
+
+        if ($request->status === 'Rejected' && $request->rejection_reason) {
             $data['Rejection Reason'] = $request->rejection_reason;
         }
 
         // Convert data to HTML format
         $output = [];
-        foreach($data as $key => $value) {
-            if ($key === 'Supporting Document' && $value === 'Available') {
-                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . 
-                    sprintf('<a href="%s" target="_blank" class="document-link">View Document</a>', 
-                    route('admin.view-supporting-document', ['requestId' => $request->id])) . '<br>';
+        foreach ($data as $key => $value) {
+             // Handle the HTML link for the document directly
+            if ($key === 'Supporting Document') {
+                 $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . $value . '<br>';
             } else {
                 $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
             }
         }
         return implode('', $output);
     }
-    
-    public function viewSupportingDocument($requestId)
+
+    /**
+     * View supporting document for a given request ID and type.
+     *
+     * @param int $requestId
+     * @param string $type ('student' or 'faculty')
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function viewSupportingDocument($requestId, $type)
     {
-        // Find the student service request
-        $request = StudentServiceRequest::findOrFail($requestId);
-    
-        // Check if supporting document exists
-        if (!$request->supporting_document) {
-            return back()->with('error', 'No supporting document found.');
+        $request = null;
+        try {
+            if ($type === 'student' || $type === 'new_student_service') { // Allow both type hints
+                 $request = StudentServiceRequest::findOrFail($requestId);
+            } elseif ($type === 'faculty') {
+                 $request = FacultyServiceRequest::findOrFail($requestId);
+            } else {
+                Log::warning('Invalid type provided for viewing document', ['type' => $type, 'requestId' => $requestId]);
+                return back()->with('error', 'Invalid request type specified.');
+            }
+
+            // Check if supporting document exists
+            if (!$request->supporting_document) {
+                Log::info('No supporting document found for request', ['type' => $type, 'requestId' => $requestId]);
+                return back()->with('error', 'No supporting document found for this request.');
+            }
+
+            // Get the full path to the file within the storage/app/public directory
+            $filePath = storage_path('app/public/' . $request->supporting_document);
+
+            // Check if file exists physically
+            if (!file_exists($filePath)) {
+                Log::error('Supporting document file not found at path', ['path' => $filePath, 'requestId' => $requestId]);
+                return back()->with('error', 'Supporting document file not found on the server.');
+            }
+
+            // Determine file type for the response header
+            $mimeType = mime_content_type($filePath);
+
+            // Return file for inline view in the browser
+            return response()->file($filePath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"' // Suggests browser displays inline
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+             Log::error('Service request not found when trying to view document', ['type' => $type, 'requestId' => $requestId]);
+             return back()->with('error', 'Service request not found.');
+        } catch (\Exception $e) {
+            Log::error('Error viewing supporting document: ' . $e->getMessage(), ['type' => $type, 'requestId' => $requestId]);
+            return back()->with('error', 'An error occurred while trying to display the document.');
         }
-    
-        // Get the full path to the file
-        $filePath = storage_path('app/public/' . $request->supporting_document);
-    
-        // Check if file exists
-        if (!file_exists($filePath)) {
-            return back()->with('error', 'Supporting document file not found.');
-        }
-    
-        // Determine file type
-        $mimeType = mime_content_type($filePath);
-    
-        // Return file for download or preview
-        return response()->file($filePath, [
-            'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
-        ]);
     }
 
 
-      // Method to fetch available UITC Staff
+      // Method to fetch available UITC Staff (Consider if this is needed alongside getUITCStaff)
+      // If it's just for a dropdown, getUITCStaff might be sufficient.
       public function getAvailableTechnicians()
       {
-          // Fetch only UITC Staff from admins table who are available
-          $availableUITCStaff = Admin::where('department', 'UITC')
+          // Fetch only Admins with role 'UITC Staff'
+          // The concept of 'available' might need more logic (e.g., status field, workload check)
+          $availableUITCStaff = Admin::where('role', 'UITC Staff') // Assuming 'role' field defines UITC Staff
                 ->select('id', 'name')
+                ->orderBy('name') // Good practice to sort
                 ->get();
-    
+
           return response()->json($availableUITCStaff);
       }
+
+      // Method to fetch all UITC Staff (likely for assignment dropdowns)
       public function getUITCStaff()
       {
           try {
-              // Fetch all UITC Staff
-              $uitcStaff = Admin::where('role', 'UITC Staff')->get();
-              
+              // Fetch all Admins with role 'UITC Staff'
+              $uitcStaff = Admin::where('role', 'UITC Staff')
+                           ->select('id', 'name') // Only select needed fields
+                           ->orderBy('name')
+                           ->get();
+
               return response()->json([
                   'success' => true,
                   'staff' => $uitcStaff
@@ -564,302 +530,409 @@ class AdminServiceRequestController extends Controller
               return response()->json([
                   'success' => false,
                   'message' => 'Failed to fetch UITC Staff'
-              ], 500);
+              ], 500); // Internal Server Error
           }
       }
 
 
-    // Method to assign UITC Staff to a student service request
+    /**
+     * Assign a UITC Staff member to a specific service request.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function assignUitcStaff(Request $request)
     {
         // Log the incoming request data for debugging
         Log::info('Assign UITC Staff Request Data:', $request->all());
-    
-        // Basic validation without type-specific checks
+
+        // Validate the request data
         $validatedData = $request->validate([
             'request_id' => 'required|integer',
-            'request_type' => 'required|string',
-            'uitcstaff_id' => 'required|exists:admins,id',
-            'transaction_type' => 'required',
-            'notes' => 'nullable|string'
+            'request_type' => 'required|string|in:student,faculty,new_student_service', // Enforce valid types
+            'uitcstaff_id' => 'required|exists:admins,id', // Ensure staff exists in admins table
+            'transaction_type' => 'required|string', // Basic string validation, consider enum if applicable
+            'notes' => 'nullable|string|max:1000' // Add max length for notes
         ]);
-    
+
         try {
-            // Get the UITC staff name for notification
+            // Find the UITC staff member to get their name
             $uitcStaff = Admin::find($validatedData['uitcstaff_id']);
-            $uitcStaffName = $uitcStaff ? $uitcStaff->name : 'UITC Staff';
-            
-            // Variable to store service request object
+            if (!$uitcStaff) {
+                // This should technically be caught by 'exists:admins,id' validation, but double-check
+                return response()->json(['success' => false, 'message' => 'Assigned UITC Staff not found.'], 404);
+            }
+            $uitcStaffName = $uitcStaff->name;
+
+            // Variables to hold details for notifications and logging
             $serviceRequest = null;
             $requestorName = '';
             $serviceCategory = '';
-            $userEmail = '';
-            
+            //$userEmail = null; // We'll rely on the user relationship
+
+            DB::beginTransaction(); // Start transaction for reliable update + notification sending
+
             // Handle different request types
             switch ($validatedData['request_type']) {
-                case 'student':
+                case 'student': // Legacy type? Handle if still needed
                 case 'new_student_service':
-                    // Verify student request exists
                     $serviceRequest = StudentServiceRequest::with('user')->find($validatedData['request_id']);
-                    
                     if (!$serviceRequest) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Student Service Request not found.'
-                        ], 404);
+                        DB::rollBack();
+                        return response()->json(['success' => false, 'message' => 'Student Service Request not found.'], 404);
                     }
-                    
-                    // Get requestor details
                     $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
                     $serviceCategory = $serviceRequest->service_category;
-                    $userEmail = $serviceRequest->user ? $serviceRequest->user->email : null;
-                    
-                    // Update student request
-                    $serviceRequest->update([
-                        'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-                        'status' => 'In Progress',
-                        'transaction_type' => $validatedData['transaction_type'],
-                        'admin_notes' => $validatedData['notes'] ?? null,
-                        'updated_at' => now()
-                    ]);
+                    //$userEmail = optional($serviceRequest->user)->email;
                     break;
-                    
+
                 case 'faculty':
-                    // Verify faculty request exists
                     $serviceRequest = FacultyServiceRequest::with('user')->find($validatedData['request_id']);
-                    
                     if (!$serviceRequest) {
-                        Log::error('Faculty Service Request not found', [
-                            'request_id' => $validatedData['request_id']
-                        ]);
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Faculty Service Request not found.'
-                        ], 404);
+                        DB::rollBack();
+                        Log::error('Faculty Service Request not found on assignment', ['request_id' => $validatedData['request_id']]);
+                        return response()->json(['success' => false, 'message' => 'Faculty Service Request not found.'], 404);
                     }
-                    
-                    // Get requestor details
                     $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
                     $serviceCategory = $serviceRequest->service_category;
-                    $userEmail = $serviceRequest->user ? $serviceRequest->user->email : null;
-                    
-                    // Log before update
-                    Log::info('Updating faculty service request', [
-                        'request_id' => $validatedData['request_id'],
-                        'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-                        'status' => 'In Progress'
-                    ]);
-                    
-                    // Update faculty request
-                    $serviceRequest->update([
-                        'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
-                        'status' => 'In Progress',
-                        'transaction_type' => $validatedData['transaction_type'],
-                        'admin_notes' => $validatedData['notes'] ?? null,
-                        'updated_at' => now()
-                    ]);
-                    
-                    // Log update result
-                    Log::info('Faculty update result', ['updated' => $serviceRequest->wasChanged()]);
-                    
+                    //$userEmail = optional($serviceRequest->user)->email;
                     break;
-                    
+
                 default:
-                    Log::warning('Unknown request type', ['type' => $validatedData['request_type']]);
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Invalid request type: ' . $validatedData['request_type']
-                    ], 400);
+                    // Should not happen due to validation, but good practice
+                    DB::rollBack();
+                    Log::warning('Unknown request type during assignment', ['type' => $validatedData['request_type']]);
+                    return response()->json(['success' => false, 'message' => 'Invalid request type provided.'], 400);
             }
-            
-            // Send notification to user if email is available
-            if ($userEmail) {
-               
-                
-                // Send the notification
-                \Illuminate\Support\Facades\Notification::route('mail', $userEmail)
-                    ->notify(new ServiceRequestAssigned(
-                        $serviceRequest->id,
-                        $serviceCategory,
-                        $requestorName,
-                        $uitcStaffName,
-                        $validatedData['transaction_type'],
-                        $validatedData['notes'] ?? ''
-                    ));
-                    
-                Log::info('Assignment notification sent to: ' . $userEmail, [
+
+            // Update the service request
+            $serviceRequest->update([
+                'assigned_uitc_staff_id' => $validatedData['uitcstaff_id'],
+                'status' => 'In Progress', // Set status consistently
+                'transaction_type' => $validatedData['transaction_type'],
+                'admin_notes' => $validatedData['notes'] // Use 'notes' from validation
+            ]);
+             // updated_at is handled automatically by Eloquent
+
+            // --- Notification Section ---
+
+            // 1. Send notification to the assigned UITC staff
+            try {
+                // Format the service category to a human-readable name for the notification
+                $formattedServiceCategory = $this->formatServiceCategory($serviceCategory);
+
+                $uitcStaff->notify(new StaffAssignedToRequest(
+                    $serviceRequest->id,
+                    $formattedServiceCategory, // Send formatted name
+                    $requestorName,
+                    $validatedData['transaction_type'],
+                    $validatedData['notes'] // Pass notes to staff notification
+                ));
+
+                Log::info('Staff assignment notification sent to UITC staff', [
+                    'staff_id' => $uitcStaff->id,
+                    'staff_name' => $uitcStaffName,
                     'request_id' => $serviceRequest->id,
-                    'staff_id' => $validatedData['uitcstaff_id'],
-                    'staff_name' => $uitcStaffName
+                    'request_type' => $validatedData['request_type']
                 ]);
-            } else {
-                Log::warning('Unable to send assignment notification - user email not found for request ID: ' . $validatedData['request_id']);
+            } catch (\Exception $e) {
+                // Log the error but don't necessarily roll back the assignment
+                // The assignment itself succeeded, only notification failed.
+                Log::error('Failed to send notification to UITC staff: ' . $e->getMessage(), [
+                    'staff_id' => $uitcStaff->id,
+                    'request_id' => $serviceRequest->id,
+                    'error_trace' => $e->getTraceAsString() // Log trace for debugging notification issues
+                ]);
+                // Optionally: Add a flag to the response indicating notification failure
             }
-    
-            Log::info('UITC Staff assigned successfully', [
+
+
+            // *** INTEGRATED CODE BLOCK STARTS HERE ***
+            // Send notification to the user if the user exists and has an email
+            if ($serviceRequest->user) {
+                $user = $serviceRequest->user;
+
+                // Ensure the user object has the Notifiable trait
+                if (method_exists($user, 'notify')) {
+                     try {
+                        // Format category name for user notification
+                        $formattedServiceCategoryUser = $this->formatServiceCategory($serviceCategory);
+
+                        // Send the notification to the user about assignment
+                        $user->notify(new ServiceRequestAssignedToUser(
+                            $serviceRequest->id,
+                            $formattedServiceCategoryUser, // Use formatted name
+                            $uitcStaffName, // Staff Name
+                            $validatedData['transaction_type'],
+                            $validatedData['notes'] // Pass admin notes to user notification? Or keep separate? Decide based on requirements.
+                        ));
+
+                        Log::info('Assignment notification sent to user: ' . $user->email, [
+                            'user_id' => $user->id,
+                            'request_id' => $serviceRequest->id,
+                            'staff_id' => $validatedData['uitcstaff_id'],
+                            'staff_name' => $uitcStaffName
+                        ]);
+                     } catch (\Exception $e) {
+                        // Log notification failure for the user
+                        Log::error('Failed to send assignment notification to user: ' . $e->getMessage(), [
+                           'user_id' => $user->id,
+                           'request_id' => $serviceRequest->id,
+                           'error_trace' => $e->getTraceAsString()
+                        ]);
+                     }
+                } else {
+                    Log::warning('User object found but does not use the Notifiable trait.', [
+                        'user_id' => $user->id,
+                        'request_id' => $serviceRequest->id
+                    ]);
+                }
+            } else {
+                Log::warning('Unable to send assignment notification - User relationship not loaded or does not exist for request.', [
+                    'request_id' => $validatedData['request_id'],
+                    'request_type' => $validatedData['request_type']
+                ]);
+            }
+            // *** INTEGRATED CODE BLOCK ENDS HERE ***
+
+
+            // If everything went well, commit the transaction
+            DB::commit();
+
+            Log::info('UITC Staff assigned successfully and notifications attempted.', [
                 'request_id' => $validatedData['request_id'],
                 'request_type' => $validatedData['request_type'],
                 'assigned_uitc_staff_id' => $validatedData['uitcstaff_id']
             ]);
-    
+
             return response()->json([
                 'success' => true,
-                'message' => 'UITC Staff assigned successfully',
-                'request_type' => $validatedData['request_type']
+                'message' => 'UITC Staff assigned successfully.',
+                'request_type' => $validatedData['request_type'], // Useful for frontend updates
+                'new_status' => 'In Progress' // Send back the new status
             ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors specifically if needed, though Laravel handles this by default
+             Log::error('Validation failed during staff assignment: ', $e->errors());
+             return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
+            // Rollback transaction in case of any other error during the process
+            DB::rollBack();
             Log::error('Error assigning UITC Staff: ' . $e->getMessage(), [
-                'request_id' => $validatedData['request_id'],
-                'request_type' => $validatedData['request_type'],
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'request_id' => $validatedData['request_id'] ?? 'unknown',
+                'request_type' => $validatedData['request_type'] ?? 'unknown',
+                'error_trace' => $e->getTraceAsString() // Log stack trace for detailed debugging
             ]);
-    
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to assign UITC Staff: ' . $e->getMessage()
-            ], 500);
+                'message' => 'An unexpected error occurred while assigning UITC Staff. Please try again.'
+                // Avoid exposing raw error messages like $e->getMessage() to the client in production
+            ], 500); // Internal Server Error
         }
     }
-    
+
+    /**
+     * Delete one or more service requests based on IDs.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function deleteServiceRequests(Request $request)
     {
         // Validate the incoming request
         $validatedData = $request->validate([
             'request_ids' => 'required|array',
-            'request_ids.*' => 'required|integer'
+            'request_ids.*' => 'required|integer|distinct' // Ensure IDs are integers and unique
         ]);
 
-        try {
-            // Start a database transaction
-            DB::beginTransaction();
+        $deletedCount = 0;
+        $notFoundCount = 0;
+        $errors = [];
 
+        // Use a transaction to ensure atomicity if needed, although simple deletion might not strictly require it
+        // DB::beginTransaction(); // Uncomment if other related actions need atomicity
+
+        try {
             foreach ($validatedData['request_ids'] as $requestId) {
-                // Try to find and delete from each possible table
                 $deleted = false;
 
-                // Try StudentServiceRequest
-                $studentRequest = StudentServiceRequest::find($requestId);
-                if ($studentRequest) {
-                    $studentRequest->delete();
+                // Prioritize specific models first
+                if (StudentServiceRequest::destroy($requestId)) {
+                    $deleted = true;
+                } elseif (FacultyServiceRequest::destroy($requestId)) {
                     $deleted = true;
                 }
+                 // Uncomment if the generic ServiceRequest model is still in use for deletable records
+                 // elseif (ServiceRequest::destroy($requestId)) {
+                 //     $deleted = true;
+                 // }
 
-                // Try FacultyServiceRequest
-                if (!$deleted) {
-                    $facultyRequest = FacultyServiceRequest::find($requestId);
-                    if ($facultyRequest) {
-                        $facultyRequest->delete();
-                        $deleted = true;
-                    }
-                }
-
-                // Try ServiceRequest
-                if (!$deleted) {
-                    $serviceRequest = ServiceRequest::find($requestId);
-                    if ($serviceRequest) {
-                        $serviceRequest->delete();
-                        $deleted = true;
-                    }
-                }
-
-                if (!$deleted) {
-                    throw new \Exception("Request ID {$requestId} not found in any table");
+                if ($deleted) {
+                    $deletedCount++;
+                    Log::info('Service Request deleted', ['request_id' => $requestId]);
+                } else {
+                    $notFoundCount++;
+                    Log::warning('Attempted to delete non-existent request ID', ['request_id' => $requestId]);
+                    // Optionally collect not found IDs
+                    // $errors[] = "Request ID {$requestId} not found.";
                 }
             }
 
-            DB::commit();
+            // DB::commit(); // Uncomment if using transaction
+
+            $message = "{$deletedCount} request(s) deleted successfully.";
+            if ($notFoundCount > 0) {
+                $message .= " {$notFoundCount} request ID(s) were not found.";
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Selected requests deleted successfully'
+                'message' => $message,
+                'deleted_count' => $deletedCount,
+                'not_found_count' => $notFoundCount
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Service Request Deletion Error: ' . $e->getMessage());
+            // DB::rollBack(); // Uncomment if using transaction
+            Log::error('Service Request Deletion Error: ' . $e->getMessage(), [
+                 'request_ids' => $validatedData['request_ids'],
+                 'error_trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete requests: ' . $e->getMessage()
+                'message' => 'An error occurred during deletion. Please try again.'
+                // Avoid exposing raw error messages to the client
             ], 500);
         }
     }
 
+    /**
+     * Reject a specific service request.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function rejectServiceRequest(Request $request)
     {
         // Validate the request
         $validatedData = $request->validate([
-            'request_id' => 'required',
-            'request_type' => 'required|in:student,faculty,new_student_service',
-            'rejection_reason' => 'required|string',
-            'notes' => 'nullable|string'
+            'request_id' => 'required|integer',
+            'request_type' => 'required|string|in:student,faculty,new_student_service',
+            'rejection_reason' => 'required|string|max:1000',
+            'notes' => 'nullable|string|max:1000' // Optional admin notes for rejection context
         ]);
 
         try {
-            // Handle different request types
+            $serviceRequest = null;
+            $requestorName = 'User'; // Default
+            $serviceCategory = 'Service'; // Default
+
+            DB::beginTransaction(); // Use transaction for update + notification
+
+            // Find the correct request model based on type
             switch ($validatedData['request_type']) {
                 case 'new_student_service':
-                    $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
-                    $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
-                    $serviceCategory = $serviceRequest->service_category;
+                    $serviceRequest = StudentServiceRequest::with('user')->find($validatedData['request_id']);
                     break;
                 case 'faculty':
-                    $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
-                    $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
-                    $serviceCategory = $serviceRequest->service_category;
+                    $serviceRequest = FacultyServiceRequest::with('user')->find($validatedData['request_id']);
                     break;
-                case 'student':
-                    $serviceRequest = ServiceRequest::findOrFail($validatedData['request_id']);
-                    $requestorName = $serviceRequest->user ? $serviceRequest->user->name : 'Student';
-                    $serviceCategory = $serviceRequest->service_category;
+                case 'student': // Legacy?
+                    $serviceRequest = ServiceRequest::with('user')->find($validatedData['request_id']);
                     break;
-                default:
-                    throw new \Exception('Invalid request type');
             }
 
-            // Update the service request
+            if (!$serviceRequest) {
+                 DB::rollBack();
+                 return response()->json(['success' => false, 'message' => 'Service Request not found.'], 404);
+            }
+
+            // Get details for notification
+            $requestorName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name; // Assumes these fields exist
+            $serviceCategory = $serviceRequest->service_category ?? 'Unspecified Service';
+            // For legacy 'student' type, adjust name source if needed:
+            // if ($validatedData['request_type'] === 'student') {
+            //     $requestorName = optional($serviceRequest->user)->name ?? 'Student';
+            // }
+
+
+            // Update the service request status and reason
             $serviceRequest->update([
                 'status' => 'Rejected',
                 'rejection_reason' => $validatedData['rejection_reason'],
-                'admin_notes' => $validatedData['notes'],
-                'rejected_at' => now()
+                'admin_notes' => $validatedData['notes'], // Store admin notes if provided
+                'rejected_at' => now(), // Record rejection timestamp
+                'assigned_uitc_staff_id' => null // Unassign staff if any was assigned previously
             ]);
 
-            // Send a notification to the user
-            //Notification::send($serviceRequest->user, new RequestRejectedNotification($serviceRequest));
+            // --- Send Notification to User ---
+            if ($serviceRequest->user) {
+                $user = $serviceRequest->user;
+                 if (method_exists($user, 'notify')) {
+                    try {
+                        // Format category for notification
+                         $formattedServiceCategory = $this->formatServiceCategory($serviceCategory);
 
-               // Send a notification to the user if we have the user associated
-        if (isset($serviceRequest->user) && $serviceRequest->user) {
-            $user = $serviceRequest->user;
-            
-            // Send the notification
-            Notification::route('mail', $user->email)
-                ->notify(new ServiceRequestRejected(
-                    $serviceRequest->id,
-                    $serviceCategory,
-                    $requestorName,
-                    $validatedData['rejection_reason'],
-                    $validatedData['notes']
-                ));
-                
-            Log::info('Rejection notification sent to: ' . $user->email);
-        } else {
-            Log::warning('Unable to send rejection notification - user not found for request ID: ' . $validatedData['request_id']);
-        }
+                        // Send the rejection notification
+                        $user->notify(new ServiceRequestRejected(
+                            $serviceRequest->id,
+                            $formattedServiceCategory,
+                            $requestorName, // Pass requestor name if needed by notification template
+                            $validatedData['rejection_reason'],
+                            $validatedData['notes'] // Pass admin notes to notification?
+                        ));
 
+                        Log::info('Rejection notification sent to user', [
+                            'user_id' => $user->id,
+                            'user_email' => $user->email,
+                            'request_id' => $serviceRequest->id
+                        ]);
+                    } catch (\Exception $e) {
+                         Log::error('Failed to send rejection notification to user: ' . $e->getMessage(), [
+                             'user_id' => $user->id,
+                             'request_id' => $serviceRequest->id,
+                             'error_trace' => $e->getTraceAsString()
+                         ]);
+                         // Don't rollback the rejection itself, just log the notification error
+                    }
+                 } else {
+                     Log::warning('User object found for rejected request but does not use Notifiable trait.', [
+                        'user_id' => $user->id,
+                        'request_id' => $serviceRequest->id
+                    ]);
+                 }
+            } else {
+                Log::warning('Unable to send rejection notification - User relationship not loaded or does not exist for request.', [
+                     'request_id' => $validatedData['request_id'],
+                     'request_type' => $validatedData['request_type']
+                ]);
+            }
+
+            DB::commit(); // Commit the rejection update
 
             return response()->json([
                 'success' => true,
-                'message' => 'Service request rejected successfully'
+                'message' => 'Service request rejected successfully.',
+                'new_status' => 'Rejected' // Send back new status
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+             Log::error('Validation failed during request rejection: ', $e->errors());
+             return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('Service Request Rejection Error: ' . $e->getMessage());
-            
+            DB::rollBack(); // Rollback on any other error
+            Log::error('Service Request Rejection Error: ' . $e->getMessage(), [
+                 'request_id' => $validatedData['request_id'] ?? 'unknown',
+                 'error_trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to reject service request: ' . $e->getMessage()
+                'message' => 'An error occurred while rejecting the service request.'
+                // Avoid exposing raw error messages
             ], 500);
         }
     }

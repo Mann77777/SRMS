@@ -10,83 +10,119 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\ServiceRequestReceived;
 use Illuminate\Support\Facades\Notification;
+use App\Models\Admin;
+use App\Notifications\RequestSubmitted;
 class StudentServiceRequestController extends Controller
 {
     public function store(Request $request)
-    {
-        // Validate basic required fields
-        $validatedData = $request->validate([
-            'service_category' => 'required|string',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'student_id' => 'required|string',
-            'agreeTerms' => 'accepted',
-         
+{
+    // Validate basic required fields
+    $validatedData = $request->validate([
+        'service_category' => 'required|string',
+        'first_name' => 'required|string',
+        'last_name' => 'required|string',
+        'student_id' => 'required|string',
+        'agreeTerms' => 'accepted',
+     
+    ]);
+
+    // Create a new student service request
+    $studentRequest = new StudentServiceRequest();
+    $studentRequest->user_id = Auth::id();
+    $studentRequest->service_category = $request->input('service_category');
+    $studentRequest->first_name = $request->input('first_name');
+    $studentRequest->last_name = $request->input('last_name');
+    $studentRequest->student_id = $request->input('student_id');
+    $studentRequest->status = 'Pending'; // Make sure status is explicitly set
+    
+    // Handle optional fields based on service category
+    switch($request->input('service_category')) {
+        case 'reset_email_password':
+        case 'reset_tup_web_password':
+            $studentRequest->account_email = $request->input('account_email');
+            break;
+        
+        case 'change_of_data_ms':
+        case 'change_of_data_portal':
+            $studentRequest->data_type = $request->input('data_type');
+            $studentRequest->new_data = $request->input('new_data');
+            
+            // Handle file upload for supporting document
+            if ($request->hasFile('supporting_document')) {
+                $file = $request->file('supporting_document');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('supporting_documents', $filename, 'public');
+                $studentRequest->supporting_document = $path;
+            }
+            break;
+        
+        case 'request_led_screen':
+            $studentRequest->preferred_date = $request->input('preferred_date');
+            $studentRequest->preferred_time = $request->input('preferred_time');
+            break;
+        
+        case 'others':
+            $studentRequest->description = $request->input('description');
+            break;
+    }
+
+    // Optional additional notes
+    $studentRequest->additional_notes = $request->input('additional_notes');
+    
+    // Save the request
+    $studentRequest->save();
+
+    // Generate a unique display ID with SSR prefix
+    $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
+
+    // Send email notification to the user
+    Notification::route('mail', $request->user()->email)
+        ->notify(new ServiceRequestReceived(
+            $displayId, // Use the formatted display ID instead of raw database ID
+            $studentRequest->service_category,
+            $studentRequest->first_name . ' ' . $studentRequest->last_name
+    ));
+    
+    // Notify admin users about the new request
+    try {
+        // Import the Admin model and RequestSubmitted notification at the top of the file
+        // use App\Models\Admin;
+        // use App\Notifications\RequestSubmitted;
+        
+        // Get all admin users
+        $admins = \App\Models\Admin::where('role', 'Admin')->get();
+        
+        // Log for debugging
+        \Log::info('Notifying admins about new student request', [
+            'request_id' => $studentRequest->id,
+            'admin_count' => $admins->count()
         ]);
-    
-        // Create a new student service request
-        $studentRequest = new StudentServiceRequest();
-        $studentRequest->user_id = Auth::id();
-        $studentRequest->service_category = $request->input('service_category');
-        $studentRequest->first_name = $request->input('first_name');
-        $studentRequest->last_name = $request->input('last_name');
-        $studentRequest->student_id = $request->input('student_id');
         
-        // Handle optional fields based on service category
-        switch($request->input('service_category')) {
-            case 'reset_email_password':
-            case 'reset_tup_web_password':
-                $studentRequest->account_email = $request->input('account_email');
-                break;
+        // Notify each admin
+        foreach ($admins as $admin) {
+            $admin->notify(new \App\Notifications\RequestSubmitted($studentRequest));
             
-            case 'change_of_data_ms':
-            case 'change_of_data_portal':
-                $studentRequest->data_type = $request->input('data_type');
-                $studentRequest->new_data = $request->input('new_data');
-                
-                // Handle file upload for supporting document
-                if ($request->hasFile('supporting_document')) {
-                    $file = $request->file('supporting_document');
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $path = $file->storeAs('supporting_documents', $filename, 'public');
-                    $studentRequest->supporting_document = $path;
-                }
-                break;
-            
-            case 'request_led_screen':
-                $studentRequest->preferred_date = $request->input('preferred_date');
-                $studentRequest->preferred_time = $request->input('preferred_time');
-                break;
-            
-            case 'others':
-                $studentRequest->description = $request->input('description');
-                break;
+            \Log::info('Notification sent to admin', [
+                'admin_id' => $admin->id,
+                'admin_name' => $admin->name
+            ]);
         }
-    
-        // Optional additional notes
-        $studentRequest->additional_notes = $request->input('additional_notes');
-        
-        // Save the request
-        $studentRequest->save();
-    
-        // Generate a unique display ID with SSR prefix
-        $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
-    
-        // Send email notification
-        Notification::route('mail', $request->user()->email)
-            ->notify(new ServiceRequestReceived(
-                $displayId, // Use the formatted display ID instead of raw database ID
-                $studentRequest->service_category,
-                $studentRequest->first_name . ' ' . $studentRequest->last_name
-        ));
-         
-        // Redirect back with success modal data
-        return redirect()->back()->with([
-            'showSuccessModal' => true,
-            'requestId' => $displayId, // Use the formatted display ID
-            'serviceCategory' => $studentRequest->service_category
+    } catch (\Exception $e) {
+        // Log the error but don't stop the process
+        \Log::error('Failed to notify admins about new student request', [
+            'request_id' => $studentRequest->id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
         ]);
     }
+     
+    // Redirect back with success modal data
+    return redirect()->back()->with([
+        'showSuccessModal' => true,
+        'requestId' => $displayId, // Use the formatted display ID
+        'serviceCategory' => $studentRequest->service_category
+    ]);
+}
 
 
 

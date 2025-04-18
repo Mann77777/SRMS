@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Notifications\ServiceRequestReceived;
 use Illuminate\Support\Facades\Notification;
+use App\Models\Admin;
+use App\Notifications\RequestSubmitted;
 
 class FacultyServiceRequestController extends Controller
 {
@@ -74,6 +76,10 @@ class FacultyServiceRequestController extends Controller
     
             // Create the request with filtered data
             $serviceRequest = FacultyServiceRequest::create($filteredData);
+            $admins = Admin::where('role', 'Admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new RequestSubmitted($serviceRequest));
+}
     
             Log::info('Service request created:', ['id' => $serviceRequest->id]);
     

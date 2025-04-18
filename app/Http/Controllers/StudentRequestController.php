@@ -6,6 +6,8 @@ use App\Models\RequestForm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Admin;
+use App\Notifications\RequestSubmitted;
 
 class StudentRequestController extends Controller
 {
@@ -99,6 +101,11 @@ class StudentRequestController extends Controller
                 'message' => 'Request submitted successfully',
                 'data' => $request->all()
             ]);
+
+            $admins = Admin::where('role', 'Admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new RequestSubmitted($studentRequest));
+}
 
         } catch (\Exception $e) {
             Log::error('Error submitting student request', [

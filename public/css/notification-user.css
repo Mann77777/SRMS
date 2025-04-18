@@ -1,0 +1,125 @@
+/* notification-user.css */
+
+/* Notification styles for Students and Faculty */
+.notification-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-icon {
+    position: relative;
+    font-size: 1.5rem;
+    color: #4a5568;
+    cursor: pointer;
+}
+
+.badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #e53e3e;
+    color: white;
+    border-radius: 50%;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.notification-dropdown-content {
+    position: absolute;
+    right: 0;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 100;
+    margin-top: 0.5rem;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.notification-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.mark-all-button {
+    background: none;
+    border: none;
+    color: #4299e1;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.notification-list {
+    padding: 0;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f7fafc;
+}
+
+.notification-item.unread {
+    background-color: #ebf8ff;
+    border-left: 3px solid #3182ce;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-content {
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.notification-details {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f8fafc;
+    border-radius: 0.25rem;
+    border-left: 2px solid #4299e1;
+    font-size: 0.85rem;
+}
+
+.detail-item {
+    margin-bottom: 0.25rem;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #718096;
+    text-align: right;
+}
+
+.empty-notifications {
+    padding: 1.5rem;
+    text-align: center;
+    color: #718096;
+}
+
+.loading-spinner {
+    padding: 1.5rem;
+    text-align: center;
+    color: #718096;
+}

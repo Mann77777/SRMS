@@ -29,6 +29,9 @@ use App\Http\Controllers\UITCStaffController;
 use App\Http\Controllers\RequestsController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UserNotificationController;
+
 
 
 Route::get('/', function () {
@@ -467,3 +470,32 @@ Route::get('/faculty/request/{id}', [FacultyServiceRequestController::class, 'ge
         Route::post('/export-pdf', [AdminReportController::class, 'exportPDF'])->name('admin.export.pdf');
         Route::get('/get-uitc-staff', [AdminServiceRequestController::class, 'getUITCStaff'])->name('admin.get.uitc.staff');
     });
+
+   // Admin routes protected by admin guard
+   Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications/get', [NotificationController::class, 'getNotifications']);
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+});
+
+// UITC Staff specific routes
+Route::middleware(['auth'])->prefix('uitc-staff')->group(function () {
+    Route::get('/assigned-requests', [UitcStaffController::class, 'assignedRequests'])->name('uitc.assigned-requests');
+    Route::get('/notifications/get', [NotificationController::class, 'getNotifications']);
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+});
+
+
+// User notification routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user/notifications/get', [App\Http\Controllers\UserNotificationController::class, 'getNotifications']);
+    Route::post('/user/notifications/mark-as-read', [App\Http\Controllers\UserNotificationController::class, 'markAsRead']);
+    Route::post('/user/notifications/mark-all-as-read', [App\Http\Controllers\UserNotificationController::class, 'markAllAsRead']);
+});
+
+Route::middleware(['auth'])->prefix('user')->group(function () {
+    Route::get('/notifications/get', [UserNotificationController::class, 'getNotifications']);
+    Route::post('/notifications/mark-as-read', [UserNotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [UserNotificationController::class, 'markAllAsRead']);
+});

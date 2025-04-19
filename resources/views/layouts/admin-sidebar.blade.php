@@ -64,7 +64,15 @@
                         <span class="navlink">Messages</span>
                     </a>
                 </li> -->
-
+                <li class="item">
+                    <a href="{{ route('admin.holidays.index') }}" class="nav_link {{ request()->is('admin/holidays*') ? 'active' : '' }}">
+                        <span class="navlink_icon">
+                            <i class="bx bxs-chat"></i>
+                        </span>
+                        <span class="navlink">Schedule Management</span>
+                    </a>
+                </li>
+                
                 <li class="item">
                     <a href="{{ url('/admin_report') }}" class="nav_link {{ request()->is('admin_report') ? 'active' : '' }}">
                         <span class="navlink_icon">
@@ -121,14 +129,14 @@
                 </li> -->
 
 
-                <!--<li class="item">
-                    <a href="{{ url('/technician-report') }}" class="nav_link {{ request()->is('technician-report') ? 'active' : '' }}">
+                <li class="item">
+                    <a href="{{ url('/uitc-staff/reports') }}" class="nav_link {{ request()->is('uitc-staff/reports') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-chat"></i>
                         </span>
-                        <span class="navlink">Report</span>
+                        <span class="navlink">My Report</span>
                     </a>
-                </li> -->
+                </li>
                 
             @endif
         </ul>

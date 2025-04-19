@@ -76,37 +76,35 @@ class RequestsController extends Controller
     public function showServiceSurvey($requestId)
     {
         $user = Auth::user();
+        $request = null;
         
         if ($user->role === "Student") {
             $request = StudentServiceRequest::findOrFail($requestId);
-            
-            // Ensure only the request owner can access the survey
-            if ($request->user_id !== Auth::id()) {
-                return redirect()->back()->with('error', 'Unauthorized access');
-            }
-            
-            // Ensure only completed requests can be surveyed
-            if ($request->status !== 'Completed') {
-                return redirect()->back()->with('error', 'Survey is only available for completed requests');
-            }
-            
         } elseif ($user->role === "Faculty & Staff") {
             $request = FacultyServiceRequest::findOrFail($requestId);
-            
-            // Ensure only the request owner can access the survey
-            if ($request->user_id !== Auth::id()) {
-                return redirect()->back()->with('error', 'Unauthorized access');
-            }
-            
-            // Ensure only completed requests can be surveyed
-            if ($request->status !== 'Completed') {
-                return redirect()->back()->with('error', 'Survey is only available for completed requests');
-            }
-            
         } else {
             return redirect()->back()->with('error', 'Unauthorized access');
         }
         
-        return view('users.service-survey', compact('request'));
+        // Ensure only the request owner can access the survey
+        if ($request->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+        
+        // Ensure only completed requests can be surveyed
+        if ($request->status !== 'Completed') {
+            return redirect()->back()->with('error', 'Survey is only available for completed requests');
+        }
+        
+        // Check if the request has already been surveyed
+        // But allow access if we're showing the success modal after submission
+        if ($request->is_surveyed && !session('survey_submitted')) {
+            return redirect()->back()->with('info', 'You have already submitted a survey for this request');
+        }
+        
+        // Determine if we should show the success modal
+        $showSuccessModal = session('survey_submitted') ? true : false;
+        
+        return view('users.customer-satisfaction', compact('request', 'showSuccessModal'));
     }
 }

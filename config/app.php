@@ -129,4 +129,12 @@ Barryvdh\DomPDF\ServiceProvider::class,
 
 // Add to the 'aliases' array in config/app.php
 'PDF' => Barryvdh\DomPDF\Facade::class,
+
+Maatwebsite\Excel\ExcelServiceProvider::class,
+Barryvdh\DomPDF\ServiceProvider::class,
+
+# Add aliases to config/app.php
+# In the 'aliases' array add:
+'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+'PDF' => Barryvdh\DomPDF\Facade::class,
 ];

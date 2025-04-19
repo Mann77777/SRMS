@@ -285,9 +285,9 @@
                     <i class="fas fa-history"></i>
                     <span>Service History</span>
                 </a>
-                <a href="{{ url('/admin_myprofile') }}" class="action-button">
-                    <i class="fas fa-user-cog"></i>
-                    <span>My Profile</span>
+                <a href="{{ url('/uitc-staff/reports') }}" class="action-button">
+                    <i class="bx bxs-chat"></i>
+                    <span>View Reports</span>
                 </a>
             </div>
         </div>

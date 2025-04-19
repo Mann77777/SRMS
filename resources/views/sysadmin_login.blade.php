@@ -12,8 +12,9 @@
 <body>
     <div class="container login-container">
         <img src="{{ asset('images/tuplogo.png') }}" class="tuplogo" alt="TUP Logo">
-        <h4 class="text-center">Sign In</h4>
-        <p class="text-center">TUP - Service Request Management System</p>
+        <!-- <h4 class="text-center">Sign In</h4>-->
+        <p class="text-center bold-text">Technological University of the Philippines</p>
+        <p class="text-center">Service Request Management System</p>
 
         <!-- Display error message if login fails -->
         @if(session('error'))

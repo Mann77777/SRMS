@@ -12,8 +12,9 @@
 <body>
     <div class="container register-container">
         <img src="{{ asset('images/tuplogo.png') }}" class="tuplogo" alt="TUP Logo" >
-        <h4 class="text-center">Sign Up</h4>
-        <p class="text-center">TUP - Service Request Management System</p>
+        <!-- <h4 class="text-center">Sign Up</h4> -->
+        <p class="text-center bold-text">Technological University of the Philippines</p>    
+        <p class="text-center">Service Request Management System</p>
 
         @if($errors->any())
             <div class="alert alert-danger">

@@ -1,0 +1,265 @@
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    src: url(data:font/truetype;base64,[BASE64_FONT_DATA]) format('truetype');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    src: url(data:font/truetype;base64,[BASE64_FONT_DATA_BOLD]) format('truetype');
+}
+
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.logo-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.logo {
+    width: 70px;
+    height: auto;
+    margin: 0 auto;
+}
+
+.header-text {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.header-text h1 {
+    font-size: 18px;
+    text-transform: uppercase;
+    margin: 5px 0;
+    font-weight: 700;
+}
+
+.header-text h2 {
+    font-size: 16px;
+    margin: 5px 0;
+    font-weight: 700;
+}
+
+.header-text p {
+    margin: 5px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 20px 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #be1e2d;
+    text-transform: uppercase;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: 700;
+}
+
+.stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    width: 23%;
+    margin: 1%;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-weight: 600;
+}
+
+.stat-box h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.stat-box p {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 10px;
+    color: #777;
+    font-weight: 500;
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+.alert {
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border-left: 4px solid #be1e2d;
+    font-weight: 600;
+}
+
+.rating-box {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.rating-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #be1e2d;
+}
+
+/* Styles for the Student Rating Slip heading */
+.report-heading {
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 10px 0;
+}
+
+/* Not valid for transfer notice */
+.not-valid {
+    float: left;
+    font-weight: 700;
+    font-size: 10px;
+}
+
+/* Manila text on the right */
+.location {
+    float: right;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* SLA Performance */
+.sla-performance {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #4a86e8;
+    margin-bottom: 20px;
+}
+
+.sla-metrics {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.sla-metric {
+    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
+    width: 30%;
+}
+
+.metric-value {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 5px 0;
+}
+
+.metric-label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.on-time {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.delayed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.avg-response {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* Category Activity Timeline */
+.timeline {
+    margin-top: 20px;
+    position: relative;
+    border-left: 2px solid #ddd;
+    padding-left: 20px;
+    margin-left: 10px;
+}
+
+.timeline-item {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #be1e2d;
+}
+
+.timeline-date {
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.timeline-content {
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.overdue-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-top: 5px;
+    font-weight: 600;
+    font-size: 11px;
+}

@@ -34,7 +34,7 @@
                             <th>Assigned Staff</th>
                             <th>Date Submitted</th>
                             <th>Date Completed</th>
-                            <th>Survey</th>
+                            <th>Action</th>
                        </tr>
                     </thead>
                     <tbody>
@@ -121,8 +121,15 @@
                                <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
                                 <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
                             </td>
+                            
                             <td>
-                                <a href="{{ route('service.survey', $request->id) }}" class="btn btn-primary">Take a Survey</a>
+                                @if($request->status === 'Completed' && !$request->is_surveyed)
+                                    <a href="{{ route('show.service.survey', $request->id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-star"></i> Rate Service
+                                    </a>
+                                @elseif($request->is_surveyed)
+                                    <span class="badge badge-success">Feedback Submitted</span>
+                                @endif
                             </td>
                            
                         </tr>

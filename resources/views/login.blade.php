@@ -12,8 +12,9 @@
 <body>
     <div class="container login-container">
         <img src="{{ asset('images/tuplogo.png') }}" class="tuplogo" alt="TUP Logo">
-        <h4 class="text-center">Sign In</h4>
-        <p class="text-center">TUP - Service Request Management System</p>
+        <!-- <h5 class="text-center">Sign In</h5> -->
+        <p class="text-center bold-text">Technological University of the Philippines</p>
+        <p class="text-center">Service Request Management System</p>
 
         <!-- Display error message if login fails -->
         @if(session('error'))
@@ -53,7 +54,7 @@
         <!-- Google Login Link -->
         <div class="text-center mt-3">
             <a href="{{ route('login.google') }}" class="btn btn-outline-google">
-                <img src="{{ asset('images/google.png') }}" alt="Google Logo" class="google-icon">Login with Google
+                <img src="{{ asset('images/google.png') }}" alt="Google Logo" class="google-icon">Sign In with Google
             </a>
         </div>
 

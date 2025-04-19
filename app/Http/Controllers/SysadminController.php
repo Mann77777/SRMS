@@ -25,7 +25,8 @@ class SysadminController extends Controller
 
         if (Auth::guard('admin')->attempt($credentials)) {
             \Log::info('Login successful for admin'. $credentials['username']);
-            return redirect()->intended('admin_dashboard');
+            
+            return redirect()->route('admin.dashboard');
         }
 
         \Log::warning('Login failed for admin');

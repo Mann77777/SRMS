@@ -31,6 +31,8 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UserNotificationController;
+use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\HolidayController;
 
 
 
@@ -64,7 +66,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 //Route::get('/student/details', [StudentController::class, 'showDetailsForm'])->name('student.details.form')->middleware(['auth', 'verified']);
-//Route::post('/student/details', [StudentController::class, 'saveDetails'])>name('student.details.save')->middleware(['auth', 'verified']);
+//Route::post('/student/details', [StudentController::class, 'saveDetails'])->name('student.details.save')->middleware(['auth', 'verified']);
 //Route::post('/profile/upload', [ProfileController::class, 'uploadProfileImage'])->name('profile.upload');
 //Route::post('/profile/remove', [ProfileController::class, 'removeProfileImage'])->name('removeProfileImage');
 
@@ -500,11 +502,36 @@ Route::middleware(['auth'])->prefix('user')->group(function () {
     Route::post('/notifications/mark-as-read', [UserNotificationController::class, 'markAsRead']);
     Route::post('/notifications/mark-all-as-read', [UserNotificationController::class, 'markAllAsRead']);
 });
-    Route::get('/service-survey/{requestId}', [RequestsController::class, 'showServiceSurvey'])
-    ->name('service.survey')
-    ->middleware('auth');
 
 
-Route::post('/submit-survey', [RequestsController::class, 'submitServiceSurvey'])
-    ->name('submit.survey')
+
+Route::get('/customer-satisfaction/{requestId}', [RequestsController::class, 'showServiceSurvey'])
+    ->name('customer.satisfaction')
     ->middleware('auth');
+
+// Removed duplicate route for submit-survey and using SurveyController properly
+Route::post('/submit-survey', [SurveyController::class, 'submitSurvey'])->name('submit.survey.new');
+
+Route::get('/service-survey/{requestId}', [RequestsController::class, 'showServiceSurvey'])->name('show.service.survey');
+
+// Holiday Management Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function() {
+    Route::resource('holidays', HolidayController::class);
+    Route::get('holidays-import-common', [HolidayController::class, 'importCommonHolidays'])
+        ->name('holidays.import-common');
+    
+    Route::get('/holidays/create', [HolidayController::class, 'create'])->name('holidays.create');
+});
+
+Route::post('/student/cancel-request/{id}', [StudentServiceRequestController::class, 'cancelRequest'])->name('student.cancel-request');
+Route::post('/faculty/cancel-request/{id}', [FacultyServiceRequestController::class, 'cancelRequest'])->name('faculty.cancel-request');
+
+
+Route::get('/uitc-staff/reports', [UITCStaffController::class, 'getReports'])
+    ->name('uitc-staff.reports')
+    ->middleware(['auth:admin']);
+
+
+Route::get('/uitc-staff/export-reports', [UITCStaffController::class, 'exportReports'])
+    ->name('uitc-staff.export-reports')
+    ->middleware(['auth:admin']);

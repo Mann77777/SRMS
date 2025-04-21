@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fetch notification count
     function fetchNotificationCount() {
-        fetch('/notifications/get', {
+        fetch('/uitc-staff/notifications/get', { // Changed URL prefix
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Content-Type': 'application/json',
@@ -71,6 +71,14 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
+                 // Check for 401 Unauthorized specifically
+                if (response.status === 401) {
+                    console.error('Fetching notification count failed: Unauthorized. Check authentication and route middleware.');
+                    // Optionally, redirect to login or show a message
+                    // window.location.href = '/login'; // Example redirect
+                } else {
+                    console.error(`Fetching notification count failed: Network response was not ok (Status: ${response.status})`);
+                }
                 throw new Error('Network response was not ok');
             }
             return response.json();
@@ -79,15 +87,18 @@ document.addEventListener('DOMContentLoaded', function() {
             updateNotificationBadge(data.count);
         })
         .catch(error => {
-            console.error('Fetching notification count failed:', error);
+             // Error already logged in the first .then block for specific statuses
+            if (error.message !== 'Network response was not ok') { // Avoid double logging generic network errors
+                 console.error('Error processing notification count:', error);
+            }
         });
     }
     
     // Fetch full notifications
     function fetchNotifications() {
-        notificationList.innerHTML = '<div class="loading-spinner">Loading...</div>';
-        
-        fetch('/notifications/get', {
+        notificationList.innerHTML = '<div class="loading-spinner">Loading...</div>'; // Show loading indicator
+
+        fetch('/uitc-staff/notifications/get', { // Changed URL prefix
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Content-Type': 'application/json',
@@ -96,6 +107,13 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
+                 if (response.status === 401) {
+                    console.error('Fetching notifications failed: Unauthorized.');
+                    notificationList.innerHTML = '<div class="empty-notifications">Error: Unauthorized. Please check login status.</div>';
+                 } else {
+                    console.error(`Fetching notifications failed: Network response was not ok (Status: ${response.status})`);
+                    notificationList.innerHTML = `<div class="empty-notifications">Failed to load notifications (Error: ${response.status})</div>`;
+                 }
                 throw new Error('Network response was not ok');
             }
             return response.json();
@@ -105,8 +123,14 @@ document.addEventListener('DOMContentLoaded', function() {
             renderNotifications(data.unread, data.read);
         })
         .catch(error => {
-            console.error('Fetching notifications failed:', error);
-            notificationList.innerHTML = '<div class="empty-notifications">Failed to load notifications</div>';
+             // Error already logged or handled in the first .then block
+             if (error.message !== 'Network response was not ok') {
+                 console.error('Error processing full notifications:', error);
+                 // Keep the error message displayed in notificationList if it was set previously
+                 if (!notificationList.querySelector('.empty-notifications')) {
+                    notificationList.innerHTML = '<div class="empty-notifications">An unexpected error occurred.</div>';
+                 }
+             }
         });
     }
     
@@ -228,7 +252,7 @@ function createNotificationElement(notification, isUnread) {
     
     // Mark all notifications as read
     function markAllAsRead() {
-        fetch('/notifications/mark-all-as-read', {
+        fetch('/uitc-staff/notifications/mark-all-as-read', { // Changed URL prefix
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -244,10 +268,10 @@ function createNotificationElement(notification, isUnread) {
         })
         .then(data => {
             if (data.success) {
-                fetchNotifications();
-                fetchNotificationCount();
-                
-                // Optional - display success message
+                fetchNotifications(); // Re-fetch to update list
+                fetchNotificationCount(); // Re-fetch to update badge
+
+                 // Optional - display success message
                 if (data.count > 0) {
                     const countMessage = data.count === 1 ? '1 notification' : `${data.count} notifications`;
                     notificationList.innerHTML = `<div class="empty-notifications">${countMessage} marked as read</div>`;

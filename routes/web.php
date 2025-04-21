@@ -478,11 +478,12 @@ Route::middleware(['auth:admin'])->group(function () {
 });
 
 // UITC Staff specific routes
-Route::middleware(['auth'])->prefix('uitc-staff')->group(function () {
-    Route::get('/assigned-requests', [UitcStaffController::class, 'assignedRequests'])->name('uitc.assigned-requests');
-    Route::get('/notifications/get', [NotificationController::class, 'getNotifications']);
-    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
-    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+// Apply 'auth:admin' middleware for staff routes
+Route::middleware(['auth:admin'])->prefix('uitc-staff')->name('uitc.')->group(function () { // Added auth:admin and route name prefix
+    Route::get('/assigned-requests', [UitcStaffController::class, 'assignedRequests'])->name('assigned-requests'); // Adjusted name
+    Route::get('/notifications/get', [NotificationController::class, 'getNotifications'])->name('notifications.get'); // Added name
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read'); // Added name
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read'); // Added name
 });
 
 

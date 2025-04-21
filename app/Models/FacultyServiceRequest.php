@@ -110,4 +110,10 @@ class FacultyServiceRequest extends Model
     {
         return $this->belongsTo(Admin::class, 'assigned_uitc_staff_id');
     }
+
+    public function satisfactionSurvey()
+    {
+        return $this->hasOne(CustomerSatisfaction::class, 'request_id')
+                    ->where('request_type', 'Faculty & Staff');
+    }
 }

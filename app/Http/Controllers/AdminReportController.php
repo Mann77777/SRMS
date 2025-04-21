@@ -2,1013 +2,818 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin;
-use App\Models\FacultyServiceRequest;
-use App\Models\StudentServiceRequest;
 use Illuminate\Http\Request;
+use App\Models\StudentServiceRequest;
+use App\Models\FacultyServiceRequest;
+use App\Models\CustomerSatisfaction;
+use App\Models\Admin;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Chart\Chart;
+use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
+use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
+use PhpOffice\PhpSpreadsheet\Chart\Legend;
+use PhpOffice\PhpSpreadsheet\Chart\Title;
+use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
 
 class AdminReportController extends Controller
 {
-    /**
-     * Display the admin report page
-     */
-    public function index()
-    {
-        // Fetch initial data for rendering the page with default charts
-        $currentMonth = Carbon::now()->startOfMonth();
-        $endDate = Carbon::now();
-        
-        // Get initial stats
-        $stats = $this->getStatisticsSummary($currentMonth, $endDate);
-        
-        // Get initial monthly trends
-        $monthlyTrends = $this->getMonthlyTrends(
-            Carbon::now()->subMonths(5)->startOfMonth(),
-            $endDate
-        );
-        
-        // Get UITC staff for dropdown population
-        $uitcStaff = Admin::where('role', 'UITC Staff')->get(['id', 'name']);
-        
-        return view('admin.reports', [
-            'initialStats' => $stats,
-            'initialMonthlyTrends' => $monthlyTrends,
-            'uitcStaff' => $uitcStaff
-        ]);
-    }
-
-    /**
-     * Get report data based on filters
-     */
-    public function getReportData(Request $request)
+    public function index(Request $request)
     {
         try {
-            // Validate input
-            $validated = $request->validate([
-                'date_filter' => 'required|string',
-                'staff_id' => 'nullable|string',
-                'service_category' => 'nullable|string',
-                'status' => 'nullable|string',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date',
-                'page' => 'nullable|integer'
-            ]);
-
-            // Set date range based on filter
+            // Get filter parameters with defaults
+            $period = $request->input('period', 'month');
+            $staffId = $request->input('staff_id', 'all');
+            $serviceCategory = $request->input('service_category', 'all');
+            $customStartDate = $request->input('custom_start_date');
+            $customEndDate = $request->input('custom_end_date');
+            
+            // Set date range based on period
             $startDate = null;
             $endDate = Carbon::now();
-
-            switch ($validated['date_filter']) {
-                case 'current_month':
+            
+            switch ($period) {
+                case 'week':
+                    $startDate = Carbon::now()->subWeek();
+                    break;
+                case 'month':
                     $startDate = Carbon::now()->startOfMonth();
                     break;
-                case 'last_month':
-                    $startDate = Carbon::now()->subMonth()->startOfMonth();
-                    $endDate = Carbon::now()->subMonth()->endOfMonth();
+                case 'quarter':
+                    $startDate = Carbon::now()->subMonths(3);
                     break;
-                case 'last_3_months':
-                    $startDate = Carbon::now()->subMonths(3)->startOfMonth();
-                    break;
-                case 'last_6_months':
-                    $startDate = Carbon::now()->subMonths(6)->startOfMonth();
-                    break;
-                case 'year_to_date':
-                    $startDate = Carbon::now()->startOfYear();
-                    break;
-                case 'last_year':
-                    $startDate = Carbon::now()->subYear()->startOfYear();
-                    $endDate = Carbon::now()->subYear()->endOfYear();
+                case 'year':
+                    $startDate = Carbon::now()->subYear();
                     break;
                 case 'custom':
-                    if ($request->filled('start_date')) {
-                        $startDate = Carbon::parse($validated['start_date']);
+                    if ($customStartDate && $customEndDate) {
+                        $startDate = Carbon::parse($customStartDate);
+                        $endDate = Carbon::parse($customEndDate)->endOfDay();
                     } else {
-                        $startDate = Carbon::now()->subMonths(6);
-                    }
-                    
-                    if ($request->filled('end_date')) {
-                        $endDate = Carbon::parse($validated['end_date'])->endOfDay();
+                        $startDate = Carbon::now()->startOfMonth();
                     }
                     break;
                 default:
-                    $startDate = Carbon::now()->subMonths(6);
+                    $startDate = Carbon::now()->startOfMonth();
             }
             
-            // Apply staff filter, service category filter, and status filter to the database queries
-            $staffId = ($validated['staff_id'] !== 'all') ? $validated['staff_id'] : null;
-            $serviceCategory = ($validated['service_category'] !== 'all') ? $validated['service_category'] : null;
-            $status = ($validated['status'] !== 'all') ? $validated['status'] : null;
+            // Get all UITC staff for filter dropdown
+            $uitcStaff = Admin::where('role', 'UITC Staff')->orderBy('name')->get();
             
-            // Get statistics summary
-            $stats = $this->getStatisticsSummary($startDate, $endDate, $staffId, $serviceCategory, $status);
+            // Build query for student requests
+            $studentQuery = StudentServiceRequest::whereBetween('created_at', [$startDate, $endDate]);
+            if ($staffId !== 'all') {
+                $studentQuery->where('assigned_uitc_staff_id', $staffId);
+            }
+            if ($serviceCategory !== 'all') {
+                $studentQuery->where('service_category', $serviceCategory);
+            }
             
-            // Generate data for all charts
-            $chartData = [
-                'monthly_trends' => $this->getMonthlyTrends($startDate, $endDate, $staffId, $serviceCategory, $status),
-                'staff_performance' => $this->getStaffPerformanceData($startDate, $endDate, $serviceCategory, $status),
-                'service_categories' => $this->getServiceCategoryDistribution($startDate, $endDate, $staffId, $status),
-                'service_category_trends' => $this->getServiceCategoryTrends($startDate, $endDate, $staffId, $status),
-                'status_distribution' => $this->getStatusDistribution($startDate, $endDate, $staffId, $serviceCategory)
+            // Build query for faculty requests
+            $facultyQuery = FacultyServiceRequest::whereBetween('created_at', [$startDate, $endDate]);
+            if ($staffId !== 'all') {
+                $facultyQuery->where('assigned_uitc_staff_id', $staffId);
+            }
+            if ($serviceCategory !== 'all') {
+                $facultyQuery->where('service_category', $serviceCategory);
+            }
+            
+            // Get requests data
+            $studentRequests = $studentQuery->get();
+            $facultyRequests = $facultyQuery->get();
+            
+            // Combine both collections
+            $allRequests = $studentRequests->concat($facultyRequests);
+            
+            // Prepare statistics data
+            $stats = $this->calculateStats($allRequests);
+            
+            // Calculate service category breakdown
+            $categoryStats = $this->calculateCategoryStats($allRequests);
+            
+            // Get SLA performance data
+            $slaStats = $this->calculateSLAStats($allRequests);
+            
+            // Calculate staff performance metrics
+            $staffStats = $this->calculateStaffPerformance($allRequests);
+            
+            // Calculate user role distribution
+            $roleDistribution = [
+                'student' => $studentRequests->count(),
+                'faculty' => $facultyRequests->count()
             ];
             
-            // Get out-of-specialization requests
-            $outOfSpecRequests = $this->getOutOfSpecRequests($startDate, $endDate, $staffId);
+            // Calculate monthly trends
+            $monthlyTrends = $this->calculateMonthlyTrends($allRequests, $startDate, $endDate);
             
-            // Get detailed request data for the table
-            $detailedRequests = $this->getDetailedRequests(
-                $startDate, 
-                $endDate, 
-                $staffId, 
-                $serviceCategory, 
-                $status, 
-                $request->input('page', 1)
-            );
+            // Get service categories for dropdown
+            $serviceCategories = $this->getServiceCategories();
             
-            // Get staff performance table data
-            $staffPerformance = $this->getStaffPerformanceTable($startDate, $endDate, $serviceCategory, $status);
-            
-            // Prepare report data
-            $reportData = [
-                'success' => true,
+            return view('admin.admin_report', [
                 'stats' => $stats,
-                'charts' => $chartData,
-                'staff_performance' => $staffPerformance,
-                'out_of_spec_requests' => $outOfSpecRequests,
-                'requests' => $detailedRequests
-            ];
-
-            return response()->json($reportData);
-            
-        } catch (\Exception $e) {
-            Log::error('Error generating report data: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'categoryStats' => $categoryStats,
+                'slaStats' => $slaStats,
+                'staffStats' => $staffStats,
+                'roleDistribution' => $roleDistribution,
+                'monthlyTrends' => $monthlyTrends,
+                'period' => $period,
+                'startDate' => $startDate->format('Y-m-d'),
+                'endDate' => $endDate->format('Y-m-d'),
+                'customStartDate' => $customStartDate,
+                'customEndDate' => $customEndDate,
+                'serviceCategories' => $serviceCategories,
+                'uitcStaff' => $uitcStaff,
+                'selectedStaffId' => $staffId,
+                'selectedCategory' => $serviceCategory
             ]);
             
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate report data: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get summary statistics directly from database
-     */
-    private function getStatisticsSummary($startDate, $endDate, $staffId = null, $serviceCategory = null, $status = null)
-    {
-        // Build the student request query
-        $studentQuery = StudentServiceRequest::whereBetween('created_at', [$startDate, $endDate]);
-        
-        // Build the faculty request query
-        $facultyQuery = FacultyServiceRequest::whereBetween('created_at', [$startDate, $endDate]);
-        
-        // Apply additional filters if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
-        }
-        
-        if ($serviceCategory) {
-            $studentQuery->where('service_category', $serviceCategory);
-            $facultyQuery->where('service_category', $serviceCategory);
-        }
-        
-        if ($status) {
-            $studentQuery->where('status', $status);
-            $facultyQuery->where('status', $status);
-        }
-        
-        // Count total requests
-        $totalStudentRequests = $studentQuery->count();
-        $totalFacultyRequests = $facultyQuery->count();
-        $totalRequests = $totalStudentRequests + $totalFacultyRequests;
-        
-        // Count completed requests
-        $completedStudentRequests = (clone $studentQuery)->where('status', 'Completed')->count();
-        $completedFacultyRequests = (clone $facultyQuery)->where('status', 'Completed')->count();
-        $completedRequests = $completedStudentRequests + $completedFacultyRequests;
-        
-        // Calculate completion rate
-        $completionRate = $totalRequests > 0 ? round(($completedRequests / $totalRequests) * 100, 1) : 0;
-        
-        // Calculate average response time (time from creation to when staff was assigned)
-        $studentAvgTime = (clone $studentQuery)
-            ->whereNotNull('assigned_uitc_staff_id')
-            ->whereNotNull('updated_at')
-            ->select(DB::raw('AVG(TIMESTAMPDIFF(HOUR, created_at, updated_at)) as avg_response_time'))
-            ->first();
-        
-        $facultyAvgTime = (clone $facultyQuery)
-            ->whereNotNull('assigned_uitc_staff_id')
-            ->whereNotNull('updated_at')
-            ->select(DB::raw('AVG(TIMESTAMPDIFF(HOUR, created_at, updated_at)) as avg_response_time'))
-            ->first();
-        
-        // Combine the averages, weighted by the number of requests
-        $studentAvgResponseTime = $studentAvgTime->avg_response_time ?? 0;
-        $facultyAvgResponseTime = $facultyAvgTime->avg_response_time ?? 0;
-        
-        $totalAvgTime = 0;
-        $totalWithResponseTime = ((clone $studentQuery)->whereNotNull('assigned_uitc_staff_id')->whereNotNull('updated_at')->count() +
-                                (clone $facultyQuery)->whereNotNull('assigned_uitc_staff_id')->whereNotNull('updated_at')->count());
-        
-        if ($totalWithResponseTime > 0) {
-            $totalAvgTime = (($studentAvgResponseTime * (clone $studentQuery)->whereNotNull('assigned_uitc_staff_id')->whereNotNull('updated_at')->count()) +
-                            ($facultyAvgResponseTime * (clone $facultyQuery)->whereNotNull('assigned_uitc_staff_id')->whereNotNull('updated_at')->count())) / 
-                            $totalWithResponseTime;
-        }
-        
-        return [
-            'total_requests' => $totalRequests,
-            'completed_requests' => $completedRequests,
-            'avg_response_time' => round($totalAvgTime, 1),
-            'completion_rate' => $completionRate
-        ];
-    }
-
-    /**
-     * Get monthly trends data from database
-     */
-    private function getMonthlyTrends($startDate, $endDate, $staffId = null, $serviceCategory = null, $status = null)
-    {
-        // Convert start and end dates to compatible format
-        $start = $startDate->copy()->startOfMonth();
-        $end = $endDate->copy()->endOfMonth();
-        
-        // Generate all months between start and end dates
-        $months = [];
-        $currentDate = $start->copy();
-        while ($currentDate->lte($end)) {
-            $months[] = $currentDate->format('Y-m'); // Format as 'YYYY-MM'
-            $currentDate->addMonth();
-        }
-        
-        // Initialize results array with zeros for all months
-        $results = array_fill_keys($months, 0);
-        
-        // Query for student requests
-        $studentQuery = DB::table('student_service_requests')
-            ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'), DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$start, $end])
-            ->groupBy(DB::raw('DATE_FORMAT(created_at, "%Y-%m")'));
+        } catch (\Exception $e) {
+            Log::error('Error generating admin reports: ' . $e->getMessage(), [
+                'admin_id' => Auth::guard('admin')->id() ?? 'Unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-        // Query for faculty requests
-        $facultyQuery = DB::table('faculty_service_requests')
-            ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'), DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$start, $end])
-            ->groupBy(DB::raw('DATE_FORMAT(created_at, "%Y-%m")'));
-        
-        // Apply additional filters if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
-        }
-        
-        if ($serviceCategory) {
-            $studentQuery->where('service_category', $serviceCategory);
-            $facultyQuery->where('service_category', $serviceCategory);
-        }
-        
-        if ($status) {
-            $studentQuery->where('status', $status);
-            $facultyQuery->where('status', $status);
-        }
-        
-        // Execute queries
-        $studentResults = $studentQuery->get();
-        $facultyResults = $facultyQuery->get();
-        
-        // Merge results
-        foreach ($studentResults as $result) {
-            $results[$result->month] += $result->count;
-        }
-        
-        foreach ($facultyResults as $result) {
-            $results[$result->month] += $result->count;
-        }
-        
-        // Format for chart display
-        $formattedLabels = [];
-        foreach ($months as $month) {
-            $date = Carbon::createFromFormat('Y-m', $month);
-            $formattedLabels[] = $date->format('M Y'); // Format as 'Jan 2023'
-        }
-        
-        return [
-            'labels' => $formattedLabels,
-            'data' => array_values($results)
-        ];
-    }
-
-    /**
-     * Get staff performance data for the chart
-     */
-    private function getStaffPerformanceData($startDate, $endDate, $serviceCategory = null, $status = null)
-    {
-        // First, get all UITC staff
-        $uitcStaff = Admin::where('role', 'UITC Staff')->get(['id', 'name']);
-        
-        // Initialize arrays for chart data
-        $labels = [];
-        $assignedCounts = [];
-        $completedCounts = [];
-        
-        foreach ($uitcStaff as $staff) {
-            // Add staff name to labels
-            $labels[] = $staff->name;
-            
-            // Count assigned student requests
-            $studentAssignedQuery = StudentServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                ->whereBetween('created_at', [$startDate, $endDate]);
-                
-            // Count assigned faculty requests
-            $facultyAssignedQuery = FacultyServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                ->whereBetween('created_at', [$startDate, $endDate]);
-            
-            // Apply service category filter if provided
-            if ($serviceCategory) {
-                $studentAssignedQuery->where('service_category', $serviceCategory);
-                $facultyAssignedQuery->where('service_category', $serviceCategory);
-            }
-            
-            // Get total assigned count
-            $assignedCount = $studentAssignedQuery->count() + $facultyAssignedQuery->count();
-            $assignedCounts[] = $assignedCount;
-            
-            // Count completed student requests
-            $studentCompletedQuery = (clone $studentAssignedQuery)->where('status', 'Completed');
-            
-            // Count completed faculty requests
-            $facultyCompletedQuery = (clone $facultyAssignedQuery)->where('status', 'Completed');
-            
-            // Get total completed count
-            $completedCount = $studentCompletedQuery->count() + $facultyCompletedQuery->count();
-            $completedCounts[] = $completedCount;
-        }
-        
-        return [
-            'labels' => $labels,
-            'assigned' => $assignedCounts,
-            'completed' => $completedCounts
-        ];
-    }
-
-    /**
-     * Get service category distribution data
-     */
-    private function getServiceCategoryDistribution($startDate, $endDate, $staffId = null, $status = null)
-    {
-        // Query for student service categories
-        $studentQuery = DB::table('student_service_requests')
-            ->select('service_category', DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('service_category');
-            
-        // Query for faculty service categories
-        $facultyQuery = DB::table('faculty_service_requests')
-            ->select('service_category', DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('service_category');
-        
-        // Apply additional filters if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
-        }
-        
-        if ($status) {
-            $studentQuery->where('status', $status);
-            $facultyQuery->where('status', $status);
-        }
-        
-        // Execute queries
-        $studentResults = $studentQuery->get();
-        $facultyResults = $facultyQuery->get();
-        
-        // Combine and format results
-        $categoryMap = [];
-        
-        foreach ($studentResults as $result) {
-            $formattedCategory = $this->formatServiceCategory($result->service_category);
-            if (!isset($categoryMap[$formattedCategory])) {
-                $categoryMap[$formattedCategory] = 0;
-            }
-            $categoryMap[$formattedCategory] += $result->count;
-        }
-        
-        foreach ($facultyResults as $result) {
-            $formattedCategory = $this->formatServiceCategory($result->service_category);
-            if (!isset($categoryMap[$formattedCategory])) {
-                $categoryMap[$formattedCategory] = 0;
-            }
-            $categoryMap[$formattedCategory] += $result->count;
-        }
-        
-        // Sort by count in descending order
-        arsort($categoryMap);
-        
-        // Take top 9 categories (or all if there are fewer)
-        $topCategories = array_slice($categoryMap, 0, 9, true);
-        
-        return [
-            'labels' => array_keys($topCategories),
-            'data' => array_values($topCategories)
-        ];
-    }
-
-    /**
-     * Get service category trends over time
-     */
-    private function getServiceCategoryTrends($startDate, $endDate, $staffId = null, $status = null)
-    {
-        // Convert start and end dates to compatible format
-        $start = $startDate->copy()->startOfMonth();
-        $end = $endDate->copy()->endOfMonth();
-        
-        // Generate all months between start and end dates
-        $months = [];
-        $currentDate = $start->copy();
-        while ($currentDate->lte($end)) {
-            $months[] = $currentDate->format('Y-m'); // Format as 'YYYY-MM'
-            $currentDate->addMonth();
-        }
-        
-        // Format months for display
-        $formattedLabels = [];
-        foreach ($months as $month) {
-            $date = Carbon::createFromFormat('Y-m', $month);
-            $formattedLabels[] = $date->format('M Y'); // Format as 'Jan 2023'
-        }
-        
-        // Get top 3 service categories
-        $topCategories = $this->getTopServiceCategories($startDate, $endDate, $staffId, $status);
-        
-        // Initialize datasets
-        $datasets = [];
-        $colorSets = [
-            [
-                'borderColor' => 'rgba(78, 115, 223, 1)',
-                'backgroundColor' => 'rgba(78, 115, 223, 0.1)'
-            ],
-            [
-                'borderColor' => 'rgba(28, 200, 138, 1)',
-                'backgroundColor' => 'rgba(28, 200, 138, 0.1)'
-            ],
-            [
-                'borderColor' => 'rgba(54, 185, 204, 1)',
-                'backgroundColor' => 'rgba(54, 185, 204, 0.1)'
-            ]
-        ];
-        
-        foreach ($topCategories as $index => $category) {
-            // Skip if we've already added 3 datasets
-            if ($index >= 3) {
-                break;
-            }
-            
-            // Get monthly counts for this category
-            $monthlyData = array_fill_keys($months, 0);
-            
-            // Query student requests for this category
-            $studentResults = DB::table('student_service_requests')
-                ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'), DB::raw('COUNT(*) as count'))
-                ->where('service_category', $category->service_category)
-                ->whereBetween('created_at', [$start, $end])
-                ->groupBy(DB::raw('DATE_FORMAT(created_at, "%Y-%m")'));
-                
-            // Query faculty requests for this category
-            $facultyResults = DB::table('faculty_service_requests')
-                ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'), DB::raw('COUNT(*) as count'))
-                ->where('service_category', $category->service_category)
-                ->whereBetween('created_at', [$start, $end])
-                ->groupBy(DB::raw('DATE_FORMAT(created_at, "%Y-%m")'));
-            
-            // Apply additional filters if provided
-            if ($staffId) {
-                $studentResults->where('assigned_uitc_staff_id', $staffId);
-                $facultyResults->where('assigned_uitc_staff_id', $staffId);
-            }
-            
-            if ($status) {
-                $studentResults->where('status', $status);
-                $facultyResults->where('status', $status);
-            }
-            
-            // Execute queries
-            $studentMonthly = $studentResults->get();
-            $facultyMonthly = $facultyResults->get();
-            
-            // Merge results
-            foreach ($studentMonthly as $result) {
-                $monthlyData[$result->month] += $result->count;
-            }
-            
-            foreach ($facultyMonthly as $result) {
-                $monthlyData[$result->month] += $result->count;
-            }
-            
-            // Add dataset
-            $datasets[] = [
-                'label' => $this->formatServiceCategory($category->service_category),
-                'data' => array_values($monthlyData),
-                'borderColor' => $colorSets[$index]['borderColor'],
-                'backgroundColor' => $colorSets[$index]['backgroundColor']
+            // Initialize default values in case of error
+            $stats = [
+                'total_requests' => 0,
+                'completed_requests' => 0,
+                'in_progress_requests' => 0,
+                'pending_requests' => 0,
+                'cancelled_requests' => 0,
+                'avg_resolution_time' => 0
             ];
-        }
-        
-        return [
-            'labels' => $formattedLabels,
-            'datasets' => $datasets
-        ];
-    }
-
-    /**
-     * Get top service categories within date range
-     */
-    private function getTopServiceCategories($startDate, $endDate, $staffId = null, $status = null)
-    {
-        // Create a union query to get combined service category counts
-        $studentQuery = DB::table('student_service_requests')
-            ->select('service_category', DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('service_category');
             
-        $facultyQuery = DB::table('faculty_service_requests')
-            ->select('service_category', DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('service_category');
-        
-        // Apply additional filters if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
-        }
-        
-        if ($status) {
-            $studentQuery->where('status', $status);
-            $facultyQuery->where('status', $status);
-        }
-        
-        // Get results
-        $studentResults = $studentQuery->get();
-        $facultyResults = $facultyQuery->get();
-        
-        // Combine results
-        $categoryMap = [];
-        
-        foreach ($studentResults as $result) {
-            if (!isset($categoryMap[$result->service_category])) {
-                $categoryMap[$result->service_category] = 0;
-            }
-            $categoryMap[$result->service_category] += $result->count;
-        }
-        
-        foreach ($facultyResults as $result) {
-            if (!isset($categoryMap[$result->service_category])) {
-                $categoryMap[$result->service_category] = 0;
-            }
-            $categoryMap[$result->service_category] += $result->count;
-        }
-        
-        // Convert to array of objects
-        $categories = [];
-        foreach ($categoryMap as $category => $count) {
-            $categories[] = (object) [
-                'service_category' => $category,
-                'count' => $count
+            $slaStats = [
+                'met' => 0,
+                'missed' => 0,
+                'met_percentage' => 0,
+                'missed_percentage' => 0,
+                'avg_response_time' => 0
             ];
+            
+            return view('admin.admin_report', [
+                'stats' => $stats,
+                'categoryStats' => [],
+                'slaStats' => $slaStats,
+                'staffStats' => [],
+                'roleDistribution' => ['student' => 0, 'faculty' => 0],
+                'monthlyTrends' => [],
+                'period' => 'month',
+                'startDate' => Carbon::now()->startOfMonth()->format('Y-m-d'),
+                'endDate' => Carbon::now()->format('Y-m-d'),
+                'customStartDate' => '',
+                'customEndDate' => '',
+                'serviceCategories' => [],
+                'uitcStaff' => [],
+                'selectedStaffId' => 'all',
+                'selectedCategory' => 'all',
+                'error' => 'Unable to generate reports: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Export report data to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            // Get filter parameters
+            $period = $request->input('period', 'month');
+            $staffId = $request->input('staff_id', 'all');
+            $serviceCategory = $request->input('service_category', 'all');
+            $customStartDate = $request->input('custom_start_date');
+            $customEndDate = $request->input('custom_end_date');
+            
+            // Set date range based on period
+            $startDate = null;
+            $endDate = Carbon::now();
+            
+            switch ($period) {
+                case 'week':
+                    $startDate = Carbon::now()->subWeek();
+                    break;
+                case 'month':
+                    $startDate = Carbon::now()->startOfMonth();
+                    break;
+                case 'quarter':
+                    $startDate = Carbon::now()->subMonths(3);
+                    break;
+                case 'year':
+                    $startDate = Carbon::now()->subYear();
+                    break;
+                case 'custom':
+                    if ($customStartDate && $customEndDate) {
+                        $startDate = Carbon::parse($customStartDate);
+                        $endDate = Carbon::parse($customEndDate)->endOfDay();
+                    } else {
+                        $startDate = Carbon::now()->startOfMonth();
+                    }
+                    break;
+                default:
+                    $startDate = Carbon::now()->startOfMonth();
+            }
+            
+            // Build query for student requests
+            $studentQuery = StudentServiceRequest::whereBetween('created_at', [$startDate, $endDate]);
+            if ($staffId !== 'all') {
+                $studentQuery->where('assigned_uitc_staff_id', $staffId);
+            }
+            if ($serviceCategory !== 'all') {
+                $studentQuery->where('service_category', $serviceCategory);
+            }
+            
+            // Build query for faculty requests
+            $facultyQuery = FacultyServiceRequest::whereBetween('created_at', [$startDate, $endDate]);
+            if ($staffId !== 'all') {
+                $facultyQuery->where('assigned_uitc_staff_id', $staffId);
+            }
+            if ($serviceCategory !== 'all') {
+                $facultyQuery->where('service_category', $serviceCategory);
+            }
+            
+            // Get requests data
+            $studentRequests = $studentQuery->get();
+            $facultyRequests = $facultyQuery->get();
+            
+            // Combine both collections
+            $allRequests = $studentRequests->concat($facultyRequests);
+            
+            // Prepare statistics data
+            $stats = $this->calculateStats($allRequests);
+            
+            // Calculate service category breakdown
+            $categoryStats = $this->calculateCategoryStats($allRequests);
+            
+            // Get SLA performance data
+            $slaStats = $this->calculateSLAStats($allRequests);
+            
+            // Calculate staff performance metrics
+            $staffStats = $this->calculateStaffPerformance($allRequests);
+            
+            // Calculate monthly trends
+            $monthlyTrends = $this->calculateMonthlyTrends($allRequests, $startDate, $endDate);
+            
+            // Create a new spreadsheet
+            $spreadsheet = new Spreadsheet();
+            
+            // Set document properties
+            $spreadsheet->getProperties()
+                ->setCreator('UITC Service Request System')
+                ->setLastModifiedBy('Admin')
+                ->setTitle('Service Request Report')
+                ->setSubject('Service Request Analytics')
+                ->setDescription('Comprehensive report on service requests.')
+                ->setKeywords('service requests, report, UITC')
+                ->setCategory('Reports');
+            
+            // Create the Summary worksheet
+            $worksheet = $spreadsheet->getActiveSheet();
+            $worksheet->setTitle('Summary');
+            
+            // Add report title and filters info
+            $worksheet->setCellValue('A1', 'UITC SERVICE REQUEST REPORT');
+            $worksheet->setCellValue('A2', 'Period: ' . ucfirst($period));
+            $worksheet->setCellValue('A3', 'Date Range: ' . $startDate->format('M d, Y') . ' to ' . $endDate->format('M d, Y'));
+            
+            // Format header
+            $worksheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+            $worksheet->getStyle('A2:A3')->getFont()->setBold(true);
+            
+            // Summary Statistics
+            $worksheet->setCellValue('A5', 'SUMMARY STATISTICS');
+            $worksheet->getStyle('A5')->getFont()->setBold(true);
+            
+            $worksheet->setCellValue('A6', 'Total Requests');
+            $worksheet->setCellValue('B6', $stats['total_requests']);
+            
+            $worksheet->setCellValue('A7', 'Completed Requests');
+            $worksheet->setCellValue('B7', $stats['completed_requests']);
+            
+            $worksheet->setCellValue('A8', 'In Progress Requests');
+            $worksheet->setCellValue('B8', $stats['in_progress_requests']);
+            
+            $worksheet->setCellValue('A9', 'Pending Requests');
+            $worksheet->setCellValue('B9', $stats['pending_requests']);
+            
+            $worksheet->setCellValue('A10', 'Cancelled Requests');
+            $worksheet->setCellValue('B10', $stats['cancelled_requests']);
+            
+            $worksheet->setCellValue('A11', 'Average Resolution Time (days)');
+            $worksheet->setCellValue('B11', $stats['avg_resolution_time']);
+            
+            // Status Distribution Section
+            $worksheet->setCellValue('D5', 'STATUS DISTRIBUTION');
+            $worksheet->getStyle('D5')->getFont()->setBold(true);
+            
+            $worksheet->setCellValue('D6', 'Status');
+            $worksheet->setCellValue('E6', 'Count');
+            $worksheet->setCellValue('F6', 'Percentage');
+            
+            $worksheet->setCellValue('D7', 'Completed');
+            $worksheet->setCellValue('E7', $stats['completed_requests']);
+            $worksheet->setCellValue('F7', $stats['total_requests'] > 0 ? round(($stats['completed_requests'] / $stats['total_requests']) * 100, 1) . '%' : '0%');
+            
+            $worksheet->setCellValue('D8', 'In Progress');
+            $worksheet->setCellValue('E8', $stats['in_progress_requests']);
+            $worksheet->setCellValue('F8', $stats['total_requests'] > 0 ? round(($stats['in_progress_requests'] / $stats['total_requests']) * 100, 1) . '%' : '0%');
+            
+            $worksheet->setCellValue('D9', 'Pending');
+            $worksheet->setCellValue('E9', $stats['pending_requests']);
+            $worksheet->setCellValue('F9', $stats['total_requests'] > 0 ? round(($stats['pending_requests'] / $stats['total_requests']) * 100, 1) . '%' : '0%');
+            
+            $worksheet->setCellValue('D10', 'Cancelled');
+            $worksheet->setCellValue('E10', $stats['cancelled_requests']);
+            $worksheet->setCellValue('F10', $stats['total_requests'] > 0 ? round(($stats['cancelled_requests'] / $stats['total_requests']) * 100, 1) . '%' : '0%');
+            
+            // Service Category Breakdown
+            $worksheet->setCellValue('A13', 'SERVICE CATEGORY BREAKDOWN');
+            $worksheet->getStyle('A13')->getFont()->setBold(true);
+            
+            $worksheet->setCellValue('A14', 'Category');
+            $worksheet->setCellValue('B14', 'Total');
+            $worksheet->setCellValue('C14', 'Completed');
+            $worksheet->setCellValue('D14', 'Completion Rate');
+            $worksheet->setCellValue('E14', 'Avg Resolution (days)');
+            
+            $row = 15;
+            foreach ($categoryStats as $category => $data) {
+                $worksheet->setCellValue('A' . $row, $category);
+                $worksheet->setCellValue('B' . $row, $data['total']);
+                $worksheet->setCellValue('C' . $row, $data['completed']);
+                $worksheet->setCellValue('D' . $row, $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) . '%' : '0%');
+                $worksheet->setCellValue('E' . $row, is_numeric($data['avg_resolution']) ? $data['avg_resolution'] : 'N/A');
+                $row++;
+            }
+            
+            // SLA Performance
+            $worksheet->setCellValue('A' . ($row + 2), 'SLA PERFORMANCE');
+            $worksheet->getStyle('A' . ($row + 2))->getFont()->setBold(true);
+            
+            $worksheet->setCellValue('A' . ($row + 3), 'Met Dealine');
+            $worksheet->setCellValue('B' . ($row + 3), $slaStats['met']);
+            
+            $worksheet->setCellValue('A' . ($row + 4), 'Missed Dealine');
+            $worksheet->setCellValue('B' . ($row + 4), $slaStats['missed']);
+            
+            $worksheet->setCellValue('A' . ($row + 5), 'SLA Met Rate');
+            $worksheet->setCellValue('B' . ($row + 5), $slaStats['met_percentage'] . '%');
+            
+            $worksheet->setCellValue('A' . ($row + 6), 'Average Response Time (hours)');
+            $worksheet->setCellValue('B' . ($row + 6), $slaStats['avg_response_time']);
+            
+            // Monthly Trends - Add to a new sheet
+            $trendSheet = $spreadsheet->createSheet();
+            $trendSheet->setTitle('Monthly Request');
+            
+            $trendSheet->setCellValue('A1', 'MONTHLY REQUEST TRENDS');
+            $trendSheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+            
+            $trendSheet->setCellValue('A3', 'Month');
+            $trendSheet->setCellValue('B3', 'New Requests');
+            $trendSheet->setCellValue('C3', 'Completed Requests');
+            
+            $trendRow = 4;
+            foreach ($monthlyTrends as $month => $data) {
+                $trendSheet->setCellValue('A' . $trendRow, $month);
+                $trendSheet->setCellValue('B' . $trendRow, $data['total']);
+                $trendSheet->setCellValue('C' . $trendRow, $data['completed']);
+                $trendRow++;
+            }
+            
+            // Staff Performance - Add to a new sheet
+            $staffSheet = $spreadsheet->createSheet();
+            $staffSheet->setTitle('UITC Staff Performance');
+            
+            $staffSheet->setCellValue('A1', 'UITC STAFF PERFORMANCE');
+            $staffSheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+            
+            $staffSheet->setCellValue('A3', 'Staff Name');
+            $staffSheet->setCellValue('B3', 'Total Assigned');
+            $staffSheet->setCellValue('C3', 'Completed');
+            $staffSheet->setCellValue('D3', 'Completion Rate');
+            $staffSheet->setCellValue('E3', 'Avg Resolution (days)');
+            $staffSheet->setCellValue('F3', 'SLA Met Rate');
+            
+            $staffRow = 4;
+            foreach ($staffStats as $staffId => $data) {
+                $staffSheet->setCellValue('A' . $staffRow, $data['name']);
+                $staffSheet->setCellValue('B' . $staffRow, $data['total']);
+                $staffSheet->setCellValue('C' . $staffRow, $data['completed']);
+                $staffSheet->setCellValue('D' . $staffRow, $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) . '%' : '0%');
+                $staffSheet->setCellValue('E' . $staffRow, $data['avg_resolution']);
+                $staffSheet->setCellValue('F' . $staffRow, $data['sla_met_rate'] . '%');
+                $staffRow++;
+            }
+            
+            // Request Details - Add to a new sheet
+            $detailsSheet = $spreadsheet->createSheet();
+            $detailsSheet->setTitle('Request Details');
+            
+            $detailsSheet->setCellValue('A1', 'SERVICE REQUEST DETAILS');
+            $detailsSheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+            
+            $detailsSheet->setCellValue('A3', 'Request ID');
+            $detailsSheet->setCellValue('B3', 'Type');
+            $detailsSheet->setCellValue('C3', 'Requester');
+            $detailsSheet->setCellValue('D3', 'Service Category');
+            $detailsSheet->setCellValue('E3', 'Status');
+            $detailsSheet->setCellValue('F3', 'Assigned Staff');
+            $detailsSheet->setCellValue('G3', 'Created Date');
+            $detailsSheet->setCellValue('H3', 'Updated Date');
+            $detailsSheet->setCellValue('I3', 'Resolution Time (days)');
+            
+            $detailRow = 4;
+            foreach ($allRequests as $request) {
+                $requestType = $request instanceof StudentServiceRequest ? 'Student' : 'Faculty & Staff';
+                $createdAt = Carbon::parse($request->created_at);
+                $updatedAt = Carbon::parse($request->updated_at);
+                $resolutionDays = $request->status === 'Completed' ? $createdAt->diffInDays($updatedAt) : 'N/A';
+                
+                // Get assigned staff name
+                $staffName = 'Not Assigned';
+                if ($request->assigned_uitc_staff_id) {
+                    $staff = Admin::find($request->assigned_uitc_staff_id);
+                    if ($staff) {
+                        $staffName = $staff->name;
+                    }
+                }
+                
+                $detailsSheet->setCellValue('A' . $detailRow, $request->id);
+                $detailsSheet->setCellValue('B' . $detailRow, $requestType);
+                $detailsSheet->setCellValue('C' . $detailRow, $request->first_name . ' ' . $request->last_name);
+                $detailsSheet->setCellValue('D' . $detailRow, $this->formatServiceCategory($request->service_category));
+                $detailsSheet->setCellValue('E' . $detailRow, $request->status);
+                $detailsSheet->setCellValue('F' . $detailRow, $staffName);
+                $detailsSheet->setCellValue('G' . $detailRow, $createdAt->format('Y-m-d H:i:s'));
+                $detailsSheet->setCellValue('H' . $detailRow, $updatedAt->format('Y-m-d H:i:s'));
+                $detailsSheet->setCellValue('I' . $detailRow, $resolutionDays);
+                
+                $detailRow++;
+            }
+            
+            // Auto-size columns for all sheets
+            foreach ($spreadsheet->getAllSheets() as $sheet) {
+                foreach (range('A', 'I') as $column) {
+                    $sheet->getColumnDimension($column)->setAutoSize(true);
+                }
+            }
+            
+            // Create the Excel file
+            $writer = new Xlsx($spreadsheet);
+            $fileName = 'UITC_Service_Request_Report_' . Carbon::now()->format('Y-m-d_H-i-s') . '.xlsx';
+            $filePath = storage_path('app/public/' . $fileName);
+            $writer->save($filePath);
+            
+            // Return the file for download
+            return response()->download($filePath)->deleteFileAfterSend(true);
+            
+        } catch (\Exception $e) {
+            Log::error('Error exporting reports to Excel: ' . $e->getMessage(), [
+                'admin_id' => Auth::guard('admin')->id() ?? 'Unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()->with('error', 'Unable to export reports: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Calculate overall statistics
+     */
+    private function calculateStats($requests)
+    {
+        $stats = [
+            'total_requests' => $requests->count(),
+            'completed_requests' => $requests->where('status', 'Completed')->count(),
+            'in_progress_requests' => $requests->where('status', 'In Progress')->count(),
+            'pending_requests' => $requests->where('status', 'Pending')->count(),
+            'cancelled_requests' => $requests->where('status', 'Cancelled')->count(),
+        ];
+        
+        // Calculate average resolution time for completed requests
+        $completedRequests = $requests->where('status', 'Completed');
+        
+        $totalResolutionDays = 0;
+        
+        foreach ($completedRequests as $request) {
+            $createdAt = Carbon::parse($request->created_at);
+            $completedAt = Carbon::parse($request->updated_at);
+            $daysToResolve = $createdAt->diffInDays($completedAt);
+            $totalResolutionDays += $daysToResolve;
         }
         
-        // Sort by count in descending order
-        usort($categories, function($a, $b) {
-            return $b->count - $a->count;
+        $stats['avg_resolution_time'] = $completedRequests->count() > 0 
+            ? round($totalResolutionDays / $completedRequests->count(), 1) 
+            : 0;
+            
+        return $stats;
+    }
+    
+    /**
+     * Calculate service category statistics
+     */
+    private function calculateCategoryStats($requests)
+    {
+        $categoryStats = [];
+        
+        foreach ($requests as $request) {
+            $category = $request->service_category;
+            $formattedCategory = $this->formatServiceCategory($category);
+            
+            if (!isset($categoryStats[$formattedCategory])) {
+                $categoryStats[$formattedCategory] = [
+                    'total' => 0,
+                    'completed' => 0,
+                    'in_progress' => 0,
+                    'pending' => 0,
+                    'cancelled' => 0,
+                    'resolution_times' => [],
+                ];
+            }
+            
+            $categoryStats[$formattedCategory]['total']++;
+            
+            switch ($request->status) {
+                case 'Completed':
+                    $categoryStats[$formattedCategory]['completed']++;
+                    $createdAt = Carbon::parse($request->created_at);
+                    $completedAt = Carbon::parse($request->updated_at);
+                    $daysToResolve = $createdAt->diffInDays($completedAt);
+                    $categoryStats[$formattedCategory]['resolution_times'][] = $daysToResolve;
+                    break;
+                case 'In Progress':
+                    $categoryStats[$formattedCategory]['in_progress']++;
+                    break;
+                case 'Pending':
+                    $categoryStats[$formattedCategory]['pending']++;
+                    break;
+                case 'Cancelled':
+                    $categoryStats[$formattedCategory]['cancelled']++;
+                    break;
+            }
+        }
+        
+        // Calculate average resolution time per category
+        foreach ($categoryStats as $category => &$data) {
+            if (!empty($data['resolution_times'])) {
+                $data['avg_resolution'] = round(array_sum($data['resolution_times']) / count($data['resolution_times']), 1);
+            } else {
+                $data['avg_resolution'] = 'N/A';
+            }
+        }
+        
+        // Sort by total requests (descending)
+        uasort($categoryStats, function($a, $b) {
+            return $b['total'] - $a['total'];
         });
         
-        return $categories;
+        return $categoryStats;
     }
-
+    
     /**
-     * Get status distribution data
+     * Calculate SLA performance statistics
      */
-    private function getStatusDistribution($startDate, $endDate, $staffId = null, $serviceCategory = null)
+    private function calculateSLAStats($requests)
     {
-        // Define statuses we want to count
-        $statuses = ['Pending', 'In Progress', 'Completed', 'Rejected'];
-        $statusCounts = array_fill_keys($statuses, 0);
+        // Define SLA thresholds in hours for different service categories
+        $slaThresholds = [
+            'create' => 24, // hours
+            'reset_email_password' => 2,
+            'change_of_data_ms' => 24,
+            'reset_tup_web_password' => 2,
+            'reset_ers_password' => 2,
+            'change_of_data_portal' => 24,
+            'dtr' => 48,
+            'biometric_record' => 24,
+            'biometrics_enrollement' => 24,
+            'new_internet' => 72,
+            'new_telephone' => 72,
+            'repair_and_maintenance' => 48,
+            'computer_repair_maintenance' => 48,
+            'printer_repair_maintenance' => 48,
+            'request_led_screen' => 24,
+            'install_application' => 48,
+            'post_publication' => 24,
+            'data_docs_reports' => 48,
+            'default' => 24 // Default threshold
+        ];
         
-        // Query student request status counts
-        $studentQuery = DB::table('student_service_requests')
-            ->select('status', DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->whereIn('status', $statuses)
-            ->groupBy('status');
+        $metSLA = 0;
+        $missedSLA = 0;
+        $totalResponseTime = 0;
+        
+        foreach ($requests->where('status', 'Completed') as $request) {
+            $createdAt = Carbon::parse($request->created_at);
+            $completedAt = Carbon::parse($request->updated_at);
+            $responseTimeHours = $createdAt->diffInHours($completedAt);
+            $totalResponseTime += $responseTimeHours;
             
-        // Query faculty request status counts
-        $facultyQuery = DB::table('faculty_service_requests')
-            ->select('status', DB::raw('COUNT(*) as count'))
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->whereIn('status', $statuses)
-            ->groupBy('status');
-        
-        // Apply additional filters if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
+            $threshold = $slaThresholds[$request->service_category] ?? $slaThresholds['default'];
+            
+            if ($responseTimeHours <= $threshold) {
+                $metSLA++;
+            } else {
+                $missedSLA++;
+            }
         }
         
-        if ($serviceCategory) {
-            $studentQuery->where('service_category', $serviceCategory);
-            $facultyQuery->where('service_category', $serviceCategory);
-        }
-        
-        // Execute queries
-        $studentResults = $studentQuery->get();
-        $facultyResults = $facultyQuery->get();
-        
-        // Merge results
-        foreach ($studentResults as $result) {
-            $statusCounts[$result->status] += $result->count;
-        }
-        
-        foreach ($facultyResults as $result) {
-            $statusCounts[$result->status] += $result->count;
-        }
+        $totalCompletedRequests = $metSLA + $missedSLA;
         
         return [
-            'labels' => array_keys($statusCounts),
-            'data' => array_values($statusCounts)
+            'met' => $metSLA,
+            'missed' => $missedSLA,
+            'met_percentage' => $totalCompletedRequests > 0 ? 
+                round(($metSLA / $totalCompletedRequests) * 100) : 0,
+            'missed_percentage' => $totalCompletedRequests > 0 ? 
+                round(($missedSLA / $totalCompletedRequests) * 100) : 0,
+            'avg_response_time' => $totalCompletedRequests > 0 ? 
+                round($totalResponseTime / $totalCompletedRequests, 1) : 0
         ];
     }
-
+    
     /**
-     * Get staff performance table data
+     * Calculate staff performance metrics
      */
-    private function getStaffPerformanceTable($startDate, $endDate, $serviceCategory = null, $status = null)
+    private function calculateStaffPerformance($requests)
     {
+        $staffStats = [];
+        
         // Get all UITC staff
-        $uitcStaff = Admin::where('role', 'UITC Staff')->get(['id', 'name']);
+        $allStaff = Admin::where('role', 'UITC Staff')->get();
         
-        $performanceData = [];
-        
-        foreach ($uitcStaff as $staff) {
-            // Count assigned student requests
-            $studentAssignedQuery = StudentServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                ->whereBetween('created_at', [$startDate, $endDate]);
-                
-            // Count assigned faculty requests
-            $facultyAssignedQuery = FacultyServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                ->whereBetween('created_at', [$startDate, $endDate]);
-            
-            // Apply service category filter if provided
-            if ($serviceCategory) {
-                $studentAssignedQuery->where('service_category', $serviceCategory);
-                $facultyAssignedQuery->where('service_category', $serviceCategory);
-            }
-            
-            // Get total assigned count
-            $assignedCount = $studentAssignedQuery->count() + $facultyAssignedQuery->count();
-            
-            // Count completed student requests
-            $studentCompletedQuery = (clone $studentAssignedQuery)->where('status', 'Completed');
-            
-            // Count completed faculty requests
-            $facultyCompletedQuery = (clone $facultyAssignedQuery)->where('status', 'Completed');
-            
-            // Get total completed count
-            $completedCount = $studentCompletedQuery->count() + $facultyCompletedQuery->count();
-            
-            // Calculate performance percentage
-            $performance = $assignedCount > 0 ? round(($completedCount / $assignedCount) * 100) : 0;
-            
-            $performanceData[] = [
+        // Initialize stats for each staff member
+        foreach ($allStaff as $staff) {
+            $staffStats[$staff->id] = [
                 'name' => $staff->name,
-                'assigned' => $assignedCount,
-                'completed' => $completedCount,
-                'performance' => $performance
+                'total' => 0,
+                'completed' => 0,
+                'in_progress' => 0,
+                'pending' => 0,
+                'cancelled' => 0,
+                'sla_met' => 0,
+                'sla_missed' => 0,
+                'resolution_times' => [],
             ];
         }
         
-        // Sort by performance (highest first)
-        usort($performanceData, function($a, $b) {
-            return $b['performance'] - $a['performance'];
-        });
+        // Define SLA thresholds (same as in calculateSLAStats)
+        $slaThresholds = [
+            'create' => 24,
+            'reset_email_password' => 2,
+            'change_of_data_ms' => 24,
+            'reset_tup_web_password' => 2,
+            'reset_ers_password' => 2,
+            'change_of_data_portal' => 24,
+            'dtr' => 48,
+            'biometric_record' => 24,
+            'biometrics_enrollement' => 24,
+            'new_internet' => 72,
+            'new_telephone' => 72,
+            'repair_and_maintenance' => 48,
+            'computer_repair_maintenance' => 48,
+            'printer_repair_maintenance' => 48,
+            'request_led_screen' => 24,
+            'install_application' => 48,
+            'post_publication' => 24,
+            'data_docs_reports' => 48,
+            'default' => 24
+        ];
         
-        return $performanceData;
-    }
-
-    /**
-     * Get out-of-specialization requests
-     */
-    private function getOutOfSpecRequests($startDate, $endDate, $staffId = null)
-    {
-        // First, determine primary expertise areas
-        $staffExpertise = $this->determineStaffExpertise();
-        
-        // Get requests that might be out of specialization
-        $outOfSpecRequests = [];
-        
-        // Query student requests
-        $studentQuery = StudentServiceRequest::with('assignedUITCStaff')
-            ->whereNotNull('assigned_uitc_staff_id')
-            ->whereBetween('created_at', [$startDate, $endDate]);
-            
-        // Query faculty requests
-        $facultyQuery = FacultyServiceRequest::with('assignedUITCStaff')
-            ->whereNotNull('assigned_uitc_staff_id')
-            ->whereBetween('created_at', [$startDate, $endDate]);
-        
-        // Apply staff filter if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
-        }
-        
-        // Execute queries
-        $studentRequests = $studentQuery->get();
-        $facultyRequests = $facultyQuery->get();
-        
-        // Process student requests
-        foreach ($studentRequests as $request) {
-            $staffId = $request->assigned_uitc_staff_id;
-            
-            // Skip if we don't have expertise data for this staff
-            if (!isset($staffExpertise[$staffId])) {
-                continue;
-            }
-            
-            // Check if request category matches staff expertise
-            $requestCategory = $this->mapCategoryToExpertise($request->service_category);
-            $staffCategory = $staffExpertise[$staffId]['expertise'];
-            
-            if ($requestCategory !== $staffCategory) {
-                $outOfSpecRequests[] = [
-                    'id' => 'SSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT),
-                    'service_type' => $this->formatServiceCategory($request->service_category),
-                    'staff_name' => $request->assignedUITCStaff->name ?? 'Unknown',
-                    'primary_expertise' => $staffCategory
-                ];
-            }
-        }
-        
-        // Process faculty requests
-        foreach ($facultyRequests as $request) {
-            $staffId = $request->assigned_uitc_staff_id;
-            
-            // Skip if we don't have expertise data for this staff
-            if (!isset($staffExpertise[$staffId])) {
-                continue;
-            }
-            
-            // Check if request category matches staff expertise
-            $requestCategory = $this->mapCategoryToExpertise($request->service_category);
-            $staffCategory = $staffExpertise[$staffId]['expertise'];
-            
-            if ($requestCategory !== $staffCategory) {
-                $outOfSpecRequests[] = [
-                    'id' => 'FSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT),
-                    'service_type' => $this->formatServiceCategory($request->service_category),
-                    'staff_name' => $request->assignedUITCStaff->name ?? 'Unknown',
-                    'primary_expertise' => $staffCategory
-                ];
-            }
-        }
-        
-        return $outOfSpecRequests;
-    }
-
-    /**
-     * Determine the primary expertise of each staff based on their most frequently assigned service categories
-     */
-    private function determineStaffExpertise()
-    {
-        // Get all UITC staff
-        $uitcStaff = Admin::where('role', 'UITC Staff')->get(['id']);
-        
-        $staffExpertise = [];
-        
-        foreach ($uitcStaff as $staff) {
-            $staffId = $staff->id;
-            
-            // Count service categories for student requests
-            $studentCategories = DB::table('student_service_requests')
-                ->select('service_category', DB::raw('COUNT(*) as count'))
-                ->where('assigned_uitc_staff_id', $staffId)
-                ->where('status', 'Completed')
-                ->groupBy('service_category')
-                ->orderBy('count', 'desc')
-                ->get();
+        // Process each request
+        foreach ($requests as $request) {
+            if ($request->assigned_uitc_staff_id && isset($staffStats[$request->assigned_uitc_staff_id])) {
+                $staffStats[$request->assigned_uitc_staff_id]['total']++;
                 
-            // Count service categories for faculty requests
-            $facultyCategories = DB::table('faculty_service_requests')
-                ->select('service_category', DB::raw('COUNT(*) as count'))
-                ->where('assigned_uitc_staff_id', $staffId)
-                ->where('status', 'Completed')
-                ->groupBy('service_category')
-                ->orderBy('count', 'desc')
-                ->get();
-            
-            // Combine category counts
-            $categoryCounts = [];
-            
-            foreach ($studentCategories as $category) {
-                if (!isset($categoryCounts[$category->service_category])) {
-                    $categoryCounts[$category->service_category] = 0;
+                switch ($request->status) {
+                    case 'Completed':
+                        $staffStats[$request->assigned_uitc_staff_id]['completed']++;
+                        
+                        $createdAt = Carbon::parse($request->created_at);
+                        $completedAt = Carbon::parse($request->updated_at);
+                        $daysToResolve = $createdAt->diffInDays($completedAt);
+                        $hoursToResolve = $createdAt->diffInHours($completedAt);
+                        
+                        $staffStats[$request->assigned_uitc_staff_id]['resolution_times'][] = $daysToResolve;
+                        
+                        // Check SLA
+                        $threshold = $slaThresholds[$request->service_category] ?? $slaThresholds['default'];
+                        
+                        if ($hoursToResolve <= $threshold) {
+                            $staffStats[$request->assigned_uitc_staff_id]['sla_met']++;
+                        } else {
+                            $staffStats[$request->assigned_uitc_staff_id]['sla_missed']++;
+                        }
+                        break;
+                    case 'In Progress':
+                        $staffStats[$request->assigned_uitc_staff_id]['in_progress']++;
+                        break;
+                    case 'Pending':
+                        $staffStats[$request->assigned_uitc_staff_id]['pending']++;
+                        break;
+                    case 'Cancelled':
+                        $staffStats[$request->assigned_uitc_staff_id]['cancelled']++;
+                        break;
                 }
-                $categoryCounts[$category->service_category] += $category->count;
+            }
+        }
+        
+        // Calculate averages and rates for each staff
+        foreach ($staffStats as $staffId => &$stats) {
+            // Calculate average resolution time
+            if (!empty($stats['resolution_times'])) {
+                $stats['avg_resolution'] = round(array_sum($stats['resolution_times']) / count($stats['resolution_times']), 1);
+            } else {
+                $stats['avg_resolution'] = 0;
             }
             
-            foreach ($facultyCategories as $category) {
-                if (!isset($categoryCounts[$category->service_category])) {
-                    $categoryCounts[$category->service_category] = 0;
-                }
-                $categoryCounts[$category->service_category] += $category->count;
-            }
-            
-            // Determine primary category
-            arsort($categoryCounts);
-            $primaryCategory = key($categoryCounts) ?? 'Unknown';
-            
-            // Map to expertise area
-            $expertise = $this->mapCategoryToExpertise($primaryCategory);
-            
-            $staffExpertise[$staffId] = [
-                'primary_category' => $primaryCategory,
-                'expertise' => $expertise
-            ];
+            // Calculate SLA met rate
+            $totalSLA = $stats['sla_met'] + $stats['sla_missed'];
+            $stats['sla_met_rate'] = $totalSLA > 0 ? round(($stats['sla_met'] / $totalSLA) * 100) : 0;
         }
         
-        return $staffExpertise;
-    }
-
-    /**
-     * Get detailed requests for the table
-     */
-    private function getDetailedRequests($startDate, $endDate, $staffId = null, $serviceCategory = null, $status = null, $page = 1)
-    {
-        $perPage = 5;
-        
-        // Query student requests
-        $studentQuery = StudentServiceRequest::with(['user', 'assignedUITCStaff'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
-            
-        // Query faculty requests
-        $facultyQuery = FacultyServiceRequest::with(['user', 'assignedUITCStaff'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
-        
-        // Apply filters if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
-        }
-        
-        if ($serviceCategory) {
-            $studentQuery->where('service_category', $serviceCategory);
-            $facultyQuery->where('service_category', $serviceCategory);
-        }
-        
-        if ($status) {
-            $studentQuery->where('status', $status);
-            $facultyQuery->where('status', $status);
-        }
-        
-        // Get results
-        $studentRequests = $studentQuery->get();
-        $facultyRequests = $facultyQuery->get();
-        
-        // Format results
-        $formattedRequests = [];
-        
-        foreach ($studentRequests as $request) {
-            $formattedRequests[] = $this->formatRequestForTable($request, 'student');
-        }
-        
-        foreach ($facultyRequests as $request) {
-            $formattedRequests[] = $this->formatRequestForTable($request, 'faculty');
-        }
-        
-        // Sort by created_at (newest first)
-        usort($formattedRequests, function($a, $b) {
-            return strtotime($b['date']) - strtotime($a['date']);
+        // Sort by total requests (descending)
+        uasort($staffStats, function($a, $b) {
+            return $b['total'] - $a['total'];
         });
         
-        // Paginate
-        $total = count($formattedRequests);
-        $offset = ($page - 1) * $perPage;
-        $paginatedRequests = array_slice($formattedRequests, $offset, $perPage);
+        // Remove staff with zero requests
+        $staffStats = array_filter($staffStats, function($stats) {
+            return $stats['total'] > 0;
+        });
         
-        return [
-            'data' => $paginatedRequests,
-            'current_page' => $page,
-            'per_page' => $perPage,
-            'last_page' => ceil($total / $perPage),
-            'total' => $total
-        ];
+        return $staffStats;
     }
-
+    
     /**
-     * Format request for table display
+     * Calculate monthly trends
      */
-    private function formatRequestForTable($request, $type)
+    private function calculateMonthlyTrends($requests, $startDate, $endDate)
     {
-        // Calculate response time if assigned
-        $responseTime = null;
-        if ($request->assigned_uitc_staff_id && $request->updated_at) {
-            $responseTime = $request->created_at->diffInHours($request->updated_at);
+        $monthlyTrends = [];
+        $startMonth = $startDate->copy();
+        $endMonth = $endDate->copy();
+        
+        while ($startMonth->lt($endMonth)) {
+            $monthKey = $startMonth->format('M Y');
+            $monthStart = $startMonth->copy()->startOfMonth();
+            $monthEnd = $startMonth->copy()->endOfMonth();
+            
+            $monthRequests = $requests->filter(function($request) use ($monthStart, $monthEnd) {
+                $createdAt = Carbon::parse($request->created_at);
+                return $createdAt->between($monthStart, $monthEnd);
+            });
+            
+            $monthCompleted = $requests->filter(function($request) use ($monthStart, $monthEnd) {
+                if ($request->status !== 'Completed') return false;
+                $updatedAt = Carbon::parse($request->updated_at);
+                return $updatedAt->between($monthStart, $monthEnd);
+            });
+            
+            $monthlyTrends[$monthKey] = [
+                'total' => $monthRequests->count(),
+                'completed' => $monthCompleted->count(),
+                'month_number' => $startMonth->month,
+                'year' => $startMonth->year,
+            ];
+            
+            $startMonth->addMonth();
         }
         
-        // Calculate completion time if completed
-        $completionTime = null;
-        if ($request->status === 'Completed' && $request->updated_at) {
-            $completionTime = $request->created_at->diffInHours($request->updated_at);
-        }
-        
-        return [
-            'id' => ($type === 'student' ? 'SSR-' : 'FSR-') . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT),
-            'date' => $request->created_at->format('M d, Y'),
-            'service_type' => $this->formatServiceCategory($request->service_category),
-            'requester' => $request->user ? $request->user->name : ($request->first_name . ' ' . $request->last_name),
-            'assigned_to' => $request->assignedUITCStaff ? $request->assignedUITCStaff->name : '-',
-            'status' => $request->status,
-            'response_time' => $responseTime ? $this->formatTimeInterval($responseTime) : '-',
-            'completion_time' => $completionTime ? $this->formatTimeInterval($completionTime) : '-'
-        ];
+        return $monthlyTrends;
     }
-
+    
     /**
-     * Format time interval for display
+     * Get list of all service categories
      */
-    private function formatTimeInterval($hours)
+    private function getServiceCategories()
     {
-        if ($hours < 1) {
-            $minutes = round($hours * 60);
-            return $minutes . 'm';
-        } elseif ($hours < 24) {
-            return round($hours, 1) . 'h';
-        } else {
-            $days = floor($hours / 24);
-            $remainingHours = $hours % 24;
-            return $days . 'd ' . round($remainingHours) . 'h';
+        $studentCategories = StudentServiceRequest::distinct()->pluck('service_category')->toArray();
+        $facultyCategories = FacultyServiceRequest::distinct()->pluck('service_category')->toArray();
+        
+        $allCategories = array_unique(array_merge($studentCategories, $facultyCategories));
+        
+        $formattedCategories = [];
+        foreach ($allCategories as $category) {
+            $formattedCategories[$category] = $this->formatServiceCategory($category);
         }
+        
+        asort($formattedCategories);
+        return $formattedCategories;
     }
-
+    
     /**
-     * Map service category to expertise area
-     */
-    private function mapCategoryToExpertise($category)
-    {
-        // Hardware-related categories
-        $hardwareCategories = [
-            'computer_repair_maintenance',
-            'printer_repair_maintenance',
-            'request_led_screen'
-        ];
-        
-        // Network-related categories
-        $networkCategories = [
-            'new_internet',
-            'new_telephone',
-            'repair_and_maintenance'
-        ];
-        
-        // Software-related categories
-        $softwareCategories = [
-            'install_application',
-            'post_publication',
-            'data_docs_reports'
-        ];
-        
-        // Account-related categories
-        $accountCategories = [
-            'create',
-            'reset_email_password',
-            'change_of_data_ms',
-            'reset_tup_web_password',
-            'reset_ers_password',
-            'change_of_data_portal',
-            'dtr',
-            'biometric_record',
-            'biometrics_enrollement'
-        ];
-        
-        if (in_array($category, $hardwareCategories)) {
-            return 'Hardware Support';
-        } elseif (in_array($category, $networkCategories)) {
-            return 'Network Support';
-        } elseif (in_array($category, $softwareCategories)) {
-            return 'Software Support';
-        } elseif (in_array($category, $accountCategories)) {
-            return 'Account Management';
-        } else {
-            return 'General Support';
-        }
-    }
-
-    /**
-     * Format service category to human-readable name
+     * Format service category for display
      */
     private function formatServiceCategory($category)
     {
@@ -1050,482 +855,9 @@ class AdminReportController extends Controller
             case 'data_docs_reports':
                 return 'Data, Documents and Reports';
             case 'others':
-                return 'Other Service';
+                return 'Others';
             default:
-                return $category;
+                return ucfirst(str_replace('_', ' ', $category));
         }
-    }
-
-    /**
-     * Export report data to Excel
-     */
-    public function exportReport(Request $request)
-    {
-        try {
-            // Add debugging log
-            Log::info('Excel export started', [
-                'request' => $request->all()
-            ]);
-    
-            // Validate input
-            $validated = $request->validate([
-                'date_filter' => 'required|string',
-                'staff_id' => 'nullable|string',
-                'service_category' => 'nullable|string',
-                'status' => 'nullable|string',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date'
-            ]);
-    
-            // Set date range based on filter
-            $startDate = null;
-            $endDate = Carbon::now();
-    
-
-            switch ($validated['date_filter']) {
-                case 'current_month':
-                    $startDate = Carbon::now()->startOfMonth();
-                    break;
-                case 'last_month':
-                    $startDate = Carbon::now()->subMonth()->startOfMonth();
-                    $endDate = Carbon::now()->subMonth()->endOfMonth();
-                    break;
-                case 'last_3_months':
-                    $startDate = Carbon::now()->subMonths(3)->startOfMonth();
-                    break;
-                case 'last_6_months':
-                    $startDate = Carbon::now()->subMonths(6)->startOfMonth();
-                    break;
-                case 'year_to_date':
-                    $startDate = Carbon::now()->startOfYear();
-                    break;
-                case 'last_year':
-                    $startDate = Carbon::now()->subYear()->startOfYear();
-                    $endDate = Carbon::now()->subYear()->endOfYear();
-                    break;
-                case 'custom':
-                    if ($request->filled('start_date')) {
-                        $startDate = Carbon::parse($validated['start_date']);
-                    } else {
-                        $startDate = Carbon::now()->subMonths(6);
-                    }
-                    
-                    if ($request->filled('end_date')) {
-                        $endDate = Carbon::parse($validated['end_date'])->endOfDay();
-                    }
-                    break;
-                default:
-                    $startDate = Carbon::now()->subMonths(6);
-            }
-            
-            // Apply staff filter, service category filter, and status filter
-            $staffId = ($validated['staff_id'] !== 'all') ? $validated['staff_id'] : null;
-            $serviceCategory = ($validated['service_category'] !== 'all') ? $validated['service_category'] : null;
-            $status = ($validated['status'] !== 'all') ? $validated['status'] : null;
-            
-            // Generate data for the Excel file
-            $stats = $this->getStatisticsSummary($startDate, $endDate, $staffId, $serviceCategory, $status);
-            $detailedRequests = $this->getAllRequestsForExport($startDate, $endDate, $staffId, $serviceCategory, $status);
-            
-            // Create Excel file
-            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-            
-            // Summary Sheet
-            $summarySheet = $spreadsheet->getActiveSheet();
-            $summarySheet->setTitle('Summary');
-            
-            // Add title
-            $summarySheet->setCellValue('A1', 'UITC Service Request Report');
-            $summarySheet->mergeCells('A1:B1');
-            $summarySheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-            
-            // Add generated date
-            $summarySheet->setCellValue('A2', 'Generated on:');
-            $summarySheet->setCellValue('B2', Carbon::now()->format('Y-m-d H:i:s'));
-            
-            // Add filter info
-            $summarySheet->setCellValue('A4', 'Filter Information');
-            $summarySheet->getStyle('A4')->getFont()->setBold(true);
-            
-            $summarySheet->setCellValue('A5', 'Date Range:');
-            $summarySheet->setCellValue('B5', $validated['date_filter']);
-            
-            $staffName = 'All Staff';
-            if ($staffId) {
-                $staff = Admin::find($staffId);
-                $staffName = $staff ? $staff->name : 'Unknown Staff';
-            }
-            $summarySheet->setCellValue('A6', 'Staff:');
-            $summarySheet->setCellValue('B6', $staffName);
-            
-            $summarySheet->setCellValue('A7', 'Service Category:');
-            $summarySheet->setCellValue('B7', $serviceCategory ? $this->formatServiceCategory($serviceCategory) : 'All Categories');
-            
-            $summarySheet->setCellValue('A8', 'Status:');
-            $summarySheet->setCellValue('B8', $status ?: 'All Statuses');
-            
-            // Add summary statistics
-            $summarySheet->setCellValue('A10', 'Summary Statistics');
-            $summarySheet->getStyle('A10')->getFont()->setBold(true);
-            
-            $summarySheet->setCellValue('A11', 'Total Requests:');
-            $summarySheet->setCellValue('B11', $stats['total_requests']);
-            
-            $summarySheet->setCellValue('A12', 'Completed Requests:');
-            $summarySheet->setCellValue('B12', $stats['completed_requests']);
-            
-            $summarySheet->setCellValue('A13', 'Average Response Time:');
-            $summarySheet->setCellValue('B13', $stats['avg_response_time'] . ' hours');
-            
-            $summarySheet->setCellValue('A14', 'Completion Rate:');
-            $summarySheet->setCellValue('B14', $stats['completion_rate'] . '%');
-            
-            // Format first column bold
-            $summarySheet->getStyle('A5:A14')->getFont()->setBold(true);
-            
-            // Auto-size columns
-            $summarySheet->getColumnDimension('A')->setAutoSize(true);
-            $summarySheet->getColumnDimension('B')->setAutoSize(true);
-            
-            // Detailed Requests Sheet
-            $detailSheet = $spreadsheet->createSheet();
-            $detailSheet->setTitle('Request Details');
-            
-            // Add headers
-            $headers = [
-                'Request ID', 'Type', 'Created Date', 'Service Category', 
-                'Requester Name', 'Requester Email', 'Assigned Staff', 
-                'Status', 'Transaction Type', 'Completed Date', 'Duration (hrs)'
-            ];
-            
-            foreach (range('A', 'K') as $index => $columnId) {
-                $detailSheet->setCellValue($columnId . '1', $headers[$index]);
-                $detailSheet->getColumnDimension($columnId)->setAutoSize(true);
-            }
-            
-            // Style headers
-            $detailSheet->getStyle('A1:K1')->getFont()->setBold(true);
-            $detailSheet->getStyle('A1:K1')->getFill()
-                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                ->getStartColor()->setRGB('E0E0E0');
-            
-            // Add data rows
-            $row = 2;
-            foreach ($detailedRequests as $request) {
-                $detailSheet->setCellValue('A' . $row, $request['id']);
-                $detailSheet->setCellValue('B' . $row, $request['type']);
-                $detailSheet->setCellValue('C' . $row, $request['created_at']);
-                $detailSheet->setCellValue('D' . $row, $request['service_name']);
-                $detailSheet->setCellValue('E' . $row, $request['requester_name']);
-                $detailSheet->setCellValue('F' . $row, $request['requester_email'] ?? 'N/A');
-                $detailSheet->setCellValue('G' . $row, $request['staff_name'] ?? 'Unassigned');
-                $detailSheet->setCellValue('H' . $row, $request['status']);
-                $detailSheet->setCellValue('I' . $row, $request['transaction_type'] ?? 'N/A');
-                $detailSheet->setCellValue('J' . $row, $request['completed_at'] ?? 'N/A');
-                $detailSheet->setCellValue('K' . $row, $request['duration_hours'] ?? 'N/A');
-                
-                // Color rows based on status
-                if ($request['status'] === 'Completed') {
-                    $detailSheet->getStyle('A' . $row . ':K' . $row)->getFill()
-                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                        ->getStartColor()->setRGB('E8F5E9'); // Light green
-                } elseif ($request['status'] === 'In Progress') {
-                    $detailSheet->getStyle('A' . $row . ':K' . $row)->getFill()
-                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                        ->getStartColor()->setRGB('E3F2FD'); // Light blue
-                }
-                
-                $row++;
-            }
-            
-            // Create a staff performance sheet
-            $staffSheet = $spreadsheet->createSheet();
-            $staffSheet->setTitle('Staff Performance');
-            
-            // Add headers
-            $staffSheet->setCellValue('A1', 'Staff Name');
-            $staffSheet->setCellValue('B1', 'Assigned Requests');
-            $staffSheet->setCellValue('C1', 'Completed Requests');
-            $staffSheet->setCellValue('D1', 'Performance %');
-            
-            // Style headers
-            $staffSheet->getStyle('A1:D1')->getFont()->setBold(true);
-            $staffSheet->getStyle('A1:D1')->getFill()
-                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                ->getStartColor()->setRGB('E0E0E0');
-                
-            // Get staff performance data
-            $staffPerformance = $this->getStaffPerformanceTable($startDate, $endDate, $serviceCategory, $status);
-            
-            // Add staff performance data
-            $row = 2;
-            foreach ($staffPerformance as $staff) {
-                $staffSheet->setCellValue('A' . $row, $staff['name']);
-                $staffSheet->setCellValue('B' . $row, $staff['assigned']);
-                $staffSheet->setCellValue('C' . $row, $staff['completed']);
-                $staffSheet->setCellValue('D' . $row, $staff['performance'] . '%');
-                
-                // Color based on performance
-                $performanceColor = 'FFEB3B'; // Yellow default
-                if ($staff['performance'] >= 85) {
-                    $performanceColor = '4CAF50'; // Green
-                } elseif ($staff['performance'] < 70) {
-                    $performanceColor = 'F44336'; // Red
-                }
-                
-                // Make the performance cell colored
-                $staffSheet->getStyle('D' . $row)->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                    ->getStartColor()->setRGB($performanceColor);
-                    
-                $row++;
-            }
-            
-            // Auto-size columns
-            foreach (range('A', 'D') as $columnId) {
-                $staffSheet->getColumnDimension($columnId)->setAutoSize(true);
-            }
-            
-            // Create a writer
-            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-
-              
-        // Create a temporary file
-        $tempFile = tempnam(sys_get_temp_dir(), 'report_');
-        $writer->save($tempFile);
-        
-        // Read the file into memory
-        $fileContent = file_get_contents($tempFile);
-        
-        // Delete the temporary file
-        @unlink($tempFile);
-        
-        // Set headers for download
-        $filename = 'UITC_Report_' . date('Y-m-d') . '.xlsx';
-        
-        Log::info('Excel file created and ready for download', [
-            'filename' => $filename,
-            'size' => strlen($fileContent)
-        ]);
-            
-        return response($fileContent, 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Content-Length' => strlen($fileContent),
-            'Cache-Control' => 'max-age=0',
-        ]);
-        
-    } catch (\Exception $e) {
-        Log::error('Error exporting Excel report: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString(),
-            'request' => $request->all()
-        ]);
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to export report: ' . $e->getMessage()
-        ], 500);
-        }
-    }
-
-        /**
-     * Export report data to PDF
-     */
-    public function exportPDF(Request $request)
-    {
-        try {
-            // Add debugging log
-            Log::info('PDF export started', [
-                'request' => $request->all()
-            ]);
-    
-            // Validate input
-            $validated = $request->validate([
-                'date_filter' => 'required|string',
-                'staff_id' => 'nullable|string',
-                'service_category' => 'nullable|string',
-                'status' => 'nullable|string',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date'
-            ]);
-
-            // Set date range based on filter - reuse from Excel export
-            $startDate = null;
-            $endDate = Carbon::now();
-
-            switch ($validated['date_filter']) {
-                case 'current_month':
-                    $startDate = Carbon::now()->startOfMonth();
-                    break;
-                case 'last_month':
-                    $startDate = Carbon::now()->subMonth()->startOfMonth();
-                    $endDate = Carbon::now()->subMonth()->endOfMonth();
-                    break;
-                case 'last_3_months':
-                    $startDate = Carbon::now()->subMonths(3)->startOfMonth();
-                    break;
-                case 'last_6_months':
-                    $startDate = Carbon::now()->subMonths(6)->startOfMonth();
-                    break;
-                case 'year_to_date':
-                    $startDate = Carbon::now()->startOfYear();
-                    break;
-                case 'last_year':
-                    $startDate = Carbon::now()->subYear()->startOfYear();
-                    $endDate = Carbon::now()->subYear()->endOfYear();
-                    break;
-                case 'custom':
-                    if ($request->filled('start_date')) {
-                        $startDate = Carbon::parse($validated['start_date']);
-                    } else {
-                        $startDate = Carbon::now()->subMonths(6);
-                    }
-                    
-                    if ($request->filled('end_date')) {
-                        $endDate = Carbon::parse($validated['end_date'])->endOfDay();
-                    }
-                    break;
-                default:
-                    $startDate = Carbon::now()->subMonths(6);
-            }
-            
-            // Apply staff filter, service category filter, and status filter
-            $staffId = ($validated['staff_id'] !== 'all') ? $validated['staff_id'] : null;
-            $serviceCategory = ($validated['service_category'] !== 'all') ? $validated['service_category'] : null;
-            $status = ($validated['status'] !== 'all') ? $validated['status'] : null;
-            
-            // Generate data for the PDF file
-            $stats = $this->getStatisticsSummary($startDate, $endDate, $staffId, $serviceCategory, $status);
-            $detailedRequests = $this->getAllRequestsForExport($startDate, $endDate, $staffId, $serviceCategory, $status);
-            $staffPerformance = $this->getStaffPerformanceTable($startDate, $endDate, $serviceCategory, $status);
-            
-            // Get chart data for visualization
-            $chartData = [
-                'monthly_trends' => $this->getMonthlyTrends($startDate, $endDate, $staffId, $serviceCategory, $status),
-                'service_categories' => $this->getServiceCategoryDistribution($startDate, $endDate, $staffId, $status),
-                'status_distribution' => $this->getStatusDistribution($startDate, $endDate, $staffId, $serviceCategory)
-            ];
-            
-            // Get staff name if filtered
-            $staffName = 'All Staff';
-            if ($staffId && $staffId !== 'all') {
-                $staff = Admin::find($staffId);
-                $staffName = $staff ? $staff->name : 'Unknown Staff';
-            }
-
-            Log::info('PDF view data prepared', [
-                'stats' => $stats,
-                'staffName' => $staffName
-            ]);
-            
-            // Generate PDF view with all data
-            $pdf = PDF::loadView('admin.reports.pdf', [
-                'stats' => $stats,
-                'detailedRequests' => $detailedRequests,
-                'staffPerformance' => $staffPerformance,
-                'chartData' => $chartData,
-                'filters' => [
-                    'dateFilter' => $validated['date_filter'],
-                    'startDate' => $startDate->format('Y-m-d'),
-                    'endDate' => $endDate->format('Y-m-d'),
-                    'staffName' => $staffName,
-                    'serviceCategory' => $serviceCategory ? $this->formatServiceCategory($serviceCategory) : 'All Categories',
-                    'status' => $status ?: 'All Statuses'
-                ]
-            ]);
-            
-            // Set paper to landscape for better report layout
-            $pdf->setPaper('a4', 'landscape');
-            Log::info('PDF file created and ready for download');
-
-            
-            // Download the PDF file
-            return $pdf->download('UITC_Report_' . date('Y-m-d') . '.pdf');
-
-            
-        } catch (\Exception $e) {
-            Log::error('Error exporting PDF report: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to export PDF report: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-            
-    /**
-     * Get all requests for export (not paginated)
-     */
-    private function getAllRequestsForExport($startDate, $endDate, $staffId = null, $serviceCategory = null, $status = null)
-    {
-        // Query student requests
-        $studentQuery = StudentServiceRequest::with(['user', 'assignedUITCStaff'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
-            
-        // Query faculty requests
-        $facultyQuery = FacultyServiceRequest::with(['user', 'assignedUITCStaff'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
-        
-        // Apply filters if provided
-        if ($staffId) {
-            $studentQuery->where('assigned_uitc_staff_id', $staffId);
-            $facultyQuery->where('assigned_uitc_staff_id', $staffId);
-        }
-        
-        if ($serviceCategory) {
-            $studentQuery->where('service_category', $serviceCategory);
-            $facultyQuery->where('service_category', $serviceCategory);
-        }
-        
-        if ($status) {
-            $studentQuery->where('status', $status);
-            $facultyQuery->where('status', $status);
-        }
-        
-        // Get results
-        $studentRequests = $studentQuery->get();
-        $facultyRequests = $facultyQuery->get();
-        
-        // Format results
-        $formattedRequests = [];
-        
-        foreach ($studentRequests as $request) {
-            $formattedRequests[] = $this->formatRequestForExport($request, 'student');
-        }
-        
-        foreach ($facultyRequests as $request) {
-            $formattedRequests[] = $this->formatRequestForExport($request, 'faculty');
-        }
-        
-        // Sort by created_at (newest first)
-        usort($formattedRequests, function($a, $b) {
-            return strtotime($b['created_at']) - strtotime($a['created_at']);
-        });
-        
-        return $formattedRequests;
-    }
-    
-    /**
-     * Format request for export
-     */
-    private function formatRequestForExport($request, $type)
-    {
-        return [
-            'id' => ($type === 'student' ? 'SSR-' : 'FSR-') . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT),
-            'type' => ($type === 'student' ? 'Student' : 'Faculty'),
-            'created_at' => $request->created_at->format('Y-m-d H:i:s'),
-            'service_category' => $request->service_category,
-            'service_name' => $this->formatServiceCategory($request->service_category),
-            'requester_name' => $request->user ? $request->user->name : ($request->first_name . ' ' . $request->last_name),
-            'requester_email' => $request->user ? $request->user->email : null,
-            'staff_name' => $request->assignedUITCStaff ? $request->assignedUITCStaff->name : null,
-            'status' => $request->status,
-            'transaction_type' => $request->transaction_type ?? null,
-            'completed_at' => ($request->status === 'Completed' && $request->updated_at) ? $request->updated_at->format('Y-m-d H:i:s') : null,
-            'duration_hours' => ($request->status === 'Completed' && $request->updated_at) ? $request->created_at->diffInHours($request->updated_at) : null
-        ];
     }
 }

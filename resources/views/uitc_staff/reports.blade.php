@@ -12,325 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/reports.css') }}" rel="stylesheet">
     <title>UITC Staff Report</title>
-    <style>
-        .report-container {
-            padding: 40px;
-            margin-left: 250px;
-        }
-
-        .content {
-            margin-top: 8%;
-            margin-left: 20%;
-            padding: 40px;
-        }
-        .content h1{
-            font-size: 2rem;
-            font-weight: 650;
-            text-transform: uppercase;
-        }
-                
-        
-        .card {
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-header {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .stat-box {
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stat-box h3 {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .stat-box p {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 0;
-        }
-        
-        .bg-completed {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        
-        .bg-progress {
-            background-color: #cce5ff;
-            color: #004085;
-        }
-        
-        .bg-cancelled {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        
-        .bg-total {
-            background-color: #e2e3e5;
-            color: #383d41;
-        }
-        
-        .rating-box {
-            text-align: center;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .star-rating {
-            color: #ffc107;
-            font-size: 24px;
-        }
-        
-        .filter-section {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .custom-date-inputs {
-            display: none;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-        
-        @media (max-width: 768px) {
-            .report-container {
-                margin-left: 0;
-                padding: 10px;
-            }
-        }
-        
-        /* New styles for SLA monitoring */
-        .sla-stat-box {
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .sla-stat-box h3 {
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .sla-stat-box p {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 0;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .sla-stat-box small {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .bg-sla-met {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        
-        .bg-sla-missed {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        
-        .progress-bar-container {
-            height: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            border-radius: 5px;
-        }
-        
-        .gauge-container {
-            position: relative;
-            width: 100%;
-            height: 6px;
-            background-color: #e9ecef;
-            margin-top: 10px;
-            border-radius: 3px;
-        }
-        
-        .gauge-fill {
-            position: absolute;
-            height: 100%;
-            left: 0;
-            border-radius: 3px;
-        }
-        
-        .timeline-container {
-            border-left: 2px solid #dee2e6;
-            padding: 0 0 0 20px;
-            margin-left: 10px;
-        }
-        
-        .timeline-item {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -26px;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #007bff;
-        }
-        
-        .timeline-date {
-            font-weight: bold;
-            color: #6c757d;
-        }
-        
-        .timeline-content {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 5px;
-        }
-        
-        .timeline-overdue {
-            background-color: #fff3cd;
-            border-left: 3px solid #ffc107;
-        }
-        
-        .timeline-overdue::before {
-            background-color: #ffc107;
-        }
-        
-        .overdue-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            background-color: #ffc107;
-            color: #212529;
-            margin-left: 5px;
-            vertical-align: middle;
-        }
-        
-        /* Daily activity chart styles */
-        .daily-chart-container {
-            height: 300px;
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
-        
-
-        /* Add these styles to the existing <style> block in your reports.blade.php file */
-
-        /* Styles for Areas for Improvement section */
-        .improvement-table td {
-            vertical-align: middle;
-        }
-
-        .priority-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 3px;
-            font-weight: bold;
-            text-align: center;
-            width: 100%;
-        }
-
-        .priority-high {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .priority-medium {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .priority-low {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .action-plan {
-            background-color: #f8f9fa;
-            border-left: 4px solid #007bff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-
-        .action-plan h6 {
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-
-        .action-plan ol {
-            padding-left: 20px;
-        }
-
-        .action-plan li {
-            margin-bottom: 5px;
-        }
-
-        /* Tooltip for improvement recommendations */
-        .recommendation-cell {
-            position: relative;
-        }
-
-        .recommendation-tooltip {
-            visibility: hidden;
-            position: absolute;
-            z-index: 1;
-            width: 300px;
-            background-color: #333;
-            color: #fff;
-            text-align: left;
-            border-radius: 6px;
-            padding: 10px;
-            bottom: 100%;
-            left: 50%;
-            margin-left: -150px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .recommendation-cell:hover .recommendation-tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
-    </style>
 </head>
 <body>
     <!-- Include Navbar -->
@@ -386,89 +69,136 @@
         </div>
 
         <!-- NEW: SLA Performance Section -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-tachometer-alt mr-2"></i> UITC Staff Performance
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-tachometer-alt mr-2"></i> UITC Staff Performance</h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <div class="sla-stat-box bg-sla-met">
-                            <h3>Met Dealine</h3>
-                            <p>{{ $slaStats['met_percentage'] }}%</p>
-                            <small>{{ $slaStats['met'] }} of {{ $slaStats['met'] + $slaStats['missed'] }} completed requests</small>
-                            <div class="gauge-container">
-                                <div class="gauge-fill bg-success" style="width: {{ $slaStats['met_percentage'] }}%"></div>
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Met Deadline</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $slaStats['met_percentage'] }}%</div>
+                                        <div class="small text-muted">{{ $slaStats['met'] }} of {{ $slaStats['met'] + $slaStats['missed'] }} completed requests</div>
+                                        <div class="progress progress-sm mt-2">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $slaStats['met_percentage'] }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="sla-stat-box bg-sla-missed">
-                            <h3>Missed Deadline</h3>
-                            <p>{{ $slaStats['missed_percentage'] }}%</p>
-                            <small>{{ $slaStats['missed'] }} of {{ $slaStats['met'] + $slaStats['missed'] }} completed requests</small>
-                            <div class="gauge-container">
-                                <div class="gauge-fill bg-danger" style="width: {{ $slaStats['missed_percentage'] }}%"></div>
+                        <div class="card border-left-danger shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                            Missed Deadline</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $slaStats['missed_percentage'] }}%</div>
+                                        <div class="small text-muted">{{ $slaStats['missed'] }} of {{ $slaStats['met'] + $slaStats['missed'] }} completed requests</div>
+                                        <div class="progress progress-sm mt-2">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ $slaStats['missed_percentage'] }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="sla-stat-box">
-                            <h3>Average Response Time</h3>
-                            <p>{{ $slaStats['avg_response_time'] }} hrs</p>
-                            <div class="d-flex justify-content-between mt-3">
-                                <span class="text-muted">Avg Overdue Time:</span>
-                                <span class="font-weight-bold">{{ $slaStats['avg_overdue_days'] }} days</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Max Overdue:</span>
-                                <span class="font-weight-bold">{{ $slaStats['max_overdue_days'] }} days</span>
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Average Response Time</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $slaStats['avg_response_time'] }} hrs</div>
+                                        <div class="small d-flex justify-content-between mt-2">
+                                            <span>Avg Overdue Time:</span>
+                                            <span>{{ $slaStats['avg_overdue_days'] }} days</span>
+                                        </div>
+                                        <div class="small d-flex justify-content-between">
+                                            <span>Max Overdue:</span>
+                                            <span>{{ $slaStats['max_overdue_days'] }} days</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         
+        <!-- First Row: Overview Stats -->
         <!-- First Row: Overview Stats -->
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="stat-box bg-total">
-                    <h3>Total Requests</h3>
-                    <p>{{ $stats['total_requests'] }}</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-box bg-completed">
-                    <h3>Completed</h3>
-                    <p>{{ $stats['completed_requests'] }}</p>
-                    <small>{{ $stats['total_requests'] > 0 ? round(($stats['completed_requests'] / $stats['total_requests']) * 100) : 0 }}% completion rate</small>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-box" style="background-color: #e9ecef;">
-                    <h3>Resolution Time</h3>
-                    <p>{{ number_format($stats['avg_resolution_time'], 2) }} days</p>
-                    <div class="d-flex justify-content-between mt-2">
-                        <small>Median: {{ number_format($stats['median_resolution_time'], 2) }} days</small>
-                        <small>Fastest: {{ number_format($timeStats['fastest_resolution'], 2) }} days</small>
-                        <small>Slowest: {{ number_format($timeStats['slowest_resolution'], 2) }} days</small>
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Requests</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_requests'] }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="stat-box bg-progress">
-                    <h3>In Progress</h3>
-                    <p>{{ $stats['in_progress_requests'] }}</p>
+            <div class="col-md-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Completed</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['completed_requests'] }}</div>
+                                <div class="small text-muted">{{ $stats['total_requests'] > 0 ? round(($stats['completed_requests'] / $stats['total_requests']) * 100) : 0 }}% completion rate</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="stat-box bg-cancelled">
-                    <h3>Cancelled</h3>
-                    <p>{{ $stats['cancelled_requests'] }}</p>
+            <div class="col-md-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Resolution Time</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['avg_resolution_time'], 2) }} days</div>
+                                <div class="small d-flex justify-content-between mt-2">
+                                    <span>Median: {{ number_format($stats['median_resolution_time'], 2) }}</span>
+                                    <span>Fastest: {{ number_format($timeStats['fastest_resolution'], 2) }}</span>
+                                    <span>Slowest: {{ number_format($timeStats['slowest_resolution'], 2) }}</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

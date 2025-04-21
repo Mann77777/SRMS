@@ -19,7 +19,7 @@ body{
 }   
 .content {
     margin-top: 8%;
-    margin-left: 23%;
+    margin-left: 20%;
     padding: 20px;
 }
 .content h1{
@@ -103,15 +103,6 @@ select {
     background-color: #f8f9fa;
 }
 
-.btn-view {
-    background-color: #007bff;  /* Bootstrap primary blue */
-    color: white;
-    transition: background-color 0.3s ease;
-}
-
-.btn-view:hover {
-    background-color: #0056b3;  /* Darker blue on hover */
-}
 
 .btn-complete {
     background-color: #16A34A;  /* Bootstrap success green */
@@ -141,4 +132,40 @@ button {
     color: #ffffff;
     font-size: 15px;
     font-weight: 500;
+}
+
+
+
+
+.custom-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    cursor: default;
+}
+.custom-badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+.custom-badge-info {
+    background-color: #17a2b8;
+    color: white;
+}
+.custom-badge-success {
+    background-color: #28a745;
+    color: white;
+}
+.custom-badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.custom-badge-secondary {
+    background-color: #6c757d;
+    color: white;
 }

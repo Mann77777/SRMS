@@ -48,53 +48,23 @@ function initializeRequestButtons() {
     });
 }
 
-
-document.addEventListener('DOMContentLoaded', function() {
-    loadServices();
-});
 function loadServices() {
-    fetch('/services/list')
+    fetch('/data/services.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return response.json();
-        })
-        .then(data => {
-            // Adjust to match the backend response structure
-            const services = data.services || data || [];
-            displayServices(services);
-        })
-        .catch(error => {
-            console.error('Error loading services:', error);
-            displayServices([]);
-        });
-}
 
-function displayServices(services) {
-    const serviceList = document.querySelector('.service-list');
-    if (!serviceList) return;
-
-    serviceList.innerHTML = services.map(service => `
-        <div class="category-card">
-            ${service.image 
-                ? `<img src="${service.image}" alt="${service.name}" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';">` 
-                : `<i class="fas ${getServiceIcon(service.name)}"></i>`
-            }
-            <h3>${service.name}</h3>
-            <p>${service.description || 'No description available'}</p>
-        </div>
-    `).join('');
-}
-function loadServices() {
-    fetch('/services/list')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Check if we're getting JSON back
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.error('Expected JSON but got:', contentType);
+                throw new Error('Server returned non-JSON response');
             }
             return response.json();
         })
         .then(data => {
+            console.log('Services loaded successfully:', data);
             // Adjust to match the backend response structure
             const services = data.services || data || [];
             displayServices(services);

@@ -74,11 +74,11 @@
                 </li>
                 
                 <li class="item">
-                    <a href="{{ url('/admin_report') }}" class="nav_link {{ request()->is('admin_report') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports') }}" class="nav_link {{ request()->is('admin_report') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-chat"></i>
                         </span>
-                        <span class="navlink">Report</span>
+                        <span class="navlink">Reports</span>
                     </a>
                 </li>
 

@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/admin_servicerequest.css') }}" rel="stylesheet">
-
     <title>Admin - Service Request</title>
 </head>
 <body data-user-role="Admin">
@@ -80,18 +79,19 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="badge 
-                                        @if($request['status'] == 'Pending') badge-warning
-                                        @elseif($request['status'] == 'In Progress') badge-info
-                                        @elseif($request['status'] == 'Completed') badge-success
-                                        @elseif($request['status'] == 'Approved') badge-success
-                                        @elseif($request['status'] == 'Rejected') badge-danger
-                                        @else badge-secondary
-                                        @endif">
-                                        {{ $request['status'] }}
-                                    </span>
+                                    @if($request['status'] == 'Pending')
+                                        <span class="custom-badge custom-badge-warning">{{ $request['status'] }}</span>
+                                    @elseif($request['status'] == 'In Progress')
+                                        <span class="custom-badge custom-badge-info">{{ $request['status'] }}</span>
+                                    @elseif($request['status'] == 'Completed')
+                                        <span class="custom-badge custom-badge-success">{{ $request['status'] }}</span>
+                                    @elseif($request['status'] == 'Rejected')
+                                        <span class="custom-badge custom-badge-danger">{{ $request['status'] }}</span>
+                                    @else
+                                        <span class="custom-badge custom-badge-secondary">{{ $request['status'] }}</span>
+                                    @endif
                                 </td>
-                               
+                                                            
                                 <td class="btns">
                                     @if($request['status'] == 'Pending')
                                         <button type="button" class="btn-approve" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}" data-details="{{ $request['request_data'] }}">
@@ -530,112 +530,113 @@
         
         // Format the data in request_data field
         $('#detailsRequestData').html(requestData.request_data);
-    
-        // Set status with appropriate color
+
         // Set status with appropriate color
         const $statusBadge = $('#detailsRequestStatus');
         // Trim and normalize the status text
-        const statusText = requestData.status.trim().toLowerCase();
-        $statusBadge.text(requestData.status);
-        $statusBadge.removeClass().addClass('badge');
+        const statusText = requestData.status.trim();
+        $statusBadge.text(statusText);
+        $statusBadge.removeClass().addClass('custom-badge');
 
-        // Match the status badge styling with the table using more flexible matching
-        if (statusText.includes('pending')) {
-            $statusBadge.addClass('badge-warning');
-        } else if (statusText.includes('in progress')) {
-            $statusBadge.addClass('badge-info');
-        } else if (statusText.includes('completed') || statusText.includes('approved')) {
-            $statusBadge.addClass('badge-success');
-        } else if (statusText.includes('rejected')) {
-            $statusBadge.addClass('badge-danger');
+        // Match the status badge styling with the table
+        if (statusText === 'Pending') {
+            $statusBadge.addClass('custom-badge-warning');
+        } else if (statusText === 'In Progress') {
+            $statusBadge.addClass('custom-badge-info');
+        } else if (statusText === 'Completed') {
+            $statusBadge.addClass('custom-badge-success');
+        } else if (statusText === 'Rejected') {
+            $statusBadge.addClass('custom-badge-danger');
         } else {
-            $statusBadge.addClass('badge-secondary');
+            $statusBadge.addClass('custom-badge-secondary');
         }
-            // Handle completed date
-            if (requestData.status === 'Completed' && requestData.updated_at) {
-                $('#detailsRequestCompleted').text(moment(requestData.updated_at).format('MMM D, YYYY h:mm A'));
-            } else {
-                $('#detailsRequestCompleted').text('-');
-            }
-            
-            // Show/hide action buttons based on status
-            if (requestData.status === 'Pending') {
-                $('#pendingActionsContainer').show();
-                
-                // Set up modal action buttons
-                $('.modal-approve-btn').data('id', requestData.id);
-                $('.modal-approve-btn').data('type', requestData.type);
-                $('.modal-approve-btn').data('details', requestData.request_data);
-                
-                $('.modal-reject-btn').data('id', requestData.id);
-                $('.modal-reject-btn').data('type', requestData.type);
-                $('.modal-reject-btn').data('details', requestData.request_data);
-            } else {
-                $('#pendingActionsContainer').hide();
-            }
-            
-            // Show assignment information if available
-            if (requestData.assigned_uitc_staff) {
-                $('#assignmentInfoSection').show();
-                $('#detailsAssignedTo').text(requestData.assigned_uitc_staff);
-                $('#detailsTransactionType').text(requestData.transaction_type || '-');
-                $('#detailsAdminNotes').text(requestData.admin_notes || 'No notes');
-            } else {
-                $('#assignmentInfoSection').hide();
-            }
-            
-            // Show rejection information if rejected
-            if (requestData.status === 'Rejected') {
-                $('#rejectionInfoSection').show();
-                $('#detailsRejectionReason').text(requestData.rejection_reason || '-');
-                $('#detailsRejectionNotes').text(requestData.notes || 'No notes');
-                $('#detailsRejectedDate').text(requestData.updated_at ? 
-                    moment(requestData.updated_at).format('MMM D, YYYY h:mm A') : '-');
-            } else {
-                $('#rejectionInfoSection').hide();
-            }
+
+        // Handle completed date
+        if (requestData.status === 'Completed' && requestData.updated_at) {
+            $('#detailsRequestCompleted').text(moment(requestData.updated_at).format('MMM D, YYYY h:mm A'));
+        } else {
+            $('#detailsRequestCompleted').text('-');
         }
+        
+        // Show/hide action buttons based on status
+        if (requestData.status === 'Pending') {
+            $('#pendingActionsContainer').show();
+            
+            // Set up modal action buttons
+            $('.modal-approve-btn').data('id', requestData.id);
+            $('.modal-approve-btn').data('type', requestData.type);
+            $('.modal-approve-btn').data('details', requestData.request_data);
+            
+            $('.modal-reject-btn').data('id', requestData.id);
+            $('.modal-reject-btn').data('type', requestData.type);
+            $('.modal-reject-btn').data('details', requestData.request_data);
+        } else {
+            $('#pendingActionsContainer').hide();
+        }
+        
+        // Show assignment information if available
+        if (requestData.assigned_uitc_staff) {
+            $('#assignmentInfoSection').show();
+            $('#detailsAssignedTo').text(requestData.assigned_uitc_staff);
+            $('#detailsTransactionType').text(requestData.transaction_type || '-');
+            $('#detailsAdminNotes').text(requestData.admin_notes || 'No notes');
+        } else {
+            $('#assignmentInfoSection').hide();
+        }
+        
+        // Show rejection information if rejected
+        if (requestData.status === 'Rejected') {
+            $('#rejectionInfoSection').show();
+            $('#detailsRejectionReason').text(requestData.rejection_reason || '-');
+            $('#detailsRejectionNotes').text(requestData.notes || 'No notes');
+            $('#detailsRejectedDate').text(requestData.updated_at ? 
+                moment(requestData.updated_at).format('MMM D, YYYY h:mm A') : '-');
+        } else {
+            $('#rejectionInfoSection').hide();
+        }
+    }
 
     // Document ready function for request detail modal
     $(document).on('click', '.clickable-request-id', function() {
-    const row = $(this).closest('tr');
-    const requestId = $(this).text().trim();
-    
-    // Extract data from the current row
-    const statusText = row.find('td:eq(6) .badge').text().trim();
-    
-    // Get completed date from the completed date cell directly
-    let completedDate = null;
-    const completedDateCell = row.find('td:eq(5)');
-    
-    // Check if the status is completed and the cell doesn't just contain "-"
-    if (statusText === 'Completed' && !completedDateCell.text().trim().includes('-')) {
-        // Try to combine date and time from spans
-        const dateSpan = completedDateCell.find('span:first').text().trim();
-        const timeSpan = completedDateCell.find('span:last').text().trim();
+        const row = $(this).closest('tr');
+        const requestId = $(this).text().trim();
         
-        if (dateSpan && timeSpan) {
-            completedDate = dateSpan + ' ' + timeSpan;
+        // Extract data from the current row
+        const statusCell = row.find('td:eq(6)');
+        const statusText = statusCell.find('.custom-badge').text().trim();
+        
+        // Get completed date from the completed date cell directly
+        let completedDate = null;
+        const completedDateCell = row.find('td:eq(5)');
+        
+        // Check if the status is completed and the cell doesn't just contain "-"
+        if (statusText === 'Completed' && !completedDateCell.text().trim().includes('–')) {
+            // Try to combine date and time from spans
+            const dateSpan = completedDateCell.find('span:first').text().trim();
+            const timeSpan = completedDateCell.find('span:last').text().trim();
+            
+            if (dateSpan && timeSpan) {
+                completedDate = dateSpan + ' ' + timeSpan;
+            }
         }
-    }
-    
-    // Build the request data object
-    const requestData = {
-        id: requestId,
-        role: row.find('td:eq(3)').text().trim(),
-        request_data: row.find('td:eq(2)').html(),
-        date: row.find('td:eq(4) span:first').text().trim() + ' ' + 
-              row.find('td:eq(4) span:last').text().trim(),
-        status: statusText,
-        updated_at: completedDate
-    };
-    
-    console.log('Request data for modal:', requestData);
-    
-    // Update and show the modal
-    updateRequestDetailsModal(requestData);
-    $('#requestDetailsModal').modal('show');
-});
+        
+        // Build the request data object
+        const requestData = {
+            id: requestId,
+            role: row.find('td:eq(3)').text().trim(),
+            request_data: row.find('td:eq(2)').html(),
+            date: row.find('td:eq(4) span:first').text().trim() + ' ' + 
+                row.find('td:eq(4) span:last').text().trim(),
+            status: statusText,
+            updated_at: completedDate
+        };
+        
+        console.log('Request data for modal:', requestData);
+        
+        // Update and show the modal
+        updateRequestDetailsModal(requestData);
+        $('#requestDetailsModal').modal('show');
+    });
     </script>
 </body>
 </html>

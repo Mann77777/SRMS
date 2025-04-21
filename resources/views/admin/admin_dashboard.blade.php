@@ -201,16 +201,19 @@
                             <td>{{ $request['user_name'] }}</td>
                             <td>{{ $request['created_at']->format('M d, Y h:i: A') }}</td>
                             <td>
-                                <span class="badge
-                                    @if($request['status'] == 'Pending') badge-warning
-                                    @elseif($request['status'] == 'In Progress') badge-info
-                                    @elseif($request['status'] == 'Completed') badge-success
-                                     @elseif($request['status'] == 'Rejected') badge-danger
-                                    @else badge-secondary
-                                    @endif">
-                                    {{ $request['status'] }}
-                                </span>
+                                @if($request['status'] == 'Pending')
+                                    <span class="custom-badge custom-badge-warning">{{ $request['status'] }}</span>
+                                @elseif($request['status'] == 'In Progress')
+                                    <span class="custom-badge custom-badge-info">{{ $request['status'] }}</span>
+                                @elseif($request['status'] == 'Completed')
+                                    <span class="custom-badge custom-badge-success">{{ $request['status'] }}</span>
+                                @elseif($request['status'] == 'Rejected')
+                                    <span class="custom-badge custom-badge-danger">{{ $request['status'] }}</span>
+                                @else
+                                    <span class="custom-badge custom-badge-secondary">{{ $request['status'] }}</span>
+                                @endif
                             </td>
+                                               
                         </tr>
                         @empty
                         <tr>

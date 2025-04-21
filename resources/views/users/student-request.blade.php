@@ -214,73 +214,94 @@
         </div>
 
         <script>
-    function formatServiceCategory(category) {
-        switch (category) {
-            case 'create':
-                return 'Create MS Office/TUP Email Account';
-            case 'reset_email_password':
-                return 'Reset MS Office/TUP Email Password';
-            case 'change_of_data_ms':
-                return 'Change of Data (MS Office)';
-            case 'reset_tup_web_password':
-                return 'Reset TUP Web Password';
-            case 'reset_ers_password':
-                return 'Reset ERS Password';
-            case 'change_of_data_portal':
-                return 'Change of Data (Portal)';
-            case 'dtr':
-                return 'Daily Time Record';
-            case 'biometric_record':
-                return 'Biometric Record';
-            case 'biometrics_enrollement':
-                return 'Biometrics Enrollment';
-            case 'new_internet':
-                return 'New Internet Connection';
-            case 'new_telephone':
-                return 'New Telephone Connection';
-            case 'repair_and_maintenance':
-                return 'Internet/Telephone Repair and Maintenance';
-            case 'computer_repair_maintenance':
-                return 'Computer Repair and Maintenance';
-            case 'printer_repair_maintenance':
-                return 'Printer Repair and Maintenance';
-            case 'request_led_screen':
-                return 'LED Screen Request';
-            case 'install_application':
-                return 'Install Application/Information System/Software';
-            case 'post_publication':
-                return 'Post Publication/Update of Information Website';
-            case 'data_docs_reports':
-                return 'Data, Documents and Reports';
-            case 'others':
-                return 'Other Service Request';
-            default:
-                return category;
-        }
-    }
-
-    function showRequestSuccessModal(requestId, serviceCategory) {
-        // Format the service category
-        const formattedCategory = formatServiceCategory(serviceCategory);
-        
-        Swal.fire({
-            title: 'Request Submitted Successfully',
-            html: 'Your service request for <strong>' + formattedCategory + '</strong> has been submitted successfully.<br>Request ID: <strong>' + requestId + '</strong>',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = '{{ url('myrequests') }}';
+            function formatServiceCategory(category) {
+                switch (category) {
+                    case 'create':
+                        return 'Create MS Office/TUP Email Account';
+                    case 'reset_email_password':
+                        return 'Reset MS Office/TUP Email Password';
+                    case 'change_of_data_ms':
+                        return 'Change of Data (MS Office)';
+                    case 'reset_tup_web_password':
+                        return 'Reset TUP Web Password';
+                    case 'reset_ers_password':
+                        return 'Reset ERS Password';
+                    case 'change_of_data_portal':
+                        return 'Change of Data (Portal)';
+                    case 'dtr':
+                        return 'Daily Time Record';
+                    case 'biometric_record':
+                        return 'Biometric Record';
+                    case 'biometrics_enrollement':
+                        return 'Biometrics Enrollment';
+                    case 'new_internet':
+                        return 'New Internet Connection';
+                    case 'new_telephone':
+                        return 'New Telephone Connection';
+                    case 'repair_and_maintenance':
+                        return 'Internet/Telephone Repair and Maintenance';
+                    case 'computer_repair_maintenance':
+                        return 'Computer Repair and Maintenance';
+                    case 'printer_repair_maintenance':
+                        return 'Printer Repair and Maintenance';
+                    case 'request_led_screen':
+                        return 'LED Screen Request';
+                    case 'install_application':
+                        return 'Install Application/Information System/Software';
+                    case 'post_publication':
+                        return 'Post Publication/Update of Information Website';
+                    case 'data_docs_reports':
+                        return 'Data, Documents and Reports';
+                    case 'others':
+                        return 'Other Service Request';
+                    default:
+                        return category;
+                }
             }
-        });
-    }
-</script>
 
-@if(session('showSuccessModal'))
-    <script>
-        showRequestSuccessModal('{{ session('requestId') }}', '{{ session('serviceCategory') }}');
-    </script>
-@endif
+            function showRequestSuccessModal(requestId, serviceCategory, nonWorkingDayInfo) {
+                // Format the service category
+                const formattedCategory = formatServiceCategory(serviceCategory);
+                
+                // Create HTML content for the modal
+                let htmlContent = 'Your service request for <strong>' + formattedCategory + '</strong> has been submitted successfully.<br>Request ID: <strong>' + requestId + '</strong>';
+                
+                // Add non-working day notice if applicable
+                if (nonWorkingDayInfo && nonWorkingDayInfo.isNonWorkingDay) {
+                    if (nonWorkingDayInfo.type === 'weekend') {
+                        htmlContent += '<br><br><div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-top: 10px;">' +
+                                    '<strong>Note:</strong> Your request was submitted during the weekend. Our staff operates Monday to Friday, so your request will be processed on the next business day.' +
+                                    '</div>';
+                    } else if (nonWorkingDayInfo.type === 'holiday') {
+                        htmlContent += '<br><br><div style="background-color: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 5px; margin-top: 10px;">' +
+                                    '<strong>Note:</strong> Your request was submitted during <strong>' + nonWorkingDayInfo.holidayName + '</strong>, a holiday. Our staff operates on regular working days, so your request will be processed on the next business day.' +
+                                    '</div>';
+                    }
+                }
+                
+                Swal.fire({
+                    title: 'Request Submitted Successfully',
+                    html: htmlContent,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ url('myrequests') }}';
+                    }
+                });
+            }
+        </script>
+
+
+        @if(session('showSuccessModal'))
+            <script>
+                showRequestSuccessModal(
+                    '{{ session('requestId') }}', 
+                    '{{ session('serviceCategory') }}',
+                    @json(session('nonWorkingDayInfo'))
+                );
+            </script>
+        @endif
 
     <!-- JavaScript -->
     <script>

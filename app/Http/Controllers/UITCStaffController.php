@@ -18,7 +18,7 @@ use Carbon\Carbon;
 
 class UITCStaffController extends Controller
 {
-    public function getAssignedRequests(Request $request)
+    public function getAssignedRequests(Request $httpRequest)
     {
         try {
             // Get the currently logged-in UITC staff member's ID
@@ -50,40 +50,40 @@ class UITCStaffController extends Controller
                 );
             
             // Add filtering options (apply to both queries)
-            if ($request->has('status') && $request->input('status') !== 'all') {
-                $studentQuery->where('student_service_requests.status', $request->input('status'));
-                $facultyQuery->where('faculty_service_requests.status', $request->input('status'));
+            if ($httpRequest->has('status') && $httpRequest->input('status') !== 'all') {
+                $studentQuery->where('student_service_requests.status', $httpRequest->input('status'));
+                $facultyQuery->where('faculty_service_requests.status', $httpRequest->input('status'));
             }
             
-            if ($request->has('transaction_type') && $request->input('transaction_type') !== 'all') {
-                $studentQuery->where('student_service_requests.transaction_type', $request->input('transaction_type'));
-                $facultyQuery->where('faculty_service_requests.transaction_type', $request->input('transaction_type'));
+            if ($httpRequest->has('transaction_type') && $httpRequest->input('transaction_type') !== 'all') {
+                $studentQuery->where('student_service_requests.transaction_type', $httpRequest->input('transaction_type'));
+                $facultyQuery->where('faculty_service_requests.transaction_type', $httpRequest->input('transaction_type'));
             }
             
             // Search functionality
-            if ($request->has('search') && !empty($request->input('search'))) {
-                $search = $request->input('search');
+            if ($httpRequest->has('search') && !empty($httpRequest->input('search'))) {
+                $search = $httpRequest->input('search');
                 
                 $studentQuery->where(function($q) use ($search) {
                     $q->where('student_service_requests.first_name', 'like', "%{$search}%")
-                      ->orWhere('student_service_requests.last_name', 'like', "%{$search}%")
-                      ->orWhere('student_service_requests.service_category', 'like', "%{$search}%")
-                      ->orWhere('users.name', 'like', "%{$search}%")
-                      ->orWhere('student_service_requests.id', 'like', "%{$search}%");
+                    ->orWhere('student_service_requests.last_name', 'like', "%{$search}%")
+                    ->orWhere('student_service_requests.service_category', 'like', "%{$search}%")
+                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('student_service_requests.id', 'like', "%{$search}%");
                 });
                 
                 $facultyQuery->where(function($q) use ($search) {
                     $q->where('faculty_service_requests.first_name', 'like', "%{$search}%")
-                      ->orWhere('faculty_service_requests.last_name', 'like', "%{$search}%")
-                      ->orWhere('faculty_service_requests.service_category', 'like', "%{$search}%")
-                      ->orWhere('users.name', 'like', "%{$search}%")
-                      ->orWhere('faculty_service_requests.id', 'like', "%{$search}%");
+                    ->orWhere('faculty_service_requests.last_name', 'like', "%{$search}%")
+                    ->orWhere('faculty_service_requests.service_category', 'like', "%{$search}%")
+                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('faculty_service_requests.id', 'like', "%{$search}%");
                 });
             }
             
             // Add sorting (apply to both queries)
-            $sortBy = $request->input('sort_by', 'created_at');
-            $sortOrder = $request->input('sort_order', 'desc');
+            $sortBy = $httpRequest->input('sort_by', 'created_at');
+            $sortOrder = $httpRequest->input('sort_order', 'desc');
             
             $studentQuery->orderBy($sortBy, $sortOrder);
             $facultyQuery->orderBy($sortBy, $sortOrder);
@@ -98,9 +98,20 @@ class UITCStaffController extends Controller
             // Sort the combined collection by created_at
             $sortedRequests = $allRequests->sortByDesc('created_at');
             
+            // Format the request_data for each request to be consistent with service-request
+            $formattedRequests = collect();
+            foreach ($sortedRequests as $serviceRequest) {
+                // Add a formatted request_data field to match the service-request format
+                $serviceRequest->request_data = $this->formatRequestData($serviceRequest);
+                $formattedRequests->push($serviceRequest);
+            }
+            
+            // Use the formatted requests for pagination
+            $sortedRequests = $formattedRequests;
+            
             // Paginate the results
             $perPage = 10;
-            $page = $request->input('page', 1);
+            $page = $httpRequest->input('page', 1);
             $offset = ($page - 1) * $perPage;
             $total = $sortedRequests->count();
             
@@ -109,11 +120,11 @@ class UITCStaffController extends Controller
                 $total,
                 $perPage,
                 $page,
-                ['path' => $request->url(), 'query' => $request->query()]
+                ['path' => $httpRequest->url(), 'query' => $httpRequest->query()]
             );
             
             // If it's an AJAX request, return JSON
-            if ($request->ajax()) {
+            if ($httpRequest->ajax()) {
                 return response()->json([
                     'success' => true,
                     'data' => $paginatedRequests
@@ -136,7 +147,7 @@ class UITCStaffController extends Controller
             ]);
             
             // If it's an AJAX request, return JSON error
-            if ($request->ajax()) {
+            if ($httpRequest->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to fetch assigned requests',
@@ -146,6 +157,158 @@ class UITCStaffController extends Controller
             
             // For non-AJAX requests, redirect with error
             return redirect()->back()->with('error', 'Unable to fetch assigned requests: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Format request data to be consistent with service-request display
+     */
+    private function formatRequestData($serviceRequest)
+    {
+        $html = '';
+        
+        // Name information
+        $name = '';
+        if (isset($serviceRequest->first_name) && isset($serviceRequest->last_name) && 
+            !empty($serviceRequest->first_name) && !empty($serviceRequest->last_name)) {
+            $name = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+        } else {
+            $name = isset($serviceRequest->requester_name) ? $serviceRequest->requester_name : 'N/A';
+        }
+        $html .= '<strong>Name:</strong> ' . $name . '<br>';
+        
+        // ID information
+        if (isset($serviceRequest->request_type) && $serviceRequest->request_type == 'student' && isset($serviceRequest->student_id)) {
+            $html .= '<strong>Student ID:</strong> ' . $serviceRequest->student_id . '<br>';
+        } elseif (isset($serviceRequest->request_type) && $serviceRequest->request_type == 'faculty' && isset($serviceRequest->faculty_id)) {
+            $html .= '<strong>Faculty ID:</strong> ' . $serviceRequest->faculty_id . '<br>';
+        }
+        
+        // Service information
+        if (isset($serviceRequest->service_category)) {
+            $html .= '<strong>Service:</strong> ' . $this->getServiceName($serviceRequest->service_category) . '<br>';
+            
+            // Description (if provided and not for 'others' category)
+            if (isset($serviceRequest->description) && !empty($serviceRequest->description)) {
+                if ($serviceRequest->service_category != 'others') {
+                    $html .= '<strong>Description:</strong> ' . $serviceRequest->description;
+                } elseif ($serviceRequest->service_category == 'others') {
+                    // For 'others', the description is the service itself
+                    $html .= '<strong>Service Details:</strong> ' . $serviceRequest->description;
+                }
+            }
+        }
+        
+        return $html;
+    }
+    
+    /**
+     * Get human-readable service name from category code
+     */
+    private function getServiceName($category)
+    {
+        $services = [
+            'create' => 'Create MS Office/TUP Email Account',
+            'reset_email_password' => 'Reset MS Office/TUP Email Password',
+            'change_of_data_ms' => 'Change of Data (MS Office)',
+            'reset_tup_web_password' => 'Reset TUP Web Password',
+            'reset_ers_password' => 'Reset ERS Password',
+            'change_of_data_portal' => 'Change of Data (Portal)',
+            'dtr' => 'Daily Time Record',
+            'biometric_record' => 'Biometric Record',
+            'biometrics_enrollement' => 'Biometrics Enrollment',
+            'new_internet' => 'New Internet Connection',
+            'new_telephone' => 'New Telephone Connection',
+            'repair_and_maintenance' => 'Internet/Telephone Repair and Maintenance',
+            'computer_repair_maintenance' => 'Computer Repair and Maintenance',
+            'printer_repair_maintenance' => 'Printer Repair and Maintenance',
+            'request_led_screen' => 'LED Screen Request',
+            'install_application' => 'Install Application/Information System/Software',
+            'post_publication' => 'Post Publication/Update of Information Website',
+            'data_docs_reports' => 'Data, Documents and Reports',
+            'others' => 'Other Service',
+        ];
+        
+        return isset($services[$category]) ? $services[$category] : $category;
+    }
+
+    /**
+     * Get detailed information about a specific request
+     *
+     * @param int $id The ID of the request
+     * @param Request $request The HTTP request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getRequestDetailsById($id, Request $request)
+    {
+        try {
+            // Determine request type (student or faculty)
+            $requestType = $request->query('type', 'student');
+            
+            // Get the currently logged-in UITC staff member's ID
+            $uitcStaffId = Auth::guard('admin')->user()->id;
+            
+            // Get the request based on type
+            if ($requestType === 'student') {
+                $serviceRequest = StudentServiceRequest::where('id', $id)
+                    ->where('assigned_uitc_staff_id', $uitcStaffId)
+                    ->first();
+                    
+                if (!$serviceRequest) {
+                    return response()->json([
+                        'error' => 'Request not found or not assigned to you'
+                    ], 404);
+                }
+                
+                // Load relationships separately
+                if ($serviceRequest) {
+                    $serviceRequest->load(['user', 'assignedUITCStaff']);
+                }
+            } else {
+                $serviceRequest = FacultyServiceRequest::where('id', $id)
+                    ->where('assigned_uitc_staff_id', $uitcStaffId)
+                    ->first();
+                    
+                if (!$serviceRequest) {
+                    return response()->json([
+                        'error' => 'Request not found or not assigned to you'
+                    ], 404);
+                }
+                
+                // Load relationships separately
+                if ($serviceRequest) {
+                    $serviceRequest->load(['user', 'assignedUITCStaff']);
+                }
+            }
+            
+            // Add requester name if available from relationship
+            if ($serviceRequest->user) {
+                $serviceRequest->email = $serviceRequest->user->email;
+            }
+            
+            // Format display ID if needed
+            if ($requestType === 'student') {
+                $serviceRequest->display_id = 'SSR-' . date('Ymd', strtotime($serviceRequest->created_at)) . '-' . 
+                    str_pad($serviceRequest->id, 4, '0', STR_PAD_LEFT);
+            } else {
+                $serviceRequest->display_id = 'FSR-' . date('Ymd', strtotime($serviceRequest->created_at)) . '-' . 
+                    str_pad($serviceRequest->id, 4, '0', STR_PAD_LEFT);
+            }
+            
+            // Return the request details
+            return response()->json($serviceRequest);
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching request details: ' . $e->getMessage(), [
+                'request_id' => $id,
+                'staff_id' => Auth::guard('admin')->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to fetch request details',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 

@@ -408,7 +408,6 @@ Route::post('/assign-uitc-staff', [AdminServiceRequestController::class, 'assign
 // Assign UITC Staff to Student Service Requests
 Route::post('/assign-uitc-staff', [AdminServiceRequestController::class, 'assignUitcStaff'])
     ->name('admin.assign.uitc.staff');
-
     
 Route::post('/service-requests/delete', [AdminServiceRequestController::class, 'deleteServiceRequests'])
     ->name('admin.delete.service.requests');
@@ -465,14 +464,11 @@ Route::get('/faculty/request/{id}', [FacultyServiceRequestController::class, 'ge
     ->name('faculty.request.details')
     ->middleware('auth');
 
-
-    Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
-        Route::get('/report', [AdminReportController::class, 'index'])->name('admin.report');
-        Route::post('/report-data', [AdminReportController::class, 'getReportData'])->name('admin.report.data');
-        Route::post('/export-report', [AdminReportController::class, 'exportReport'])->name('admin.export.excel');
-        Route::post('/export-pdf', [AdminReportController::class, 'exportPDF'])->name('admin.export.pdf');
-        Route::get('/get-uitc-staff', [AdminServiceRequestController::class, 'getUITCStaff'])->name('admin.get.uitc.staff');
-    });
+// Admin Report Routes
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/admin/reports', [App\Http\Controllers\AdminReportController::class, 'index'])->name('admin.reports');
+    Route::post('/admin/reports/export', [App\Http\Controllers\AdminReportController::class, 'exportExcel'])->name('admin.reports.export');
+});
 
    // Admin routes protected by admin guard
    Route::middleware(['auth'])->group(function () {

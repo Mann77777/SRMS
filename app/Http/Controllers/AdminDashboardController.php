@@ -90,11 +90,25 @@ class AdminDashboardController extends Controller
                             ->where('status', 'Completed')
                             ->count();
             
-            // Get average rating for this UITC staff
-            $data['surveyRatings'] = DB::table('student_service_requests')
-                        ->where('assigned_uitc_staff_id', $staffId)
-                        ->whereNotNull('survey_rating')
-                        ->avg('survey_rating') ?? 0;
+            // Get average rating for this UITC staff from customer_satisfactions table
+            $studentRequestIds = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                                ->where('status', 'Completed')
+                                ->pluck('id');
+                                
+            $facultyRequestIds = FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                                ->where('status', 'Completed')
+                                ->pluck('id');
+
+            $data['surveyRatings'] = DB::table('customer_satisfactions')
+                        ->where(function($query) use ($studentRequestIds) {
+                            $query->where('request_type', 'Student')
+                                  ->whereIn('request_id', $studentRequestIds);
+                        })
+                        ->orWhere(function($query) use ($facultyRequestIds) {
+                            $query->where('request_type', 'Faculty & Staff') // Match the type used in SurveyController
+                                  ->whereIn('request_id', $facultyRequestIds);
+                        })
+                        ->avg('average_rating') ?? 0;
         } else {
             // Admin data - count today's requests by status
             $today = Carbon::today();

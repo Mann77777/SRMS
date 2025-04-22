@@ -238,7 +238,7 @@ class DashboardController extends Controller
             // Fetch faculty and staff recent requests
             $facultyRequests = FacultyServiceRequest::where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
-                ->take(5)
+                ->take(3)
                 ->get()
                 ->map(function ($request) {
                     return [

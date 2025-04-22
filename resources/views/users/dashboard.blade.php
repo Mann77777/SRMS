@@ -145,7 +145,7 @@
                                 <span class="request-id-text">
                                     @if(Auth::user()->role == "Student")
                                         {{ 'SSR-' . date('Ymd', strtotime($request['created_at'])) . '-' . str_pad($request['id'], 4, '0', STR_PAD_LEFT) }}
-                                    @else
+                                    @elseif(Auth::user()->role == "Faculty & Staff")
                                         {{ 'FSR-' . date('Ymd', strtotime($request['created_at'])) . '-' . str_pad($request['id'], 4, '0', STR_PAD_LEFT) }}
                                     @endif
                                 </span>

@@ -45,6 +45,11 @@ function updateRecentRequestsTable(requests) {
     // Don't clear existing rows if there are no new requests
     if (requests.length === 0) return;
     
+    const userRole = document.body.dataset.userRole || '';
+    
+    // Set max requests based on role
+    //const maxRequests = (userRole === 'Faculty & Staff') ? 5 : 3;
+    
     // Format the date
     function formatDate(dateString) {
         const date = new Date(dateString);
@@ -61,37 +66,60 @@ function updateRecentRequestsTable(requests) {
         return `${month} ${day}, ${year} ${hours}:${minutes} ${ampm}`;
     }
     
+    // Format request ID
+    function formatRequestId(request, userRole) {
+        const createdDate = new Date(request.created_at);
+        const dateStr = createdDate.getFullYear() +
+                      String(createdDate.getMonth() + 1).padStart(2, '0') +
+                      String(createdDate.getDate()).padStart(2, '0');
+        const paddedId = String(request.id).padStart(4, '0');
+        
+        if (userRole === 'Student') {
+            return `SSR-${dateStr}-${paddedId}`;
+        } else if (userRole === 'Faculty & Staff') {
+            return `FSR-${dateStr}-${paddedId}`;
+        } else {
+            return `REQ-${dateStr}-${paddedId}`;
+        }
+    }
+    
     // Get badge class based on status
     function getBadgeClass(status) {
         switch(status) {
-            case 'Pending': return 'badge-warning';
-            case 'In Progress': return 'badge-info';
-            case 'Completed': return 'badge-success';
-            case 'Rejected': return 'badge-danger';
-            default: return 'badge-secondary';
+            case 'Pending': return 'custom-badge custom-badge-warning';
+            case 'In Progress': return 'custom-badge custom-badge-info';
+            case 'Completed': return 'custom-badge custom-badge-success';
+            case 'Rejected': return 'custom-badge custom-badge-danger';
+            default: return 'custom-badge custom-badge-secondary';
         }
     }
     
     // Create rows for new requests
     const existingRows = Array.from(tableBody.querySelectorAll('tr'));
     const existingIds = existingRows.map(row => {
-        const firstCell = row.querySelector('td:first-child');
-        return firstCell ? firstCell.textContent.trim() : '';
+        const requestIdSpan = row.querySelector('.request-id-text');
+        return requestIdSpan ? requestIdSpan.textContent.trim() : '';
     });
     
     // Add new requests that aren't already in the table
     requests.forEach(request => {
+        const formattedId = formatRequestId(request, userRole);
+        
         // Skip if this request is already in the table
-        if (existingIds.includes(String(request.id))) return;
+        if (existingIds.some(id => id === formattedId)) return;
         
         const row = document.createElement('tr');
         
         row.innerHTML = `
-            <td>${request.id}</td>
+            <td>
+                <span class="request-id-text">${formattedId}</span>
+            </td>
             <td>${request.service_type}</td>
             <td>${formatDate(request.created_at)}</td>
             <td>${formatDate(request.updated_at)}</td>
-            <td><span class="badge ${getBadgeClass(request.status)}">${request.status}</span></td>
+            <td>
+                <span class="${getBadgeClass(request.status)}">${request.status}</span>
+            </td>
         `;
         
         // Insert at the top of the table
@@ -102,11 +130,13 @@ function updateRecentRequestsTable(requests) {
         }
     });
     
-    // If we have more than 3 rows now, remove excess
+    // If we have more than maxRequests rows now, remove excess
     const allRows = tableBody.querySelectorAll('tr');
-    if (allRows.length > 3) {
-        for (let i = 3; i < allRows.length; i++) {
-            tableBody.removeChild(allRows[i]);
+    if (allRows.length > maxRequests) {
+        for (let i = maxRequests; i < allRows.length; i++) {
+            if (allRows[i]) {
+                tableBody.removeChild(allRows[i]);
+            }
         }
     }
 }

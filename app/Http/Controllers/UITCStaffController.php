@@ -1181,6 +1181,14 @@ class UITCStaffController extends Controller
             ]
         );
         
+         // Add this code to encode the logo
+        $logoPath = public_path('images/tuplogo.png');
+        $logoData = null;
+        
+        if (file_exists($logoPath)) {
+            $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+        }
+        
         // Generate PDF using a library like DomPDF
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadView('uitc_staff.reports_pdf', [
@@ -1195,8 +1203,10 @@ class UITCStaffController extends Controller
             'dailyActivity' => $dailyActivity,
             'slaStats' => $slaStats,
             'recentActivity' => $recentActivity,
-            'improvementRecommendations' => $improvementRecommendations
+            'improvementRecommendations' => $improvementRecommendations,
+            'logoData' => $logoData  // Pass the encoded logo
         ]);
+    
         
         // Return the PDF for download
         return $pdf->download('UITC Staff Report-' . Carbon::now()->format('Y-m-d_H-i-s') . '.pdf');

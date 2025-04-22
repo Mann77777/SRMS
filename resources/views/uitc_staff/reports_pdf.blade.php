@@ -244,7 +244,14 @@
 </head>
 <body>
     <div class="logo-header">
-        <img src="{{ $logoData ?? asset('images/tuplogo.png') }}" alt="TUP Logo" class="logo">
+        @if(isset($logoData) && $logoData)
+            <img src="{{ $logoData }}" alt="TUP Logo" class="logo">
+        @else
+            <!-- Fallback if logo data isn't available -->
+            <div style="width: 70px; height: 70px; background-color: #f0f0f0; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                <span>Logo</span>
+            </div>
+        @endif
     </div>
     
     <div class="header-text">

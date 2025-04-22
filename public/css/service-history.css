@@ -98,7 +98,7 @@ body {
 }
 
 
-
+/* Badge styles */
 .badge {
     display: inline-block;
     padding: 0.25em 0.6em;
@@ -116,7 +116,7 @@ body {
     color: white;
 }
 
-/* For your custom badges */
+/* For consistency with myrequest.blade.php */
 .custom-badge {
     display: inline-block;
     padding: 0.25em 0.6em;

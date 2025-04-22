@@ -128,10 +128,11 @@
                                         <i class="fas fa-star"></i> Rate Service
                                     </a>
                                 @elseif($request->is_surveyed)
-                                    <span class="badge badge-success">Feedback Submitted</span>
+                                    <span class="custom-badge custom-badge-success">Feedback Submitted</span>
+                                @else
+                                    <!-- No action needed -->
                                 @endif
-                            </td>
-                           
+                            </td>                   
                         </tr>
                         @empty
                         <tr>

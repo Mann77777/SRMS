@@ -67,7 +67,7 @@
                 <li class="item">
                     <a href="{{ route('admin.holidays.index') }}" class="nav_link {{ request()->is('admin/holidays*') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bxs-chat"></i>
+                            <i class="bx bxs-calendar"></i>
                         </span>
                         <span class="navlink">Schedule Management</span>
                     </a>
@@ -76,7 +76,7 @@
                 <li class="item">
                     <a href="{{ route('admin.reports') }}" class="nav_link {{ request()->is('admin_report') ? 'active' : '' }}">
                         <span class="navlink_icon">
-                            <i class="bx bxs-chat"></i>
+                            <i class="bx bxs-report"></i>
                         </span>
                         <span class="navlink">Reports</span>
                     </a>

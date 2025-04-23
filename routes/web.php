@@ -369,6 +369,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::match(['PUT', 'POST'], '/admin/staff/{id}/update', [StaffManagementController::class, 'saveEditedStaff'])->name('staff.update');
     Route::delete('/admin/staff/{id}', [StaffManagementController::class, 'deleteStaff'])->name('staff.delete');
 
+    // New routes to add
+    Route::get('/staff-management/all', [StaffManagementController::class, 'showAll'])->name('admin.staff-management.all');
+    Route::post('/admin/staff/{id}/change-status', [StaffManagementController::class, 'changeStatus'])->name('staff.change-status');
+
     Route::get('/admin-messages', function () {
         return view('admin.admin-messages');
     })->name('admin.admin-messages');

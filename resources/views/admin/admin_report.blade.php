@@ -83,12 +83,12 @@
                         <div class="form-group">
                             <label for="staff_id">UITC Staff</label>
                             <select class="form-control" id="staff_id" name="staff_id">
-                                <option value="all">All Staff</option>
-                                @foreach($uitcStaff as $staff)
-                                    <option value="{{ $staff->id }}" {{ $selectedStaffId == $staff->id ? 'selected' : '' }}>
-                                        {{ $staff->name }}
-                                    </option>
-                                @endforeach
+                                <option value="all">All Active Staff</option>
+                                    @foreach($uitcStaff as $staff)
+                                        <option value="{{ $staff->id }}" {{ $selectedStaffId == $staff->id ? 'selected' : '' }}>
+                                            {{ $staff->name }}
+                                        </option>
+                                    @endforeach
                             </select>
                         </div>
                     </div>

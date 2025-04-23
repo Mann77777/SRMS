@@ -106,7 +106,7 @@
             </div>
         </form>
 
-        <!-- Password Change Form -->
+        <!-- Password Change Form 
         <h2 class="changepass-header">Set or Change Password</h2>
         @if ($errors->any())
             <div class="alert alert-danger" style="list-style-type: none; padding-left: 0;">
@@ -128,7 +128,7 @@
                 <input type="password" name="password_confirmation" id="password_confirmation" class="input-field" placeholder="Enter Confirm Password" required>
             </div>
             <button type="submit" class="btn">Set Password</button>
-        </form>
+        </form> -->
 
     </div>
 

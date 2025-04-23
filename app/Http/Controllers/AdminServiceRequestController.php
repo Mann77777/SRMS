@@ -546,12 +546,12 @@ class AdminServiceRequestController extends Controller
       // If it's just for a dropdown, getUITCStaff might be sufficient.
       public function getAvailableTechnicians()
       {
-          // Fetch only Admins with role 'UITC Staff'
-          // The concept of 'available' might need more logic (e.g., status field, workload check)
-          $availableUITCStaff = Admin::where('role', 'UITC Staff') // Assuming 'role' field defines UITC Staff
-                ->select('id', 'name')
-                ->orderBy('name') // Good practice to sort
-                ->get();
+          // Fetch only Admins with role 'UITC Staff' that are active
+          $availableUITCStaff = Admin::where('role', 'UITC Staff') 
+            ->where('availability_status', 'active') // Only active staff
+            ->select('id', 'name')
+            ->orderBy('name') // Good practice to sort
+            ->get();
 
           return response()->json($availableUITCStaff);
       }
@@ -562,14 +562,15 @@ class AdminServiceRequestController extends Controller
           try {
               // Fetch all Admins with role 'UITC Staff'
               $uitcStaff = Admin::where('role', 'UITC Staff')
-                           ->select('id', 'name') // Only select needed fields
-                           ->orderBy('name')
-                           ->get();
+                ->where('availability_status', 'active') // Only get active staff
+                ->select('id', 'name') // Only select needed fields
+                ->orderBy('name')
+                ->get();
 
-              return response()->json([
-                  'success' => true,
-                  'staff' => $uitcStaff
-              ]);
+            return response()->json([
+                'success' => true,
+                'staff' => $uitcStaff
+            ]);
           } catch (\Exception $e) {
               Log::error('Error fetching UITC Staff: ' . $e->getMessage());
               return response()->json([

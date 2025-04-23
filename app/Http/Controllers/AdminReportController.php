@@ -66,8 +66,11 @@ class AdminReportController extends Controller
             }
             
             // Get all UITC staff for filter dropdown
-            $uitcStaff = Admin::where('role', 'UITC Staff')->orderBy('name')->get();
-            
+            $uitcStaff = Admin::where('role', 'UITC Staff')
+                ->where('availability_status', 'active')
+                ->orderBy('name')
+                ->get();    
+                    
             // Build query for student requests
             $studentQuery = StudentServiceRequest::whereBetween('created_at', [$startDate, $endDate]);
             if ($staffId !== 'all') {
@@ -649,8 +652,10 @@ class AdminReportController extends Controller
     {
         $staffStats = [];
         
-        // Get all UITC staff
-        $allStaff = Admin::where('role', 'UITC Staff')->get();
+        // Get only ACTIVE UITC staff
+        $allStaff = Admin::where('role', 'UITC Staff')
+            ->where('availability_status', 'active')
+            ->get();
         
         // Initialize stats for each staff member
         foreach ($allStaff as $staff) {

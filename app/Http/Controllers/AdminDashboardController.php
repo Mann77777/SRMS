@@ -126,7 +126,9 @@ class AdminDashboardController extends Controller
             $data['rejectedRequests'] = $this->countRequestsByStatusAndDate('Rejected', $today);
 
             // Active UITC staff count (this doesn't change daily)
-            $data['assignStaff'] = Admin::where('role', 'UITC Staff')->count();
+            $data['assignStaff'] = Admin::where('role', 'UITC Staff')
+                ->where('availability_status', 'active')
+                ->count();
         }
 
         // Get recent requests (combined student and faculty)
@@ -571,11 +573,13 @@ class AdminDashboardController extends Controller
     private function getAppointmentsByStaff()
     {
         try {
-            // Get UITC Staff members
-            $staffMembers = Admin::where('role', 'UITC Staff')->get();
+            // Get only ACTIVE UITC Staff members
+            $staffMembers = Admin::where('role', 'UITC Staff')
+                ->where('availability_status', 'active')
+                ->get();
             
             if ($staffMembers->isEmpty()) {
-                \Log::warning('No UITC staff members found');
+                \Log::warning('No active UITC staff members found');
                 // Return empty data to prevent errors
                 return [
                     'labels' => [],
@@ -616,24 +620,24 @@ class AdminDashboardController extends Controller
                 
                 // Count assigned requests for each staff
                 $studentAssigned = StudentServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                                 ->where('status', 'In Progress')
-                                 ->count();
-                                 
+                                ->where('status', 'In Progress')
+                                ->count();
+                                
                 $facultyAssigned = FacultyServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                                 ->where('status', 'In Progress')
-                                 ->count();
-                                 
+                                ->where('status', 'In Progress')
+                                ->count();
+                                
                 $assignedCounts[] = $studentAssigned + $facultyAssigned;
                 
                 // Count completed requests for each staff
                 $studentCompleted = StudentServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                                 ->where('status', 'Completed')
-                                 ->count();
-                                 
+                                ->where('status', 'Completed')
+                                ->count();
+                                
                 $facultyCompleted = FacultyServiceRequest::where('assigned_uitc_staff_id', $staff->id)
-                                 ->where('status', 'Completed')
-                                 ->count();
-                                 
+                                ->where('status', 'Completed')
+                                ->count();
+                                
                 $completedCounts[] = $studentCompleted + $facultyCompleted;
             }
             

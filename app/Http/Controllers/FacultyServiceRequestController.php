@@ -11,6 +11,8 @@ use App\Notifications\ServiceRequestReceived;
 use Illuminate\Support\Facades\Notification;
 use App\Models\Admin;
 use App\Notifications\RequestSubmitted;
+use Carbon\Carbon;
+use App\Utilities\DateChecker;
 
 class FacultyServiceRequestController extends Controller
 {
@@ -86,12 +88,16 @@ class FacultyServiceRequestController extends Controller
             // Generate a unique display ID with FSR prefix
             $displayId = 'FSR-' . date('Ymd') . '-' . str_pad($serviceRequest->id, 4, '0', STR_PAD_LEFT);
     
+            // Check if today is a non-working day (weekend or holiday)
+            $nonWorkingDayInfo = DateChecker::isNonWorkingDay();
+    
             if (Auth::check() && $request->user()->email) {
                 Notification::route('mail', $request->user()->email)
                     ->notify(new ServiceRequestReceived(
-                        $displayId, // Use the formatted display ID instead of raw database ID
+                        $displayId, // Formatted display ID
                         $request->input('service_category'),
-                        $filteredData['first_name'] . ' ' . $filteredData['last_name']
+                        $filteredData['first_name'] . ' ' . $filteredData['last_name'],
+                        $nonWorkingDayInfo // Pass the non-working day info
                     ));
                     
                 Log::info('Email notification sent to: ' . $request->user()->email);
@@ -100,8 +106,9 @@ class FacultyServiceRequestController extends Controller
             // Redirect back with success modal data
             return redirect()->back()->with([
                 'showSuccessModal' => true,
-                'requestId' => $displayId, // Use the formatted display ID
-                'serviceCategory' => $request->input('service_category')
+                'requestId' => $displayId, // Formatted display ID
+                'serviceCategory' => $request->input('service_category'),
+                'nonWorkingDayInfo' => $nonWorkingDayInfo // Add the non-working day info to the session
             ]);
     
         } catch (\Exception $e) {
@@ -115,6 +122,18 @@ class FacultyServiceRequestController extends Controller
                 ->withInput();
         }
     }
+
+    /**
+     * Check if today is a weekend (Saturday or Sunday)
+     *
+     * @return bool
+     */
+    private function isWeekend()
+    {
+        $dayOfWeek = Carbon::now()->dayOfWeek;
+        return $dayOfWeek === Carbon::SATURDAY || $dayOfWeek === Carbon::SUNDAY;
+    }
+    
     public function myRequests(Request $request = null)
     {
         $user = Auth::user();
@@ -307,5 +326,56 @@ class FacultyServiceRequestController extends Controller
         }
 
         return view('users.service-survey', compact('request'));
+    }
+    
+    public function cancelRequest($id)
+    {
+        try {
+            $request = FacultyServiceRequest::findOrFail($id);
+            
+            // Check if the request belongs to the current user
+            if ($request->user_id !== Auth::id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            
+            // Check if the request can be cancelled (not completed or already cancelled)
+            if ($request->status === 'Completed' || $request->status === 'Rejected' || $request->status === 'Cancelled') {
+                return response()->json([
+                    'error' => 'This request cannot be cancelled because it is already ' . $request->status
+                ], 400);
+            }
+            
+            // Update the request status to Cancelled
+            $request->status = 'Cancelled';
+            $request->save();
+            
+            return response()->json(['message' => 'Request cancelled successfully']);
+        } catch (\Exception $e) {
+            \Log::error('Error cancelling request: ' . $e->getMessage());
+            return response()->json(['error' => 'Request not found'], 404);
+        }
+    }
+
+    public function create()
+    {
+        $today = Carbon::now();
+        $isWeekend = $today->isWeekend();
+        $isHoliday = Holiday::isHoliday($today);
+        $isSemestralBreak = Holiday::isAcademicPeriod($today, 'semestral_break');
+        $isExamWeek = Holiday::isAcademicPeriod($today, 'exam_week');
+        
+        // Construct appropriate message
+        $statusMessage = null;
+        if ($isWeekend) {
+            $statusMessage = "Note: Today is a weekend. Your request will be processed on the next business day.";
+        } elseif ($isHoliday) {
+            $statusMessage = "Note: Today is a holiday. Your request will be processed on the next business day.";
+        } elseif ($isSemestralBreak) {
+            $statusMessage = "Note: We are currently on semestral break. Response times may be longer than usual.";
+        } elseif ($isExamWeek) {
+            $statusMessage = "Note: It's exam week. Priority will be given to academic system issues.";
+        }
+        
+        return view('user.service_requests.create', compact('statusMessage'));
     }
 }

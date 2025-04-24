@@ -12,121 +12,159 @@ use App\Notifications\ServiceRequestReceived;
 use Illuminate\Support\Facades\Notification;
 use App\Models\Admin;
 use App\Notifications\RequestSubmitted;
+use App\Utilities\DateChecker;
+
 class StudentServiceRequestController extends Controller
 {
     public function store(Request $request)
-{
-    // Validate basic required fields
-    $validatedData = $request->validate([
-        'service_category' => 'required|string',
-        'first_name' => 'required|string',
-        'last_name' => 'required|string',
-        'student_id' => 'required|string',
-        'agreeTerms' => 'accepted',
-     
-    ]);
-
-    // Create a new student service request
-    $studentRequest = new StudentServiceRequest();
-    $studentRequest->user_id = Auth::id();
-    $studentRequest->service_category = $request->input('service_category');
-    $studentRequest->first_name = $request->input('first_name');
-    $studentRequest->last_name = $request->input('last_name');
-    $studentRequest->student_id = $request->input('student_id');
-    $studentRequest->status = 'Pending'; // Make sure status is explicitly set
-    
-    // Handle optional fields based on service category
-    switch($request->input('service_category')) {
-        case 'reset_email_password':
-        case 'reset_tup_web_password':
-            $studentRequest->account_email = $request->input('account_email');
-            break;
-        
-        case 'change_of_data_ms':
-        case 'change_of_data_portal':
-            $studentRequest->data_type = $request->input('data_type');
-            $studentRequest->new_data = $request->input('new_data');
-            
-            // Handle file upload for supporting document
-            if ($request->hasFile('supporting_document')) {
-                $file = $request->file('supporting_document');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('supporting_documents', $filename, 'public');
-                $studentRequest->supporting_document = $path;
-            }
-            break;
-        
-        case 'request_led_screen':
-            $studentRequest->preferred_date = $request->input('preferred_date');
-            $studentRequest->preferred_time = $request->input('preferred_time');
-            break;
-        
-        case 'others':
-            $studentRequest->description = $request->input('description');
-            break;
-    }
-
-    // Optional additional notes
-    $studentRequest->additional_notes = $request->input('additional_notes');
-    
-    // Save the request
-    $studentRequest->save();
-
-    // Generate a unique display ID with SSR prefix
-    $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
-
-    // Send email notification to the user
-    Notification::route('mail', $request->user()->email)
-        ->notify(new ServiceRequestReceived(
-            $displayId, // Use the formatted display ID instead of raw database ID
-            $studentRequest->service_category,
-            $studentRequest->first_name . ' ' . $studentRequest->last_name
-    ));
-    
-    // Notify admin users about the new request
-    try {
-        // Import the Admin model and RequestSubmitted notification at the top of the file
-        // use App\Models\Admin;
-        // use App\Notifications\RequestSubmitted;
-        
-        // Get all admin users
-        $admins = \App\Models\Admin::where('role', 'Admin')->get();
-        
-        // Log for debugging
-        \Log::info('Notifying admins about new student request', [
-            'request_id' => $studentRequest->id,
-            'admin_count' => $admins->count()
+    {
+        // Validate basic required fields
+        $validatedData = $request->validate([
+            'service_category' => 'required|string',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'student_id' => 'required|string',
+            'agreeTerms' => 'accepted',
+         
         ]);
-        
-        // Notify each admin
-        foreach ($admins as $admin) {
-            $admin->notify(new \App\Notifications\RequestSubmitted($studentRequest));
+    
+        // Create a new student service request
+        $studentRequest = new StudentServiceRequest();
+        $studentRequest->user_id = Auth::id();
+        $studentRequest->service_category = $request->input('service_category');
+        $studentRequest->first_name = $request->input('first_name');
+        $studentRequest->last_name = $request->input('last_name');
+        $studentRequest->student_id = $request->input('student_id');
+        $studentRequest->status = 'Pending'; // Make sure status is explicitly set
+
+        // Handle optional fields based on service category
+        switch($request->input('service_category')) {
+            case 'reset_email_password':
+            case 'reset_tup_web_password':
+                $studentRequest->account_email = $request->input('account_email');
+                break;
             
-            \Log::info('Notification sent to admin', [
-                'admin_id' => $admin->id,
-                'admin_name' => $admin->name
+            case 'change_of_data_ms':
+            case 'change_of_data_portal':
+                $studentRequest->data_type = $request->input('data_type');
+                $studentRequest->new_data = $request->input('new_data');
+                
+                // Handle file upload for supporting document
+                if ($request->hasFile('supporting_document')) {
+                    $file = $request->file('supporting_document');
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('supporting_documents', $filename, 'public');
+                    $studentRequest->supporting_document = $path;
+                }
+                break;
+            
+            case 'request_led_screen':
+                $studentRequest->preferred_date = $request->input('preferred_date');
+                $studentRequest->preferred_time = $request->input('preferred_time');
+                break;
+            
+            case 'others':
+                $studentRequest->description = $request->input('description');
+                break;
+        }
+    
+        // Optional additional notes
+        $studentRequest->additional_notes = $request->input('additional_notes');
+        
+        // Save the request
+        $studentRequest->save();
+    
+        // Generate a unique display ID with SSR prefix
+        $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
+    
+        // Check if today is a non-working day (weekend or holiday)
+        $nonWorkingDayInfo = DateChecker::isNonWorkingDay();
+    
+        // Send email notification to the user
+        Notification::route('mail', $request->user()->email)
+            ->notify(new ServiceRequestReceived(
+                $displayId, // Formatted display ID
+                $studentRequest->service_category,
+                $studentRequest->first_name . ' ' . $studentRequest->last_name,
+                $nonWorkingDayInfo // Pass the non-working day info
+        ));
+        // Notify admin users about the new request
+        try {
+            // Import the Admin model and RequestSubmitted notification at the top of the file
+            // use App\Models\Admin;
+            // use App\Notifications\RequestSubmitted;
+            
+            // Get all admin users
+            $admins = \App\Models\Admin::where('role', 'Admin')->get();
+            
+            // Log for debugging
+            \Log::info('Notifying admins about new student request', [
+                'request_id' => $studentRequest->id,
+                'admin_count' => $admins->count()
+            ]);
+            
+            // Notify each admin
+            foreach ($admins as $admin) {
+                $admin->notify(new \App\Notifications\RequestSubmitted($studentRequest));
+                
+                \Log::info('Notification sent to admin', [
+                    'admin_id' => $admin->id,
+                    'admin_name' => $admin->name
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Log the error but don't stop the process
+            \Log::error('Failed to notify admins about new student request', [
+                'request_id' => $studentRequest->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
-    } catch (\Exception $e) {
-        // Log the error but don't stop the process
-        \Log::error('Failed to notify admins about new student request', [
-            'request_id' => $studentRequest->id,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+         
+        // Redirect back with success modal data
+        return redirect()->back()->with([
+            'showSuccessModal' => true,
+            'requestId' => $displayId, // Use the formatted display ID
+            'serviceCategory' => $studentRequest->service_category,
+            'nonWorkingDayInfo' => $nonWorkingDayInfo // Add the non-working day info to the session
         ]);
     }
-     
-    // Redirect back with success modal data
-    return redirect()->back()->with([
-        'showSuccessModal' => true,
-        'requestId' => $displayId, // Use the formatted display ID
-        'serviceCategory' => $studentRequest->service_category
-    ]);
-}
 
+    /**
+     * Check if today is a weekend (Saturday or Sunday)
+     *
+     * @return bool
+     */
+    private function isWeekend()
+    {
+        $dayOfWeek = Carbon::now()->dayOfWeek;
+        return $dayOfWeek === Carbon::SATURDAY || $dayOfWeek === Carbon::SUNDAY;
+    }
+    
+    public function create()
+    {
+        $today = Carbon::now();
+        $isWeekend = $today->isWeekend();
+        $isHoliday = Holiday::isHoliday($today);
+        $isSemestralBreak = Holiday::isAcademicPeriod($today, 'semestral_break');
+        $isExamWeek = Holiday::isAcademicPeriod($today, 'exam_week');
+        
+        // Construct appropriate message
+        $statusMessage = null;
+        if ($isWeekend) {
+            $statusMessage = "Note: Today is a weekend. Your request will be processed on the next business day.";
+        } elseif ($isHoliday) {
+            $statusMessage = "Note: Today is a holiday. Your request will be processed on the next business day.";
+        } elseif ($isSemestralBreak) {
+            $statusMessage = "Note: We are currently on semestral break. Response times may be longer than usual.";
+        } elseif ($isExamWeek) {
+            $statusMessage = "Note: It's exam week. Priority will be given to academic system issues.";
+        }
+        
+        return view('user.service_requests.create', compact('statusMessage'));
+    }
 
-
-    // New method to show student's requestspublic function myRequests(Request $request = null)
+    // method to show student's requests
     public function myRequests(Request $request = null)
     {
         $user = Auth::user();
@@ -276,6 +314,34 @@ class StudentServiceRequestController extends Controller
             return response()->json($responseData);
         } catch (\Exception $e) {
             \Log::error('Error getting request details: ' . $e->getMessage());
+            return response()->json(['error' => 'Request not found'], 404);
+        }
+    }
+
+    public function cancelRequest($id)
+    {
+        try {
+            $request = StudentServiceRequest::findOrFail($id);
+            
+            // Check if the request belongs to the current user
+            if ($request->user_id !== Auth::id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            
+            // Check if the request can be cancelled (not completed or already cancelled)
+            if ($request->status === 'Completed' || $request->status === 'Rejected' || $request->status === 'Cancelled') {
+                return response()->json([
+                    'error' => 'This request cannot be cancelled because it is already ' . $request->status
+                ], 400);
+            }
+            
+            // Update the request status to Cancelled
+            $request->status = 'Cancelled';
+            $request->save();
+            
+            return response()->json(['message' => 'Request cancelled successfully']);
+        } catch (\Exception $e) {
+            \Log::error('Error cancelling request: ' . $e->getMessage());
             return response()->json(['error' => 'Request not found'], 404);
         }
     }

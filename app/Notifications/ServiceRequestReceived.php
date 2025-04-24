@@ -13,6 +13,7 @@ class ServiceRequestReceived extends Notification
     protected $requestId;
     protected $serviceCategory;
     protected $requestorName;
+    protected $nonWorkingDayInfo;
 
     private $serviceCategoryTitles = [
         'create' => 'Create MS Office/TUP Email Account',
@@ -42,8 +43,9 @@ class ServiceRequestReceived extends Notification
      * @param string|int $requestId The request ID (will be formatted if numeric)
      * @param string $serviceCategory The service category key
      * @param string $requestorName The name of the requestor
+     * @param array|bool $nonWorkingDayInfo Non-working day information or boolean for backward compatibility
      */
-    public function __construct($requestId, $serviceCategory, $requestorName = '')
+    public function __construct($requestId, $serviceCategory, $requestorName = '', $nonWorkingDayInfo = null)
     {
         // Handle ID formatting here
         // If $requestId is already formatted (contains '-'), use it as is
@@ -67,6 +69,19 @@ class ServiceRequestReceived extends Notification
         
         $this->serviceCategory = $serviceCategory;
         $this->requestorName = $requestorName;
+        
+        // Handle different formats of nonWorkingDayInfo for backward compatibility
+        if (is_bool($nonWorkingDayInfo)) {
+            // Handle old format (just boolean for weekend)
+            $this->nonWorkingDayInfo = [
+                'isNonWorkingDay' => $nonWorkingDayInfo,
+                'type' => $nonWorkingDayInfo ? 'weekend' : null,
+                'holidayName' => null
+            ];
+        } else {
+            // Use the new format
+            $this->nonWorkingDayInfo = $nonWorkingDayInfo;
+        }
     }
 
     /**
@@ -90,15 +105,28 @@ class ServiceRequestReceived extends Notification
     {
         $serviceCategoryTitle = $this->serviceCategoryTitles[$this->serviceCategory] ?? $this->serviceCategory;
 
-        return (new MailMessage)
+        $mailMessage = (new MailMessage)
             ->subject('TUP SRMS - Service Request Received')
             ->greeting('Dear ' . $this->requestorName . ',')
             ->line('Thank you for submitting your request. We have received it and will process it as soon as possible.')
             ->line('Request ID: ' . $this->requestId)
             ->line('Service: ' . $serviceCategoryTitle)
-            ->line('Current Status: Pending')
-            ->action('View Request', url('/myrequests'))
+            ->line('Current Status: Pending');
+            
+        // Add non-working day notice if applicable
+        if ($this->nonWorkingDayInfo && $this->nonWorkingDayInfo['isNonWorkingDay']) {
+            if ($this->nonWorkingDayInfo['type'] === 'weekend') {
+                $mailMessage->line('**Note:** Your request was submitted during the weekend. Our staff operates Monday to Friday, so your request will be processed on the next business day.');
+            } elseif ($this->nonWorkingDayInfo['type'] === 'holiday') {
+                $holidayName = $this->nonWorkingDayInfo['holidayName'];
+                $mailMessage->line('**Note:** Your request was submitted during ' . $holidayName . ', a holiday. Our staff operates on regular working days, so your request will be processed on the next business day.');
+            }
+        }
+            
+        $mailMessage->action('View Request', url('/myrequests'))
             ->salutation('Best regards,')
             ->salutation('TUP SRMS Team');
+            
+        return $mailMessage;
     }
 }

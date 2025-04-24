@@ -577,13 +577,29 @@
             }
         }
 
-        function showRequestSuccessModal(requestId, serviceCategory) {
+        function showRequestSuccessModal(requestId, serviceCategory, nonWorkingDayInfo) {
             // Format the service category
             const formattedCategory = formatServiceCategory(serviceCategory);
             
+            // Create HTML content for the modal
+            let htmlContent = 'Your service request for <strong>' + formattedCategory + '</strong> has been submitted successfully.<br>Request ID: <strong>' + requestId + '</strong>';
+            
+            // Add non-working day notice if applicable
+            if (nonWorkingDayInfo && nonWorkingDayInfo.isNonWorkingDay) {
+                if (nonWorkingDayInfo.type === 'weekend') {
+                    htmlContent += '<br><br><div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-top: 10px;">' +
+                                '<strong>Note:</strong> Your request was submitted during the weekend. Our staff operates Monday to Friday, so your request will be processed on the next business day.' +
+                                '</div>';
+                } else if (nonWorkingDayInfo.type === 'holiday') {
+                    htmlContent += '<br><br><div style="background-color: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 5px; margin-top: 10px;">' +
+                                '<strong>Note:</strong> Your request was submitted during <strong>' + nonWorkingDayInfo.holidayName + '</strong>, a holiday. Our staff operates on regular working days, so your request will be processed on the next business day.' +
+                                '</div>';
+                }
+            }
+            
             Swal.fire({
                 title: 'Request Submitted Successfully',
-                html: 'Your service request for <strong>' + formattedCategory + '</strong> has been submitted successfully.<br>Request ID: <strong>' + requestId + '</strong>',
+                html: htmlContent,
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then((result) => {
@@ -594,9 +610,14 @@
         }
     </script>
 
+    
     @if(session('showSuccessModal'))
         <script>
-            showRequestSuccessModal('{{ session('requestId') }}', '{{ session('serviceCategory') }}');
+            showRequestSuccessModal(
+                '{{ session('requestId') }}', 
+                '{{ session('serviceCategory') }}',
+                @json(session('nonWorkingDayInfo'))
+            );
         </script>
     @endif
 </body>

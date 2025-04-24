@@ -134,17 +134,15 @@ class FacultyServiceRequestController extends Controller
         return $dayOfWeek === Carbon::SATURDAY || $dayOfWeek === Carbon::SUNDAY;
     }
     
-    public function myRequests(Request $request = null)
+    // Update signature to require Request object
+    public function myRequests(Request $request)
     {
         $user = Auth::user();
-    
+
         if($user->role === "Faculty & Staff")
         {
-            // If $request is null, initialize it to get an empty request object
-            if ($request === null) {
-                $request = new Request();
-            }
-            
+            // Remove the null check and creation of new Request object
+
             // Debug the incoming request parameters
             \Log::info('Request parameters for faculty requests:', [
                 'status' => $request->status,

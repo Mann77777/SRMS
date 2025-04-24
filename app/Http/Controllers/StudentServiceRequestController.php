@@ -165,17 +165,15 @@ class StudentServiceRequestController extends Controller
     }
 
     // method to show student's requests
-    public function myRequests(Request $request = null)
+    // Update signature to require Request object
+    public function myRequests(Request $request)
     {
         $user = Auth::user();
-        
+
         if($user->role === "Student")
         {
-            // If $request is null, initialize it to get an empty request object
-            if ($request === null) {
-                $request = new Request();
-            }
-            
+            // Remove the null check and creation of new Request object
+
             // Debug the incoming request parameters
             \Log::info('Request parameters for student requests:', [
                 'status' => $request->status,

@@ -126,9 +126,7 @@ Route::get('/myrequests', [RequestsController::class, 'myRequests'])
 
 Route::get('/student/myrequests/{id}', [StudentServiceRequestController::class, 'show'])->name('student.myrequests.show');
 
-Route::get('/myrequests', [RequestsController::class, 'myRequests'])
-->name('myrequests')
-->middleware('auth');
+// Removed duplicate route definition for /myrequests
 
 Route::get('/faculty/myrequests/{id}', [FacultyServiceRequestController::class, 'show'])->name('faculty.myrequests.show');
 

@@ -11,19 +11,22 @@ use App\Models\FacultyServiceRequest;
 
 class RequestsController extends Controller
 {
-    public function myRequests()
+    // Inject the Request object
+    public function myRequests(Request $request)
     {
         $user = Auth::user();
-        
+
         if ($user->role === "Student") {
             $controller = new StudentServiceRequestController();
-            return $controller->myRequests();
-        } 
+            // Pass the request object along
+            return $controller->myRequests($request);
+        }
         elseif ($user->role === "Faculty & Staff") {
             $controller = new FacultyServiceRequestController();
-            return $controller->myRequests();
+            // Pass the request object along
+            return $controller->myRequests($request);
         }
-        
+
         // Handle unexpected role
         return redirect()->back()->with('error', 'Unauthorized access');
     }

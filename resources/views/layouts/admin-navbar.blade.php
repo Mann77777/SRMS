@@ -34,18 +34,20 @@
 
         <li class="dropdown">
             <a href="#" class="profile-icon">
-                @if(Auth::check() && Auth::user()->profile_image)
-                    <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
-                @elseif(Auth::check())
+                @if(Auth::guard('admin')->check() && Auth::guard('admin')->user()->profile_image)
+                    <img src="{{ asset('storage/' . Auth::guard('admin')->user()->profile_image) }}" alt="Profile Image" class="profile-img-navbar">
+                @elseif(Auth::guard('admin')->check())
                     <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
                 @else
+                    {{-- If not logged in via admin guard, show default --}}
                     <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img-navbar">
                 @endif
             </a>
-            @if(Auth::check())
+            @if(Auth::guard('admin')->check()) {{-- Check admin guard for dropdown content --}}
                 <div class="dropdown-content">
                     <a href="{{ route('admin.admin_myprofile') }}">My Profile</a>
-                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">Logout</a>
+                    {{-- Ensure the logout route/form uses the correct guard if necessary --}}
+                    <a href="{{ route('admin.logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">Logout</a>
                     <form id="admin-logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
                         @csrf
                     </form>

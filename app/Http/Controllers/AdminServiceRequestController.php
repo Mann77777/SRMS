@@ -55,6 +55,8 @@ class AdminServiceRequestController extends Controller
                     'status' => $request->status ?? 'Pending',
                     'type' => 'new_student_service', // Specific type
                     'updated_at' => $request->updated_at,
+                    'rejection_reason' => $request->rejection_reason ?? null,
+                    'notes' => $request->admin_notes ?? null,
                 ];
             }
 
@@ -70,6 +72,8 @@ class AdminServiceRequestController extends Controller
                     'request_data' => $this->formatFacultyServiceRequestData($request),
                     'date' => $request->created_at,
                     'status' => $request->status ?? 'Pending', // Default status if null
+                    'rejection_reason' => $request->rejection_reason ?? null,
+                    'notes' => $request->admin_notes ?? null,
                     'type' => 'faculty', // Specific type
                     'updated_at' => $request->updated_at,
                 ];
@@ -289,6 +293,9 @@ class AdminServiceRequestController extends Controller
         if ($request->status === 'Rejected' && $request->rejection_reason) {
             $data['Rejection Reason'] = $request->rejection_reason;
         }
+        if ($request->status === 'Rejected' && $request->admin_notes) {
+            $data['Admin Notes'] = $request->admin_notes;
+        }
 
         // Convert data to HTML format
         $output = [];
@@ -388,10 +395,10 @@ class AdminServiceRequestController extends Controller
                     $data['Emergency Contact Number'] = $request->emergency_contact_number;
                 }
 
-                foreach ($fieldsToInclude as $field => $label) {
+                foreach ($bioFields as $field => $label) { // Corrected variable name here
                     // Include the field even if it's null, showing "Not provided" for empty values
-                    $data[$label] = isset($request->$field) && !empty($request->$field) 
-                        ? $request->$field 
+                    $data[$label] = isset($request->$field) && !empty($request->$field)
+                        ? ($field === 'date_of_birth' ? $this->formatDate($request->$field) : $request->$field) // Format date specifically
                         : 'Not provided';
                 }
                 break;
@@ -474,86 +481,12 @@ class AdminServiceRequestController extends Controller
         if ($request->status === 'Rejected' && $request->rejection_reason) {
             $data['Rejection Reason'] = $request->rejection_reason;
         }
+        if ($request->admin_notes) {
+            $data['Admin Notes'] = $request->admin_notes;
+        }
 
         // Convert data to HTML format
         $output = [];
-        foreach ($data as $key => $value) {
-             // Handle the HTML link for the document directly
-            if ($key === 'Supporting Document') {
-                 $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . $value . '<br>';
-            } else {
-                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
-            }
-        }
-        return implode('', $output);
-    }
-
-    /**
-     * View supporting document for a given request ID and type.
-     *
-     * @param int $requestId
-     * @param string $type ('student' or 'faculty')
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
-     */
-    public function viewSupportingDocument($requestId, $type)
-    {
-        $request = null;
-        try {
-            if ($type === 'student' || $type === 'new_student_service') { // Allow both type hints
-                 $request = StudentServiceRequest::findOrFail($requestId);
-            } elseif ($type === 'faculty') {
-                 $request = FacultyServiceRequest::findOrFail($requestId);
-            } else {
-                Log::warning('Invalid type provided for viewing document', ['type' => $type, 'requestId' => $requestId]);
-                return back()->with('error', 'Invalid request type specified.');
-            }
-
-            // Check if supporting document exists
-            if (!$request->supporting_document) {
-                Log::info('No supporting document found for request', ['type' => $type, 'requestId' => $requestId]);
-                return back()->with('error', 'No supporting document found for this request.');
-            }
-
-            // Get the full path to the file within the storage/app/public directory
-            $filePath = storage_path('app/public/' . $request->supporting_document);
-
-            // Check if file exists physically
-            if (!file_exists($filePath)) {
-                Log::error('Supporting document file not found at path', ['path' => $filePath, 'requestId' => $requestId]);
-                return back()->with('error', 'Supporting document file not found on the server.');
-            }
-
-            // Determine file type for the response header
-            $mimeType = mime_content_type($filePath);
-
-            // Return file for inline view in the browser
-            return response()->file($filePath, [
-                'Content-Type' => $mimeType,
-                'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"' // Suggests browser displays inline
-            ]);
-
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-             Log::error('Service request not found when trying to view document', ['type' => $type, 'requestId' => $requestId]);
-             return back()->with('error', 'Service request not found.');
-        } catch (\Exception $e) {
-            Log::error('Error viewing supporting document: ' . $e->getMessage(), ['type' => $type, 'requestId' => $requestId]);
-            return back()->with('error', 'An error occurred while trying to display the document.');
-        }
-    }
-
-
-      // Method to fetch available UITC Staff (Consider if this is needed alongside getUITCStaff)
-      // If it's just for a dropdown, getUITCStaff might be sufficient.
-      public function getAvailableTechnicians()
-      {
-          // Fetch only Admins with role 'UITC Staff' that are active
-          $availableUITCStaff = Admin::where('role', 'UITC Staff') 
-            ->where('availability_status', 'active') // Only active staff
-            ->select('id', 'name')
-            ->orderBy('name') // Good practice to sort
-            ->get();
-
-          return response()->json($availableUITCStaff);
       }
 
       // Method to fetch all UITC Staff (likely for assignment dropdowns)
@@ -920,9 +853,10 @@ class AdminServiceRequestController extends Controller
                  if (method_exists($user, 'notify')) {
                     try {
                         // Format category for notification
-                         $formattedServiceCategory = $this->formatServiceCategory($serviceCategory);
+                        $formattedServiceCategory = $this->formatServiceCategory($serviceCategory);
 
                         // Send the rejection notification
+                        // Pass the rejectionReason and notes to the notification
                         $user->notify(new ServiceRequestRejected(
                             $serviceRequest->id,
                             $formattedServiceCategory,

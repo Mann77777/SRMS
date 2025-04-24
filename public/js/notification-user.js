@@ -150,9 +150,14 @@ function createNotificationElement(notification, isUnread) {
     const notificationEl = document.createElement('div');
     notificationEl.className = `notification-item${isUnread ? ' unread' : ''}`;
     notificationEl.dataset.id = notification.id;
-    
+
     const data = notification.data;
     const time = new Date(notification.created_at).toLocaleString();
+
+    // Add level-specific class for styling (e.g., danger for rejected)
+    if (data.level) {
+        notificationEl.classList.add(`notification-${data.level}`); // Adds 'notification-danger', 'notification-success', etc.
+    }
     
     // Enhanced display for notifications
     let content = data.message;

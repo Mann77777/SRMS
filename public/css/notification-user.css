@@ -123,3 +123,41 @@
     text-align: center;
     color: #718096;
 }
+/* Styles for different notification levels */
+.notification-item.notification-danger {
+    background-color: #f8d7da; /* Light red background */
+    border-left: 5px solid #dc3545; /* Red left border */
+    color: #721c24; /* Dark red text */
+}
+
+.notification-item.notification-danger .notification-time {
+    color: #721c24; /* Match text color */
+}
+
+/* Add styles for other levels if needed */
+.notification-item.notification-success {
+    background-color: #d4edda;
+    border-left: 5px solid #28a745;
+    color: #155724;
+}
+.notification-item.notification-success .notification-time {
+    color: #155724;
+}
+
+.notification-item.notification-info {
+    background-color: #d1ecf1;
+    border-left: 5px solid #17a2b8;
+    color: #0c5460;
+}
+.notification-item.notification-info .notification-time {
+    color: #0c5460;
+}
+
+.notification-item.notification-warning {
+    background-color: #fff3cd;
+    border-left: 5px solid #ffc107;
+    color: #856404;
+}
+.notification-item.notification-warning .notification-time {
+    color: #856404;
+}

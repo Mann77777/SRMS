@@ -84,34 +84,60 @@ class ServiceRequestRejected extends Notification
         $this->notes = $notes;
     }
 
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
     public function via($notifiable)
     {
-        return ['mail'];
+        // Send notification via the database channel
+        return ['database'];
     }
 
-    public function toMail($notifiable)
+    /**
+     * Get the array representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
+    public function toArray($notifiable)
     {
         $serviceCategoryTitle = $this->serviceCategoryTitles[$this->serviceCategory] ?? $this->serviceCategory;
         $rejectionReasonTitle = $this->rejectionReasonTitles[$this->rejectionReason] ?? $this->rejectionReason;
 
-        $mailMessage = (new MailMessage)
-            ->subject('TUP SRMS - Service Request Rejected')
-            ->greeting('Dear ' . $this->requestorName . ',')
-            ->line('We regret to inform you that your service request has been rejected.')
-            ->line('Request ID: ' . $this->requestId)
-            ->line('Service: ' . $serviceCategoryTitle)
-            ->line('Reason for Rejection: ' . $rejectionReasonTitle);
+        return [
+            'level' => 'danger', // Add level for styling
+            'request_id_formatted' => $this->requestId, // Use the pre-formatted ID
+            'request_id_raw' => $this->getRequestIdRaw(), // Store the original ID if needed
+            'service_category' => $this->serviceCategory,
+            'service_category_title' => $serviceCategoryTitle,
+            'rejection_reason' => $this->rejectionReason,
+            'rejection_reason_title' => $rejectionReasonTitle,
+            'notes' => $this->notes,
+            'message' => sprintf(
+                'Your request (%s) for "%s" was rejected. Reason: %s.%s',
+                $this->requestId,
+                $serviceCategoryTitle,
+                $rejectionReasonTitle,
+                !empty($this->notes) ? ' Notes: ' . $this->notes : ''
+            ),
+        ];
+    }
 
-        // Add notes if provided
-        if (!empty($this->notes)) {
-            $mailMessage->line('Additional Notes: ' . $this->notes);
+    /**
+     * Helper to get the raw request ID before formatting.
+     * This assumes the constructor logic correctly sets the formatted ID.
+     * We might need to adjust the constructor if we want to reliably store the raw ID.
+     * For now, this attempts to extract it if possible.
+     */
+    private function getRequestIdRaw()
+    {
+        if (is_string($this->requestId) && preg_match('/-(\d+)$/', $this->requestId, $matches)) {
+            return (int) ltrim($matches[1], '0');
         }
-
-        $mailMessage->line('If you have any questions regarding this decision, please contact the UITC office for clarification.')
-            ->action('Submit New Request', url('/login'))
-            ->salutation('Best regards,')
-            ->salutation('TUP SRMS Team');
-
-        return $mailMessage;
+        // If it wasn't formatted or pattern doesn't match, return the stored value (might be raw or formatted)
+        return $this->requestId;
     }
 }

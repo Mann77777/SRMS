@@ -29,6 +29,7 @@
                     <option value="In Progress">In Progress</option>
                     <option value="Completed">Completed</option>
                     <option value="Rejected">Rejected</option>
+                    <option value="Cancelled">Cancelled</option>
                 </select>
                 <!-- Search Bar -->
                 <div class="search-container">

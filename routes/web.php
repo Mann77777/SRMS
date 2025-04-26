@@ -115,6 +115,11 @@ Route::middleware(['auth'])->group(function () {
     
     Route::delete('/faculty/request/{id}', [FacultyServiceRequestController::class, 'deleteRequest'])
         ->name('faculty.request.delete');
+
+    // Edit Request Routes (Added)
+    Route::get('/requests/{id}/edit', [RequestsController::class, 'edit'])->name('requests.edit');
+    Route::match(['put', 'patch'], '/requests/{id}', [RequestsController::class, 'update'])->name('requests.update');
+
 });
     
     Route::post('/faculty/service-request/store', [FacultyServiceRequestController::class, 'store'])

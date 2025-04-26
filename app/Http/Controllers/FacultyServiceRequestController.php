@@ -259,40 +259,184 @@ class FacultyServiceRequestController extends Controller
         return view('users.faculty-service-view', ['request' => $request]);
     }
 
-    public function updateRequest(Request $request, $id)
+    /**
+     * Show the form for editing the specified faculty service request.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
     {
-        try {
-            $serviceRequest = FacultyServiceRequest::findOrFail($id);
-            
-            if ($serviceRequest->user_id !== Auth::id()) {
-                return redirect()->back()->with('error', 'Unauthorized action');
-            }
+        $request = FacultyServiceRequest::findOrFail($id);
 
-            // Get the ACTUAL database columns
+        // Authorization: Ensure the logged-in user owns this request
+        if ($request->user_id !== Auth::id()) {
+            return redirect()->route('myrequests')->with('error', 'Unauthorized action.');
+        }
+
+        // Prevent editing if the request is not in a pending state
+        if ($request->status !== 'Pending') {
+             return redirect()->route('myrequests')->with('error', 'This request cannot be edited as it is no longer pending.');
+        }
+
+        // Format the service category name before passing to the view
+        // Format the service category name using the static helper method
+        $formattedServiceName = \App\Helpers\ServiceHelper::formatServiceCategory($request->service_category, $request->description);
+
+        // Pass the request data and the formatted name to the edit view
+        return view('users.edit-request', compact('request', 'formattedServiceName'));
+    }
+
+    /**
+     * Update the specified faculty service request in storage.
+     * Renamed from updateRequest for consistency.
+     *
+     * @param  \Illuminate\Http\Request  $requestData
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $requestData, $id) // Renamed parameter and method
+    {
+        $serviceRequest = FacultyServiceRequest::findOrFail($id); // Renamed variable
+
+        // Authorization: Ensure the logged-in user owns this request
+        if ($serviceRequest->user_id !== Auth::id()) {
+            return redirect()->route('myrequests')->with('error', 'Unauthorized action.');
+        }
+
+        // Prevent editing if the request is not in a pending state
+        if ($serviceRequest->status !== 'Pending') {
+             return redirect()->route('myrequests')->with('error', 'This request cannot be edited as it is no longer pending.');
+        }
+
+        // --- Validation ---
+        // Define validation rules based on FacultyServiceRequest fields and service category
+         $rules = [
+             'first_name' => 'required|string|max:255',
+             'last_name' => 'required|string|max:255',
+             'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+             'remove_supporting_document' => 'nullable|in:1', // For checkbox to remove file
+            // Add other common faculty fields if necessary
+        ];
+
+        // Add specific validation based on the *original* service category
+        // (Similar logic as Student controller, adjust fields for Faculty model)
+        switch ($serviceRequest->service_category) {
+            case 'reset_email_password':
+            case 'reset_tup_web_password':
+            case 'reset_ers_password':
+                 $rules['account_email'] = 'required|email|max:255';
+                 break;
+            case 'change_of_data_ms':
+            case 'change_of_data_portal':
+                 $rules['data_type'] = 'required|string|max:255';
+                 $rules['new_data'] = 'required|string|max:1000';
+                 break;
+            case 'dtr':
+                 $rules['dtr_months'] = 'required|string|max:255';
+                 $rules['dtr_with_details'] = 'sometimes|boolean'; // Use boolean validation
+                 break;
+            case 'biometrics_enrollement':
+                 // Add validation for all relevant biometrics fields
+                 $rules['middle_name'] = 'nullable|string|max:255';
+                 $rules['college'] = 'required|string|max:255';
+                 $rules['department'] = 'required|string|max:255';
+                 $rules['plantilla_position'] = 'required|string|max:255';
+                 $rules['date_of_birth'] = 'required|date';
+                 $rules['phone_number'] = 'required|string|max:20';
+                 $rules['address'] = 'required|string|max:500';
+                 $rules['blood_type'] = 'nullable|string|max:10';
+                 $rules['emergency_contact_person'] = 'required|string|max:255';
+                 $rules['emergency_contact_number'] = 'required|string|max:20';
+                 break;
+            case 'new_internet':
+            case 'new_telephone':
+            case 'repair_and_maintenance':
+            case 'computer_repair_maintenance':
+            case 'printer_repair_maintenance':
+                 $rules['location'] = 'required|string|max:255';
+                 $rules['problem_encountered'] = 'required|string|max:1000'; // Mapped from problems_encountered
+                 break;
+            case 'request_led_screen':
+                 $rules['preferred_date'] = 'required|date';
+                 $rules['preferred_time'] = 'required|string';
+                 $rules['led_screen_details'] = 'nullable|string|max:1000';
+                 break;
+            case 'install_application':
+                 $rules['application_name'] = 'required|string|max:255';
+                 $rules['installation_purpose'] = 'required|string|max:1000';
+                 $rules['installation_notes'] = 'nullable|string|max:1000';
+                 break;
+            case 'post_publication':
+                 $rules['publication_author'] = 'required|string|max:255';
+                 $rules['publication_editor'] = 'required|string|max:255';
+                 $rules['publication_start_date'] = 'required|date';
+                 $rules['publication_end_date'] = 'required|date|after_or_equal:publication_start_date';
+                 break;
+            case 'data_docs_reports':
+                 $rules['data_documents_details'] = 'required|string|max:1000';
+                 break;
+            case 'others':
+                 $rules['description'] = 'required|string|max:1000';
+                 break;
+        }
+
+        $validatedData = $requestData->validate($rules);
+
+        // --- Update Logic ---
+        try {
+            // Get the ACTUAL database columns to ensure we only update existing fields
             $tableColumns = Schema::getColumnListing('faculty_service_requests');
             
-            // Get all input data
-            $inputData = $request->all();
-            
-            // Initialize filtered data array
-            $filteredData = [];
-            
-            // Only include fields that exist in the database
-            foreach ($tableColumns as $column) {
-                if (isset($inputData[$column])) {
-                    $filteredData[$column] = $inputData[$column];
+            // Prepare data for update, only including validated fields that exist in the table
+             $updateData = [];
+             foreach ($validatedData as $key => $value) {
+                 // Skip file input and removal flag
+                 if ($key === 'supporting_document' || $key === 'remove_supporting_document') {
+                     continue;
+                 }
+
+                // Handle special mapping for problem_encountered
+                if ($key === 'problem_encountered' && in_array('problem_encountered', $tableColumns)) {
+                     $updateData['problem_encountered'] = $value;
+                } elseif (in_array($key, $tableColumns)) {
+                    // Handle boolean conversion for dtr_with_details
+                    if ($key === 'dtr_with_details') {
+                        // Ensure value is explicitly true/false (or 1/0) based on presence
+                        $updateData[$key] = $requestData->has('dtr_with_details');
+                    } else {
+                        $updateData[$key] = $value;
+                    }
                 }
             }
-            
-            // Handle special field mapping
-            if (isset($inputData['problems_encountered']) && in_array('problem_encountered', $tableColumns)) {
-                $filteredData['problem_encountered'] = $inputData['problems_encountered'];
+
+             // Handle file upload if a new one is provided
+            if ($requestData->hasFile('supporting_document') && in_array('supporting_document', $tableColumns)) {
+                // Delete old file if it exists
+                if ($serviceRequest->supporting_document) {
+                    Storage::disk('public')->delete($serviceRequest->supporting_document);
+                }
+                // Store new file
+                $file = $requestData->file('supporting_document');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('documents', $filename, 'public'); // Use 'documents' folder
+                $updateData['supporting_document'] = $path;
+            } elseif ($requestData->has('remove_supporting_document') && $requestData->input('remove_supporting_document') == '1' && in_array('supporting_document', $tableColumns)) {
+                 // Handle removal of existing document
+                 if ($serviceRequest->supporting_document) {
+                     Storage::disk('public')->delete($serviceRequest->supporting_document);
+                     $updateData['supporting_document'] = null;
+                 }
             }
 
-            $serviceRequest->update($filteredData);
-            return redirect()->back()->with('success', 'Request updated successfully');
+
+            // Update the request
+            $serviceRequest->update($updateData);
+
+            return redirect()->route('myrequests')->with('success', 'Request updated successfully!');
+
         } catch (\Exception $e) {
-            Log::error('Error updating request:', [
+            Log::error('Error updating faculty service request:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -393,4 +537,6 @@ class FacultyServiceRequestController extends Controller
         
         return view('user.service_requests.create', compact('statusMessage'));
     }
+
+    // Removed private formatServiceCategory method - Use App\Helpers\ServiceHelper::formatServiceCategory instead
 }

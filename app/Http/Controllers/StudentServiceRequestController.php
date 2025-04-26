@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Notification;
 use App\Models\Admin;
 use App\Notifications\RequestSubmitted;
 use App\Utilities\DateChecker;
+use App\Helpers\ServiceHelper; // Ensure helper is imported
 
 class StudentServiceRequestController extends Controller
 {
@@ -25,9 +26,9 @@ class StudentServiceRequestController extends Controller
             'last_name' => 'required|string',
             'student_id' => 'required|string',
             'agreeTerms' => 'accepted',
-         
+
         ]);
-    
+
         // Create a new student service request
         $studentRequest = new StudentServiceRequest();
         $studentRequest->user_id = Auth::id();
@@ -43,12 +44,12 @@ class StudentServiceRequestController extends Controller
             case 'reset_tup_web_password':
                 $studentRequest->account_email = $request->input('account_email');
                 break;
-            
+
             case 'change_of_data_ms':
             case 'change_of_data_portal':
                 $studentRequest->data_type = $request->input('data_type');
                 $studentRequest->new_data = $request->input('new_data');
-                
+
                 // Handle file upload for supporting document
                 if ($request->hasFile('supporting_document')) {
                     $file = $request->file('supporting_document');
@@ -57,29 +58,29 @@ class StudentServiceRequestController extends Controller
                     $studentRequest->supporting_document = $path;
                 }
                 break;
-            
+
             case 'request_led_screen':
                 $studentRequest->preferred_date = $request->input('preferred_date');
                 $studentRequest->preferred_time = $request->input('preferred_time');
                 break;
-            
+
             case 'others':
                 $studentRequest->description = $request->input('description');
                 break;
         }
-    
+
         // Optional additional notes
         $studentRequest->additional_notes = $request->input('additional_notes');
-        
+
         // Save the request
         $studentRequest->save();
-    
+
         // Generate a unique display ID with SSR prefix
         $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
-    
+
         // Check if today is a non-working day (weekend or holiday)
         $nonWorkingDayInfo = DateChecker::isNonWorkingDay();
-    
+
         // Send email notification to the user
         Notification::route('mail', $request->user()->email)
             ->notify(new ServiceRequestReceived(
@@ -90,37 +91,26 @@ class StudentServiceRequestController extends Controller
         ));
         // Notify admin users about the new request
         try {
-            // Import the Admin model and RequestSubmitted notification at the top of the file
-            // use App\Models\Admin;
-            // use App\Notifications\RequestSubmitted;
-            
-            // Get all admin users
             $admins = \App\Models\Admin::where('role', 'Admin')->get();
-            
-            // Log for debugging
             \Log::info('Notifying admins about new student request', [
                 'request_id' => $studentRequest->id,
                 'admin_count' => $admins->count()
             ]);
-            
-            // Notify each admin
             foreach ($admins as $admin) {
                 $admin->notify(new \App\Notifications\RequestSubmitted($studentRequest));
-                
                 \Log::info('Notification sent to admin', [
                     'admin_id' => $admin->id,
                     'admin_name' => $admin->name
                 ]);
             }
         } catch (\Exception $e) {
-            // Log the error but don't stop the process
             \Log::error('Failed to notify admins about new student request', [
                 'request_id' => $studentRequest->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
         }
-         
+
         // Redirect back with success modal data
         return redirect()->back()->with([
             'showSuccessModal' => true,
@@ -130,17 +120,6 @@ class StudentServiceRequestController extends Controller
         ]);
     }
 
-    /**
-     * Check if today is a weekend (Saturday or Sunday)
-     *
-     * @return bool
-     */
-    private function isWeekend()
-    {
-        $dayOfWeek = Carbon::now()->dayOfWeek;
-        return $dayOfWeek === Carbon::SATURDAY || $dayOfWeek === Carbon::SUNDAY;
-    }
-    
     public function create()
     {
         $today = Carbon::now();
@@ -148,7 +127,7 @@ class StudentServiceRequestController extends Controller
         $isHoliday = Holiday::isHoliday($today);
         $isSemestralBreak = Holiday::isAcademicPeriod($today, 'semestral_break');
         $isExamWeek = Holiday::isAcademicPeriod($today, 'exam_week');
-        
+
         // Construct appropriate message
         $statusMessage = null;
         if ($isWeekend) {
@@ -160,84 +139,59 @@ class StudentServiceRequestController extends Controller
         } elseif ($isExamWeek) {
             $statusMessage = "Note: It's exam week. Priority will be given to academic system issues.";
         }
-        
+
         return view('user.service_requests.create', compact('statusMessage'));
     }
 
-    // method to show student's requests
-    // Update signature to require Request object
     public function myRequests(Request $request)
     {
         $user = Auth::user();
 
         if($user->role === "Student")
         {
-            // Remove the null check and creation of new Request object
-
-            // Debug the incoming request parameters
             \Log::info('Request parameters for student requests:', [
                 'status' => $request->status,
                 'search' => $request->search,
                 'page' => $request->page
             ]);
-            
-            // Start building the query
+
             $query = StudentServiceRequest::where('user_id', Auth::id());
-            
-            // Apply status filter if provided - exact match with database value
+
             if ($request->has('status') && $request->status !== 'all' && $request->status !== '') {
                 \Log::info('Filtering by status: ' . $request->status);
                 $query->where('status', $request->status);
             }
-            
-            // Apply search filter if provided
+
             if ($request->has('search') && !empty($request->search)) {
                 $search = $request->search;
                 \Log::info('Searching for: ' . $search);
-
-                // Check if the search term looks like a formatted Request ID (SSR-YYYYMMDD-ID)
                 $extractedId = null;
                 if (preg_match('/^SSR-\d{8}-(\d+)$/i', $search, $matches)) {
                     $extractedId = (int) $matches[1];
                     \Log::info('Extracted Request ID from search term: ' . $extractedId);
                 }
-
                 $query->where(function($q) use ($search, $extractedId) {
-                    // Search service category or description
                     $q->where('service_category', 'like', '%' . $search . '%')
                       ->orWhere('description', 'like', '%' . $search . '%');
-
-                    // If a numeric ID was extracted from the search term, search by that exact ID
                     if ($extractedId !== null) {
                         $q->orWhere('id', '=', $extractedId);
                     }
-                    // Optionally, keep the original broad ID search as a fallback if no specific ID was extracted
-                    // else {
-                    //    $q->orWhere('id', 'like', '%' . $search . '%');
-                    // }
-                    // For now, let's only search the exact ID if the format matches.
                 });
             }
-            
-            // Count the total records after filtering (before pagination)
+
             $totalRecords = $query->count();
             \Log::info('Total filtered records: ' . $totalRecords);
-            
-            // Get the requests with pagination after filtering
             $requests = $query->orderBy('created_at', 'desc')->paginate(10);
-            
-            // Append query parameters to pagination links
             $requests->appends($request->except('page'));
-            
             \Log::info('Paginated results count: ' . $requests->count());
-            
+
             return view('users.myrequests', compact('requests'));
         }
-        
+
         return redirect()->back()->with('error', 'Unauthorized access');
     }
 
-       public function show($id)
+    public function show($id)
     {
         $request = StudentServiceRequest::findOrFail($id);
        return view('users.student-request-view', ['request' => $request]);
@@ -246,7 +200,6 @@ class StudentServiceRequestController extends Controller
     public function requestHistory()
     {
         $user = Auth::user();
-
         if($user->role === "Student")
         {
             $requests = StudentServiceRequest::where('user_id', Auth::id())
@@ -254,27 +207,20 @@ class StudentServiceRequestController extends Controller
                 ->with('assignedUITCStaff')
                 ->orderBy('updated_at', 'desc')
                 ->paginate(10);
-
             return view('users.request-history', compact('requests'));
         }
-
         return redirect()->back()->with('error', 'Unauthorized access');
     }
 
     public function showServiceSurvey($requestId)
     {
         $request = StudentServiceRequest::findOrFail($requestId);
-        
-        // Ensure only the request owner can access the survey
         if ($request->user_id !== Auth::id()) {
             return redirect()->back()->with('error', 'Unauthorized access');
         }
-
-        // Ensure only completed requests can be surveyed
         if ($request->status !== 'Completed') {
             return redirect()->back()->with('error', 'Survey is only available for completed requests');
         }
-
         return view('users.service-survey', compact('request'));
     }
 
@@ -286,46 +232,31 @@ class StudentServiceRequestController extends Controller
             'comments' => 'nullable|string|max:500',
             'issue_resolved' => 'required|in:yes,no'
         ]);
-
         $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
-        
-        // Ensure only the request owner can submit the survey
         if ($serviceRequest->user_id !== Auth::id()) {
             return redirect()->back()->with('error', 'Unauthorized access');
         }
-
-        // Save survey results (you might want to create a separate Survey model)
         $serviceRequest->survey_rating = $validatedData['rating'];
         $serviceRequest->survey_comments = $validatedData['comments'];
         $serviceRequest->survey_issue_resolved = $validatedData['issue_resolved'];
         $serviceRequest->save();
-
         return redirect()->route('request.history')->with('success', 'Thank you for your feedback!');
     }
 
     public function getRequestDetails($id)
     {
         try {
-            // Fetch the request with the assigned_uitc_staff relationship
-            $request = StudentServiceRequest::with('assignedUITCStaff')
-                ->findOrFail($id);
-                
-            // Check if the request belongs to the current user
+            $request = StudentServiceRequest::with('assignedUITCStaff')->findOrFail($id);
             if ($request->user_id !== Auth::id()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            
-            // Structure the response to include staff information properly
             $responseData = $request->toArray();
-            
-            // Make sure the assigned staff data is properly included
             if ($request->assignedUITCStaff) {
                 $responseData['assigned_uitc_staff'] = [
                     'id' => $request->assignedUITCStaff->id,
                     'name' => $request->assignedUITCStaff->name
                 ];
             }
-            
             return response()->json($responseData);
         } catch (\Exception $e) {
             \Log::error('Error getting request details: ' . $e->getMessage());
@@ -337,27 +268,115 @@ class StudentServiceRequestController extends Controller
     {
         try {
             $request = StudentServiceRequest::findOrFail($id);
-            
-            // Check if the request belongs to the current user
             if ($request->user_id !== Auth::id()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            
-            // Check if the request can be cancelled (not completed or already cancelled)
             if ($request->status === 'Completed' || $request->status === 'Rejected' || $request->status === 'Cancelled') {
-                return response()->json([
-                    'error' => 'This request cannot be cancelled because it is already ' . $request->status
-                ], 400);
+                return response()->json(['error' => 'This request cannot be cancelled because it is already ' . $request->status], 400);
             }
-            
-            // Update the request status to Cancelled
             $request->status = 'Cancelled';
             $request->save();
-            
             return response()->json(['message' => 'Request cancelled successfully']);
         } catch (\Exception $e) {
             \Log::error('Error cancelling request: ' . $e->getMessage());
             return response()->json(['error' => 'Request not found'], 404);
+        }
+    }
+
+    public function edit($id)
+    {
+        $request = StudentServiceRequest::findOrFail($id);
+        if ($request->user_id !== Auth::id()) {
+            return redirect()->route('myrequests')->with('error', 'Unauthorized action.');
+        }
+        if ($request->status !== 'Pending') {
+             return redirect()->route('myrequests')->with('error', 'This request cannot be edited as it is no longer pending.');
+        }
+        // Use the static helper method
+        $formattedServiceName = ServiceHelper::formatServiceCategory($request->service_category, $request->description);
+        return view('users.edit-request', compact('request', 'formattedServiceName'));
+    }
+
+    public function update(Request $requestData, $id)
+    {
+        $serviceRequest = StudentServiceRequest::findOrFail($id);
+        if ($serviceRequest->user_id !== Auth::id()) {
+            return redirect()->route('myrequests')->with('error', 'Unauthorized action.');
+        }
+        if ($serviceRequest->status !== 'Pending') {
+             return redirect()->route('myrequests')->with('error', 'This request cannot be edited as it is no longer pending.');
+        }
+
+        $rules = [
+             'first_name' => 'required|string|max:255',
+             'last_name' => 'required|string|max:255',
+             'student_id' => 'required|string|max:50',
+             // 'additional_notes' => 'nullable|string|max:1000', // Removed validation
+             'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+         ];
+         switch ($serviceRequest->service_category) {
+            case 'reset_email_password':
+            case 'reset_tup_web_password':
+                $rules['account_email'] = 'required|email|max:255';
+                break;
+            case 'change_of_data_ms':
+            case 'change_of_data_portal':
+                $rules['data_type'] = 'required|string|max:255';
+                $rules['new_data'] = 'required|string|max:1000';
+                break;
+            case 'request_led_screen':
+                $rules['preferred_date'] = 'required|date';
+                $rules['preferred_time'] = 'required|string';
+                break;
+            case 'others':
+                $rules['description'] = 'required|string|max:1000';
+                break;
+        }
+        $validatedData = $requestData->validate($rules);
+
+         try {
+              $serviceRequest->first_name = $validatedData['first_name'];
+              $serviceRequest->last_name = $validatedData['last_name'];
+              $serviceRequest->student_id = $validatedData['student_id'];
+
+              switch ($serviceRequest->service_category) {
+                case 'reset_email_password':
+                case 'reset_tup_web_password':
+                    $serviceRequest->account_email = $validatedData['account_email'];
+                    break;
+                case 'change_of_data_ms':
+                case 'change_of_data_portal':
+                    $serviceRequest->data_type = $validatedData['data_type'];
+                    $serviceRequest->new_data = $validatedData['new_data'];
+                    break;
+                case 'request_led_screen':
+                    $serviceRequest->preferred_date = $validatedData['preferred_date'];
+                    $serviceRequest->preferred_time = $validatedData['preferred_time'];
+                    break;
+                case 'others':
+                    $serviceRequest->description = $validatedData['description'];
+                    break;
+            }
+
+            if ($requestData->hasFile('supporting_document')) {
+                if ($serviceRequest->supporting_document) {
+                    Storage::disk('public')->delete($serviceRequest->supporting_document);
+                }
+                $file = $requestData->file('supporting_document');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('supporting_documents', $filename, 'public');
+                $serviceRequest->supporting_document = $path;
+            }
+
+            $serviceRequest->save();
+            return redirect()->route('myrequests')->with('success', 'Request updated successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error updating student service request:', [
+                'request_id' => $id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'An error occurred while updating the request. Please try again.')->withInput();
         }
     }
 }

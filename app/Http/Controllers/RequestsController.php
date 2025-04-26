@@ -110,4 +110,60 @@ class RequestsController extends Controller
         
         return view('users.customer-satisfaction', compact('request', 'showSuccessModal'));
     }
+
+    /**
+     * Show the form for editing the specified resource.
+     * Delegates to the appropriate controller based on user role.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $user = Auth::user();
+
+        if ($user->role === "Student") {
+            $controller = new StudentServiceRequestController();
+            // Assuming StudentServiceRequestController has an 'edit' method
+            return $controller->edit($id);
+        }
+        elseif ($user->role === "Faculty & Staff") {
+            $controller = new FacultyServiceRequestController();
+            // Assuming FacultyServiceRequestController has an 'edit' method
+            return $controller->edit($id);
+        }
+
+        // Handle unexpected role or unauthorized access
+        return redirect()->route('myrequests')->with('error', 'Unauthorized access to edit request.');
+    }
+
+    /**
+     * Update the specified resource in storage.
+     * Delegates to the appropriate controller based on user role.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        if ($user->role === "Student") {
+            $controller = new StudentServiceRequestController();
+            // Assuming StudentServiceRequestController has an 'update' method
+            return $controller->update($request, $id);
+        }
+        elseif ($user->role === "Faculty & Staff") {
+            $controller = new FacultyServiceRequestController();
+            // Assuming FacultyServiceRequestController has an 'update' method
+            // Note: FacultyServiceRequestController already has an 'updateRequest' method,
+            // let's rename it to 'update' for consistency or call the existing one.
+            // For now, assuming an 'update' method exists or will be created.
+            return $controller->update($request, $id);
+        }
+
+        // Handle unexpected role or unauthorized access
+        return redirect()->route('myrequests')->with('error', 'Unauthorized access to update request.');
+    }
 }

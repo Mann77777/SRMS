@@ -632,25 +632,17 @@ if (response.status === 'Pending') {
     });
 
     // ======= EDIT REQUEST =======
+    // Redirect to a dedicated edit page when the edit button is clicked
     $('.request-table').on('click', '.btn-edit', function() {
         const id = $(this).data('id');
-        const service = $(this).closest('tr').find('td:nth-child(2)').text().trim();
-        
-        $('#editServiceId').val(id);
-        $('#editServiceName').val(service);
-        $('#editServiceDescription').val('');
-        $('#editServiceModal').modal('show');
+        // Determine the correct edit URL based on user role (optional, could be handled by a single route)
+        const userRole = $('body').data('user-role') || '';
+        // For simplicity, let's use a single route structure handled by RequestsController
+        window.location.href = `/requests/${id}/edit`; 
     });
 
-    // Save edited service
-    $('#saveEditedServiceBtn').on('click', function() {
-        const id = $('#editServiceId').val();
-        const serviceName = $('#editServiceName').val();
-        const description = $('#editServiceDescription').val();
-
-        // Redirect to edit request page
-        window.location.href = `/editrequest/${id}?service=${encodeURIComponent(serviceName)}&description=${encodeURIComponent(description)}`;
-    });
+    // Remove the old modal save logic as it's no longer needed
+    // $('#saveEditedServiceBtn').on('click', function() { ... }); // REMOVED
 
     // ======= CANCEL REQUEST =======
     $('.request-table').on('click', '.btn-cancel', function() {

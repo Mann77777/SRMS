@@ -29,6 +29,7 @@
                     <option value="In Progress">In Progress</option>
                     <option value="Completed">Completed</option>
                     <option value="Rejected">Rejected</option>
+                    <option value="Cancelled">Cancelled</option>
                 </select>
                 <!-- Search Bar -->
                 <div class="search-container">
@@ -144,7 +145,7 @@
                                         <span class="custom-badge custom-badge-info">{{ $request->status }}</span>
                                     @elseif($request->status == 'Completed')
                                         <span class="custom-badge custom-badge-success">{{ $request->status }}</span>
-                                    @elseif($request->status == 'Rejected')
+                                    @elseif($request->status == 'Cancelled')
                                         <span class="custom-badge custom-badge-danger">{{ $request->status }}</span>
                                     @else
                                         <span class="custom-badge custom-badge-secondary">{{ $request->status }}</span>

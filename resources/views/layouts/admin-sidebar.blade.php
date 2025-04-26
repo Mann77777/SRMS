@@ -12,7 +12,7 @@
             @if(Auth::guard('admin')->user()->role === 'Admin')
                 <!-- Admin Sidebar Links -->
                 <li class="item">
-                    <a href="{{ url('/admin_dashboard') }}" class="nav_link {{ request()->is('admin_dashboard') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/dashboard') }}" class="nav_link {{ request()->is('admin/dashboard') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="fas fa-chart-bar"></i>
                         </span>
@@ -56,14 +56,6 @@
                     </a>
                 </li>
                 
-                <!-- <li class="item">
-                    <a href="{{ url('/admin-messages') }}" class="nav_link {{ request()->is('admin-messages') ? 'active' : '' }}">
-                        <span class="navlink_icon">
-                            <i class="bx bx-chat"></i>
-                        </span>
-                        <span class="navlink">Messages</span>
-                    </a>
-                </li> -->
                 <li class="item">
                     <a href="{{ route('admin.holidays.index') }}" class="nav_link {{ request()->is('admin/holidays*') ? 'active' : '' }}">
                         <span class="navlink_icon">
@@ -74,7 +66,7 @@
                 </li>
                 
                 <li class="item">
-                    <a href="{{ route('admin.reports') }}" class="nav_link {{ request()->is('admin_report') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports') }}" class="nav_link {{ request()->is('admin/reports') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-report"></i>
                         </span>

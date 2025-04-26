@@ -173,56 +173,102 @@ $(document).ready(function() {
         }
     });
 
+    // DEBUGGING - Log initial dropdown values
+    console.log("Initial status value:", $('#status').val());
+    console.log("Initial transaction type value:", $('#transaction_type').val());
+    
+    // FILTER FUNCTIONALITY
+    
+    // Function to apply filters and update the table
+    function applyFilters() {
+        const status = $('#status').val();
+        const transactionType = $('#transaction_type').val();
+        const searchTerm = $('#user-search').val();
+        
+        console.log("Applying filters:", { status, transactionType, searchTerm });
+        
+        // Build the request URL with filters
+        let url = window.location.pathname;
+        let queryParams = [];
+        
+        if (status && status !== 'all') {
+            queryParams.push(`status=${encodeURIComponent(status)}`);
+        }
+        
+        if (transactionType && transactionType !== 'all') {
+            queryParams.push(`transaction_type=${encodeURIComponent(transactionType)}`);
+        }
+        
+        if (searchTerm) {
+            queryParams.push(`search=${encodeURIComponent(searchTerm)}`);
+        }
+        
+        // Redirect with filters
+        let redirectUrl = url;
+        if (queryParams.length > 0) {
+            redirectUrl += '?' + queryParams.join('&');
+        }
+        
+        console.log("Redirecting to:", redirectUrl);
+        window.location.href = redirectUrl;
+    }
+    
+    // Add event listeners to filters
+    $('#status').on('change', function() {
+        console.log("Status changed to:", $(this).val());
+        applyFilters();
+    });
+    
+    $('#transaction_type').on('change', function() {
+        console.log("Transaction type changed to:", $(this).val());
+        applyFilters();
+    });
+    
+    // Handle search with debounce
+    let searchTimeout;
+    $('#user-search').on('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            console.log("Search term:", $('#user-search').val());
+            applyFilters();
+        }, 500);
+    });
+    
+    // Handle Enter key in search field
+    $('#user-search').on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            applyFilters();
+        }
+    });
+
+    // REQUEST DETAIL VIEW
+    
     // Click handler for request IDs
     $(document).on('click', '.clickable-request-id', function() {
         console.log("Request ID clicked");
         const row = $(this).closest('tr');
         const requestId = $(this).text().trim();
+        const requestType = row.find('.btn-complete').data('request-type') || 'student';
         
-        // Extract data from the current row
-        const statusCell = row.find('td:eq(5)');
-        const statusText = statusCell.find('.custom-badge').text().trim();
-        
-        // Get completed date from the completed date cell
-        let completedDate = null;
-        const completedDateCell = row.find('td:eq(4)');
-        
-        if (statusText === 'Completed' && !completedDateCell.text().trim().includes('–')) {
-            // Try to combine date and time from spans
-            const dateSpan = completedDateCell.find('span:first').text().trim();
-            const timeSpan = completedDateCell.find('span:last').text().trim();
-            
-            if (dateSpan && timeSpan) {
-                completedDate = dateSpan + ' ' + timeSpan;
+        // Fetch request details from server
+        $.ajax({
+            url: `/uitc-staff/request-details/${requestId}`,
+            method: 'GET',
+            data: { type: requestType },
+            success: function(data) {
+                updateRequestDetailsModal(data);
+                $('#requestDetailsModal').modal('show');
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.error || 'Failed to fetch request details'
+                });
             }
-        }
-        
-        // Get request details from the second column
-        const requestDetails = row.find('td:eq(1)').html();
-        
-        // Get request type if available from the complete button
-        const completeButton = row.find('.btn-complete');
-        const requestType = completeButton.length ? completeButton.data('request-type') : '';
-        
-        // Build the request data object
-        const requestData = {
-            id: requestId,
-            role: row.find('td:eq(2)').text().trim(),
-            request_data: requestDetails,
-            date: row.find('td:eq(3) span:first').text().trim() + ' ' + 
-                row.find('td:eq(3) span:last').text().trim(),
-            status: statusText,
-            updated_at: completedDate,
-            type: requestType
-        };
-        
-        console.log('Request data for modal:', requestData);
-        
-        // Update modal with request data
-        updateRequestDetailsModal(requestData);
-        
-        // Show the modal
-        $('#requestDetailsModal').modal('show');
+        });
     });
 
     // Function to update the modal with request information
@@ -231,15 +277,14 @@ $(document).ready(function() {
         
         // Set basic request information
         $('#detailsRequestId').text(requestData.id);
-        $('#detailsRequestRole').text(requestData.role);
-        $('#detailsRequestDate').text(requestData.date);
+        $('#detailsRequestRole').text(requestData.role || requestData.request_type || 'N/A');
+        $('#detailsRequestDate').text(formatDateTime(requestData.created_at));
         
         // Format the data in request_data field
-        $('#detailsRequestData').html(requestData.request_data);
+        $('#detailsRequestData').html(requestData.request_data || formatRequestData(requestData));
         
         // Set status with appropriate color
         const $statusBadge = $('#detailsRequestStatus');
-        // Trim and normalize the status text
         const statusText = requestData.status.trim();
         $statusBadge.text(statusText);
         $statusBadge.removeClass().addClass('custom-badge');
@@ -258,21 +303,29 @@ $(document).ready(function() {
         }
         
         // Handle completed date
-        if (requestData.status === 'Completed' && requestData.updated_at) {
-            $('#detailsRequestCompleted').text(requestData.updated_at);
+        if (requestData.status === 'Completed' && requestData.completed_at) {
+            $('#detailsRequestCompleted').text(formatDateTime(requestData.completed_at));
+        } else if (requestData.status === 'Completed' && requestData.updated_at) {
+            $('#detailsRequestCompleted').text(formatDateTime(requestData.updated_at));
         } else {
             $('#detailsRequestCompleted').text('-');
         }
         
-        // Hide sections that we don't need for this view
-        // We're in UITC Staff view, so hide admin-specific actions
+        // Hide sections that we don't need for UITC Staff view
         if ($('#pendingActionsContainer').length) {
             $('#pendingActionsContainer').hide();
         }
         
-        // Hide assignment info section as we don't need it in the UITC staff view
+        // Show assignment info if present
         if ($('#assignmentInfoSection').length) {
-            $('#assignmentInfoSection').hide();
+            if (requestData.assigned_uitc_staff_id) {
+                $('#assignmentInfoSection').show();
+                $('#detailsAssignedTo').text(requestData.assignedUITCStaff?.name || 'You');
+                $('#detailsTransactionType').text(formatTransactionType(requestData.transaction_type));
+                $('#detailsAdminNotes').text(requestData.admin_notes || 'No notes');
+            } else {
+                $('#assignmentInfoSection').hide();
+            }
         }
         
         // Show rejection info if the request was rejected
@@ -280,8 +333,8 @@ $(document).ready(function() {
             if (requestData.status === 'Rejected') {
                 $('#rejectionInfoSection').show();
                 $('#detailsRejectionReason').text(requestData.rejection_reason || '-');
-                $('#detailsRejectionNotes').text(requestData.notes || 'No notes');
-                $('#detailsRejectedDate').text(requestData.updated_at || '-');
+                $('#detailsRejectionNotes').text(requestData.rejection_notes || 'No notes');
+                $('#detailsRejectedDate').text(formatDateTime(requestData.updated_at));
             } else {
                 $('#rejectionInfoSection').hide();
             }
@@ -299,13 +352,121 @@ $(document).ready(function() {
         }
     }
     
-    // Handle Complete button click event
+    // Format date and time from ISO format
+    function formatDateTime(dateTimeString) {
+        if (!dateTimeString) return '-';
+        
+        const date = new Date(dateTimeString);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        const month = months[date.getMonth()];
+        const day = date.getDate();
+        const year = date.getFullYear();
+        
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // Convert 0 to 12
+        
+        return `${month} ${day}, ${year} ${hours}:${minutes} ${ampm}`;
+    }
+    
+    // Format transaction type
+    function formatTransactionType(type) {
+        if (!type) return 'N/A';
+        
+        switch(type.toLowerCase()) {
+            case 'simple': return 'Simple Transaction';
+            case 'complex': return 'Complex Transaction';
+            case 'highly technical': return 'Highly Technical Transaction';
+            default: return type;
+        }
+    }
+    
+    // Format request data for display
+    function formatRequestData(request) {
+        let html = '';
+        
+        // Name information
+        let name = '';
+        if (request.first_name && request.last_name) {
+            name = request.first_name + ' ' + request.last_name;
+        } else {
+            name = request.requester_name || 'N/A';
+        }
+        html += '<strong>Name:</strong> ' + name + '<br>';
+        
+        // ID information
+        if (request.request_type === 'student' && request.student_id) {
+            html += '<strong>Student ID:</strong> ' + request.student_id + '<br>';
+        } else if (request.request_type === 'faculty' && request.faculty_id) {
+            html += '<strong>Faculty ID:</strong> ' + request.faculty_id + '<br>';
+        }
+        
+        // Service information
+        if (request.service_category) {
+            html += '<strong>Service:</strong> ' + formatServiceCategory(request.service_category) + '<br>';
+            
+            // Description
+            if (request.description) {
+                if (request.service_category !== 'others') {
+                    html += '<strong>Description:</strong> ' + request.description;
+                } else {
+                    html += '<strong>Service Details:</strong> ' + request.description;
+                }
+            }
+        }
+        
+        return html;
+    }
+    
+    // Format service category
+    function formatServiceCategory(category) {
+        if (!category) return 'N/A';
+        
+        const services = {
+            'create': 'Create MS Office/TUP Email Account',
+            'reset_email_password': 'Reset MS Office/TUP Email Password',
+            'change_of_data_ms': 'Change of Data (MS Office)',
+            'reset_tup_web_password': 'Reset TUP Web Password',
+            'reset_ers_password': 'Reset ERS Password',
+            'change_of_data_portal': 'Change of Data (Portal)',
+            'dtr': 'Daily Time Record',
+            'biometric_record': 'Biometric Record',
+            'biometrics_enrollement': 'Biometrics Enrollment',
+            'new_internet': 'New Internet Connection',
+            'new_telephone': 'New Telephone Connection',
+            'repair_and_maintenance': 'Internet/Telephone Repair and Maintenance',
+            'computer_repair_maintenance': 'Computer Repair and Maintenance',
+            'printer_repair_maintenance': 'Printer Repair and Maintenance',
+            'request_led_screen': 'LED Screen Request',
+            'install_application': 'Install Application/Information System/Software',
+            'post_publication': 'Post Publication/Update of Information Website',
+            'data_docs_reports': 'Data, Documents and Reports',
+            'others': 'Other Service'
+        };
+        
+        return services[category] || category;
+    }
+    
+    // COMPLETE REQUEST FUNCTIONALITY
+    
+    // Handle Complete button click
     $('.btn-complete').on('click', function() {
         const requestId = $(this).data('request-id');
         const requestType = $(this).data('request-type') || 'student';
         
         $('#completeRequestId').val(requestId);
         $('#completeRequestType').val(requestType);
+        
+        // Reset form validation
+        $('#completeRequestForm').removeClass('was-validated');
+        $('#completionReport').val('');
+        $('#actionsTaken').val('');
+        
+        // Show modal
         $('#completeRequestModal').modal('show');
     });
     
@@ -319,6 +480,10 @@ $(document).ready(function() {
             $(this).addClass('was-validated');
             return;
         }
+        
+        // Disable submit button
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
 
         // Get form data
         const formData = $(this).serialize();
@@ -329,7 +494,7 @@ $(document).ready(function() {
             method: 'POST',
             data: formData,
             success: function(response) {
-                // Close the complete request modal
+                // Close the modal
                 $('#completeRequestModal').modal('hide');
                 
                 // Show success message
@@ -350,56 +515,38 @@ $(document).ready(function() {
                     title: 'Error',
                     text: xhr.responseJSON?.message || 'Failed to complete the request.'
                 });
+                
+                // Re-enable submit button
+                submitBtn.prop('disabled', false).text('Submit Completion');
             }
         });
     });
-    
-    // Function for filters
-    function applyFilters() {
-        const status = $('#status').val();
-        const transactionType = $('#transaction_type').val();
-        const searchTerm = $('#user-search').val();
+
+    // Set pre-selected values for filters based on URL parameters
+    function setFiltersFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
         
-        // Build query string
-        let queryParams = [];
+        console.log("URL Parameters:", Object.fromEntries(urlParams.entries()));
         
-        if (status && status !== 'all') {
-            queryParams.push(`status=${encodeURIComponent(status)}`);
+        // Set status dropdown
+        if (urlParams.has('status')) {
+            $('#status').val(urlParams.get('status'));
+            console.log("Set status to:", urlParams.get('status'));
         }
         
-        if (transactionType && transactionType !== 'all') {
-            queryParams.push(`transaction_type=${encodeURIComponent(transactionType)}`);
+        // Set transaction type dropdown
+        if (urlParams.has('transaction_type')) {
+            $('#transaction_type').val(urlParams.get('transaction_type'));
+            console.log("Set transaction_type to:", urlParams.get('transaction_type'));
         }
         
-        if (searchTerm) {
-            queryParams.push(`search=${encodeURIComponent(searchTerm)}`);
+        // Set search input
+        if (urlParams.has('search')) {
+            $('#user-search').val(urlParams.get('search'));
+            console.log("Set search to:", urlParams.get('search'));
         }
-        
-        // Redirect with filters
-        let url = window.location.pathname;
-        if (queryParams.length > 0) {
-            url += '?' + queryParams.join('&');
-        }
-        
-        window.location.href = url;
     }
     
-    // Add event listeners to filters
-    $('#status').on('change', applyFilters);
-    $('#transaction_type').on('change', applyFilters);
-    
-    // Debounce search to avoid too many requests
-    let searchTimeout;
-    $('#user-search').on('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(applyFilters, 500);
-    });
-    
-    // Also handle Enter key in search
-    $('#user-search').on('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            applyFilters();
-        }
-    });
+    // Initialize filters from URL parameters
+    setFiltersFromUrl();
 });

@@ -39,14 +39,14 @@
                 <option value="faculty">Faculty & Staff</option>
             </select>
 
-            <!-- Status Filter -->
+            <!-- Status Filter 
             <select name="status" id="status">
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="pending_verification">Pending Verification</option>
                 <option value="verified">Verified</option>
-            </select>
+            </select> -->
 
             <!-- Search Bar -->
             <div class="search-container">

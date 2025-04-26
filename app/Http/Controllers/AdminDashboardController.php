@@ -53,6 +53,7 @@ class AdminDashboardController extends Controller
                 'appointmentsByStaff' => $fallbackData['appointmentsByStaff'],
                 'requestReceive' => 0,
                 'assignRequest' => 0,
+                'inProgressRequests' => 0, // Add this for In Progress card
                 'servicesCompleted' => 0,
                 'rejectedRequests' => 0,
                 'assignStaff' => 0,
@@ -62,80 +63,144 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Get basic dashboard data common for all users
-     * 
-     * @param bool $isUitcStaff
-     * @param int $staffId
-     * @return array
-     */
-    private function getBasicDashboardData($isUitcStaff, $staffId)
-    {
-        // Prepare base data structure
-        $data = [];
+ * Get basic dashboard data common for all users
+ * 
+ * @param bool $isUitcStaff
+ * @param int $staffId
+ * @return array
+ */
+private function getBasicDashboardData($isUitcStaff, $staffId)
+{
+    // Prepare base data structure
+    $data = [];
 
-        if ($isUitcStaff) {
-            // Get all assigned requests for this UITC staff (not just today's)
-            $data['assignedRequests'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
-                            ->where('status', 'In Progress')
-                            ->count() +
-                        FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
-                            ->where('status', 'In Progress')
-                            ->count();
-            
-            // Get all completed requests for this UITC staff (not just today's)
-            $data['servicesCompleted'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
+    if ($isUitcStaff) {
+        // Get all assigned requests for this UITC staff (not just today's)
+        $data['assignedRequests'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                        ->where('status', 'In Progress')
+                        ->count() +
+                    FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                        ->where('status', 'In Progress')
+                        ->count();
+        
+        // Get all completed requests for this UITC staff (not just today's)
+        $data['servicesCompleted'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                        ->where('status', 'Completed')
+                        ->count() +
+                    FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                        ->where('status', 'Completed')
+                        ->count();
+        
+        // Get average rating for this UITC staff from customer_satisfactions table
+        $studentRequestIds = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
                             ->where('status', 'Completed')
-                            ->count() +
-                        FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                            ->pluck('id');
+                            
+        $facultyRequestIds = FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
                             ->where('status', 'Completed')
-                            ->count();
-            
-            // Get average rating for this UITC staff from customer_satisfactions table
-            $studentRequestIds = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
-                                ->where('status', 'Completed')
-                                ->pluck('id');
-                                
-            $facultyRequestIds = FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
-                                ->where('status', 'Completed')
-                                ->pluck('id');
+                            ->pluck('id');
 
-            $data['surveyRatings'] = DB::table('customer_satisfactions')
-                        ->where(function($query) use ($studentRequestIds) {
-                            $query->where('request_type', 'Student')
-                                  ->whereIn('request_id', $studentRequestIds);
-                        })
-                        ->orWhere(function($query) use ($facultyRequestIds) {
-                            $query->where('request_type', 'Faculty & Staff') // Match the type used in SurveyController
-                                  ->whereIn('request_id', $facultyRequestIds);
-                        })
-                        ->avg('average_rating') ?? 0;
-        } else {
-            // Admin data - count today's requests by status
-            $today = Carbon::today();
-            
-            // New requests - created today with Pending status
-            $data['requestReceive'] = $this->countRequestsByStatusAndDate('Pending', $today);
-            
-            // Pending requests - In Progress status today
-            $data['assignRequest'] = $this->countRequestsByStatusAndDate('In Progress', $today);
-            
-            // Completed requests - completed today
-            $data['servicesCompleted'] = $this->countRequestsByStatusAndDate('Completed', $today);
-            
-            // Rejected requests - rejected today
-            $data['rejectedRequests'] = $this->countRequestsByStatusAndDate('Rejected', $today);
+        $data['surveyRatings'] = DB::table('customer_satisfactions')
+                    ->where(function($query) use ($studentRequestIds) {
+                        $query->where('request_type', 'Student')
+                              ->whereIn('request_id', $studentRequestIds);
+                    })
+                    ->orWhere(function($query) use ($facultyRequestIds) {
+                        $query->where('request_type', 'Faculty & Staff') // Match the type used in SurveyController
+                              ->whereIn('request_id', $facultyRequestIds);
+                    })
+                    ->avg('average_rating') ?? 0;
+                    
+        // Get active (In Progress) assigned requests for this staff
+        $data['activeRequests'] = $this->getActiveRequests($staffId);
+    } else {
+        // Admin data - count today's requests by status
+        $today = Carbon::today();
+        
+        // New requests - created today with Pending status
+        $data['requestReceive'] = $this->countRequestsByStatusAndDate('Pending', $today);
+        
+        // Pending requests - get all truly "Pending" requests (not assigned yet)
+        $data['assignRequest'] = StudentServiceRequest::where('status', 'Pending')
+                                ->count() +
+                              FacultyServiceRequest::where('status', 'Pending')
+                                ->count();
+        
+        // In Progress requests - get all "In Progress" requests
+        $data['inProgressRequests'] = StudentServiceRequest::where('status', 'In Progress')
+                                    ->count() +
+                                  FacultyServiceRequest::where('status', 'In Progress')
+                                    ->count();
+        
+        // Completed requests - completed today
+        $data['servicesCompleted'] = $this->countRequestsByStatusAndDate('Completed', $today);
+        
+        // Rejected requests - rejected today
+        $data['rejectedRequests'] = $this->countRequestsByStatusAndDate('Rejected', $today);
 
-            // Active UITC staff count (this doesn't change daily)
-            $data['assignStaff'] = Admin::where('role', 'UITC Staff')
-                ->where('availability_status', 'active')
-                ->count();
-        }
-
+        // Active UITC staff count (this doesn't change daily)
+        $data['assignStaff'] = Admin::where('role', 'UITC Staff')
+            ->where('availability_status', 'active')
+            ->count();
+            
         // Get recent requests (combined student and faculty)
         $data['recentRequests'] = $this->getRecentRequests($isUitcStaff, $staffId);
-
-        return $data;
     }
+
+    return $data;
+}
+
+/**
+ * Get active requests for the UITC Staff dashboard
+ * 
+ * @param int $staffId
+ * @return Collection
+ */
+private function getActiveRequests($staffId)
+{
+    // Start queries
+    $studentQuery = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
+        ->where('status', 'In Progress')
+        ->orderBy('created_at', 'desc');
+    
+    $facultyQuery = FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
+        ->where('status', 'In Progress')
+        ->orderBy('created_at', 'desc');
+    
+    // Get student requests
+    $studentRequests = $studentQuery->take(5)
+        ->get()
+        ->map(function($request) {
+            return [
+                'id' => $request->id,
+                'service_type' => $this->getServiceName($request, 'student'),
+                'user_name' => $request->first_name . ' ' . $request->last_name,
+                'created_at' => $request->created_at,
+                'status' => $request->status,
+                'type' => 'student'
+            ];
+        });
+
+    // Get faculty requests
+    $facultyRequests = $facultyQuery->take(5)
+        ->get()
+        ->map(function($request) {
+            return [
+                'id' => $request->id,
+                'service_type' => $this->getServiceName($request, 'faculty'),
+                'user_name' => $request->first_name . ' ' . $request->last_name,
+                'created_at' => $request->created_at,
+                'status' => $request->status,
+                'type' => 'faculty'
+            ];
+        });
+
+    // Merge and sort by date
+    return $studentRequests->concat($facultyRequests)
+        ->sortByDesc('created_at')
+        ->take(5);
+}
+
 
     /**
      * Get chart-specific data
@@ -711,11 +776,11 @@ class AdminDashboardController extends Controller
     }
 
     /**
- * Handle AJAX request for time series data
- *
- * @param  \Illuminate\Http\Request  $request
- * @return \Illuminate\Http\Response
- */
+     * Handle AJAX request for time series data
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function getTimeSeriesData(Request $request)
     {
         $period = $request->input('period', '6months');

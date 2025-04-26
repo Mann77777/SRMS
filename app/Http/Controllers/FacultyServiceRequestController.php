@@ -163,11 +163,28 @@ class FacultyServiceRequestController extends Controller
             if ($request->has('search') && !empty($request->search)) {
                 $search = $request->search;
                 \Log::info('Searching for: ' . $search);
-                
-                $query->where(function($q) use ($search) {
+
+                // Check if the search term looks like a formatted Request ID (FSR-YYYYMMDD-ID)
+                $extractedId = null;
+                if (preg_match('/^FSR-\d{8}-(\d+)$/i', $search, $matches)) {
+                    $extractedId = (int) $matches[1];
+                    \Log::info('Extracted Request ID from search term: ' . $extractedId);
+                }
+
+                $query->where(function($q) use ($search, $extractedId) {
+                    // Search service category or description
                     $q->where('service_category', 'like', '%' . $search . '%')
-                      ->orWhere('description', 'like', '%' . $search . '%')
-                      ->orWhere('id', 'like', '%' . $search . '%');
+                      ->orWhere('description', 'like', '%' . $search . '%');
+
+                    // If a numeric ID was extracted from the search term, search by that exact ID
+                    if ($extractedId !== null) {
+                        $q->orWhere('id', '=', $extractedId);
+                    }
+                    // Optionally, keep the original broad ID search as a fallback if no specific ID was extracted
+                    // else {
+                    //    $q->orWhere('id', 'like', '%' . $search . '%');
+                    // }
+                    // For now, let's only search the exact ID if the format matches.
                 });
             }
             

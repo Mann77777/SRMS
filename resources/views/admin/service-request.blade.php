@@ -85,7 +85,7 @@
                                         <span class="custom-badge custom-badge-info">{{ $request['status'] }}</span>
                                     @elseif($request['status'] == 'Completed')
                                         <span class="custom-badge custom-badge-success">{{ $request['status'] }}</span>
-                                    @elseif($request['status'] == 'Rejected')
+                                    @elseif($request['status'] == 'Cancelled')
                                         <span class="custom-badge custom-badge-danger">{{ $request['status'] }}</span>
                                     @else
                                         <span class="custom-badge custom-badge-secondary">{{ $request['status'] }}</span>

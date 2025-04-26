@@ -369,39 +369,67 @@
 
             // Handle Status Filter
             $('#status').on('change', function() {
-                const selectedStatus = $(this).val().toLowerCase();
-                const rows = $('.request-table tbody tr:not(.empty-state)');
-
-                if (selectedStatus === 'all') {
-                    rows.show();
-                } else {
-                    rows.each(function() {
-                        const statusText = $(this).find('td:nth-child(6) .badge').text().trim().toLowerCase();
-                        $(this).toggle(statusText === selectedStatus);
-                    });
-                }
-
-                // Update empty state visibility
-                const visibleRows = rows.filter(':visible');
-                const emptyStateRow = $('.empty-state').closest('tr');
-                
-                if (visibleRows.length === 0) {
-                    if (emptyStateRow.length === 0) {
-                        $('.request-table tbody').append(`
-                            <tr class="empty-state-row">
-                                <td colspan="7" class="empty-state">
-                                    <i class="fas fa-inbox fa-3x"></i>
-                                    <p>No requests found with status: ${selectedStatus}</p>
-                                </td>
-                            </tr>
-                        `);
-                    } else {
-                        emptyStateRow.show();
-                    }
-                } else {
-                    $('.empty-state-row').remove();
-                }
+                const selectedStatus = $(this).val();
+                fetchRequests(selectedStatus); // Call function to fetch data via AJAX
             });
+
+            function fetchRequests(status, page = 1) {
+                // Add a loading indicator (optional)
+                $('.request-table tbody').html('<tr><td colspan="8" style="text-align: center;">Loading...</td></tr>');
+
+                $.ajax({
+                    url: '{{ route("admin.service.requests.filter") }}', // We will define this route next
+                    method: 'GET',
+                    data: {
+                        status: status,
+                        page: page // Pass the page number for pagination
+                    },
+                    success: function(response) {
+                        // Replace table body content
+                        $('.request-table tbody').html(response.table_body);
+                        // Replace pagination links
+                        $('.pagination-container').html(response.pagination);
+                        // Re-attach event listeners for dynamically added elements if necessary
+                        // (e.g., approve/reject buttons, clickable IDs) - Consider moving event bindings to use delegation
+                        rebindEventListeners(); 
+                    },
+                    error: function(xhr) {
+                        console.error('Error fetching requests:', xhr);
+                        $('.request-table tbody').html('<tr><td colspan="8" style="text-align: center; color: red;">Failed to load requests.</td></tr>');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to filter requests. Please try again.',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+
+            // Handle pagination clicks using event delegation
+            $(document).on('click', '.pagination a', function(event) {
+                event.preventDefault();
+                const page = $(this).attr('href').split('page=')[1];
+                const selectedStatus = $('#status').val();
+                fetchRequests(selectedStatus, page);
+            });
+
+            // Function to rebind event listeners after AJAX update
+            // Note: It's better practice to use event delegation from a static parent element
+            // like $(document).on('click', '.btn-approve', function() { ... });
+            // The current implementation already uses delegation for some buttons, which is good.
+            // We'll add a placeholder function here, but ensure your existing delegated events cover the dynamic content.
+            function rebindEventListeners() {
+                // Example: If you had non-delegated events, rebind them here.
+                // $('.some-dynamic-element').off('click').on('click', function() { ... });
+                
+                // Re-initialize Select All checkbox logic if needed, although it might be fine
+                $('#select-all').prop('checked', false); // Reset select-all on filter/page change
+                
+                // Ensure existing delegated events still work (they should if properly set up)
+                console.log("Event listeners rebound (or rely on delegation).");
+            }
+
 
             // Handle Delete Selected
             $('#delete-btn').on('click', function() {

@@ -345,6 +345,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
     // Other Admin Routes
     Route::get('/service-request', [AdminServiceRequestController::class, 'index'])->name('admin.service-request');
+    Route::get('/admin/service-requests/filter', [AdminServiceRequestController::class, 'filterRequests'])->name('admin.service.requests.filter'); // Added route for filtering
 
     Route::get('/request-form-management', function () {
         return view('admin.request-form-management');

@@ -944,4 +944,98 @@ class AdminServiceRequestController extends Controller
         // Format only as date without time
         return $carbonDate->format('M d, Y');
     }
+
+    /**
+     * Filter service requests based on status via AJAX.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function filterRequests(Request $request)
+    {
+        $status = $request->input('status');
+        $page = $request->input('page', 1);
+        $perPage = 10; // Number of items per page
+
+        $requests = [];
+
+        try {
+            // Fetch student requests
+            $studentQuery = StudentServiceRequest::with('user');
+            if ($status && $status !== 'all') {
+                $studentQuery->where('status', $status);
+            }
+            $newStudentRequests = $studentQuery->get();
+            foreach($newStudentRequests as $req) { // Use different variable name to avoid conflict
+                $user = $req->user;
+                $requests[] = [
+                    'id' => $req->id,
+                    'user_id' => $req->user_id,
+                    'role' => $user ? $user->role : 'Student',
+                    'service' => $req->service_category,
+                    'request_data' => $this->formatStudentServiceRequestData($req),
+                    'date' => $req->created_at,
+                    'status' => $req->status ?? 'Pending',
+                    'type' => 'new_student_service',
+                    'updated_at' => $req->updated_at,
+                    'rejection_reason' => $req->rejection_reason ?? null,
+                    'notes' => $req->admin_notes ?? null,
+                ];
+            }
+
+            // Fetch faculty requests
+            $facultyQuery = FacultyServiceRequest::with('user');
+            if ($status && $status !== 'all') {
+                $facultyQuery->where('status', $status);
+            }
+            $facultyRequests = $facultyQuery->get();
+            foreach($facultyRequests as $req) { // Use different variable name
+                $user = $req->user;
+                $requests[] = [
+                    'id' => $req->id,
+                    'user_id' => $req->user_id,
+                    'role' => $user ? $user->role : 'Faculty',
+                    'service' => $req->service_category,
+                    'request_data' => $this->formatFacultyServiceRequestData($req),
+                    'date' => $req->created_at,
+                    'status' => $req->status ?? 'Pending',
+                    'rejection_reason' => $req->rejection_reason ?? null,
+                    'notes' => $req->admin_notes ?? null,
+                    'type' => 'faculty',
+                    'updated_at' => $req->updated_at,
+                ];
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error filtering service requests: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to load requests.'], 500);
+        }
+
+        // Sort combined requests by date (latest first)
+        $allRequests = collect($requests)->sortByDesc('date');
+
+        // Paginate the collection manually
+        $items = $allRequests->forPage($page, $perPage);
+
+        // Create a new paginator instance
+        $paginatedRequests = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items->values(), // Ensure it's a non-associative array
+            $allRequests->count(),
+            $perPage,
+            $page,
+            // Important: Set the path for pagination links to the filter route itself
+            ['path' => route('admin.service.requests.filter'), 'query' => $request->query()]
+        );
+
+        // Render the partial view for the table body
+        $tableBodyHtml = view('admin.partials.service-request-rows', ['requests' => $paginatedRequests])->render();
+
+        // Render the pagination links
+        $paginationHtml = $paginatedRequests->links('vendor.pagination.custom')->toHtml();
+
+        return response()->json([
+            'table_body' => $tableBodyHtml,
+            'pagination' => $paginationHtml
+        ]);
+    }
 }

@@ -53,6 +53,7 @@ class AdminDashboardController extends Controller
                 'appointmentsByStaff' => $fallbackData['appointmentsByStaff'],
                 'requestReceive' => 0,
                 'assignRequest' => 0,
+                'inProgressRequests' => 0, // Add this for In Progress card
                 'servicesCompleted' => 0,
                 'rejectedRequests' => 0,
                 'assignStaff' => 0,
@@ -116,8 +117,17 @@ class AdminDashboardController extends Controller
             // New requests - created today with Pending status
             $data['requestReceive'] = $this->countRequestsByStatusAndDate('Pending', $today);
             
-            // Pending requests - In Progress status today
-            $data['assignRequest'] = $this->countRequestsByStatusAndDate('In Progress', $today);
+            // Pending requests - get all truly "Pending" requests (not assigned yet)
+            $data['assignRequest'] = StudentServiceRequest::where('status', 'Pending')
+                                    ->count() +
+                                  FacultyServiceRequest::where('status', 'Pending')
+                                    ->count();
+            
+            // In Progress requests - get all "In Progress" requests
+            $data['inProgressRequests'] = StudentServiceRequest::where('status', 'In Progress')
+                                        ->count() +
+                                      FacultyServiceRequest::where('status', 'In Progress')
+                                        ->count();
             
             // Completed requests - completed today
             $data['servicesCompleted'] = $this->countRequestsByStatusAndDate('Completed', $today);
@@ -711,11 +721,11 @@ class AdminDashboardController extends Controller
     }
 
     /**
- * Handle AJAX request for time series data
- *
- * @param  \Illuminate\Http\Request  $request
- * @return \Illuminate\Http\Response
- */
+     * Handle AJAX request for time series data
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function getTimeSeriesData(Request $request)
     {
         $period = $request->input('period', '6months');

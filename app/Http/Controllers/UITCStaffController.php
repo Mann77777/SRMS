@@ -519,6 +519,58 @@ class UITCStaffController extends Controller
         }
     }
 
+    /**
+     * Get active requests for the UITC Staff dashboard
+     * 
+     * @param bool $isUitcStaff
+     * @param int $staffId
+     * @return Collection
+     */
+    private function getActiveRequests($staffId)
+    {
+        // Start queries
+        $studentQuery = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
+            ->where('status', 'In Progress')
+            ->orderBy('created_at', 'desc');
+        
+        $facultyQuery = FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
+            ->where('status', 'In Progress')
+            ->orderBy('created_at', 'desc');
+        
+        // Get student requests
+        $studentRequests = $studentQuery->take(5)
+            ->get()
+            ->map(function($request) {
+                return [
+                    'id' => $request->id,
+                    'service_type' => $this->getServiceName($request, 'student'),
+                    'user_name' => $request->first_name . ' ' . $request->last_name,
+                    'created_at' => $request->created_at,
+                    'status' => $request->status,
+                    'type' => 'student'
+                ];
+            });
+
+        // Get faculty requests
+        $facultyRequests = $facultyQuery->take(5)
+            ->get()
+            ->map(function($request) {
+                return [
+                    'id' => $request->id,
+                    'service_type' => $this->getServiceName($request, 'faculty'),
+                    'user_name' => $request->first_name . ' ' . $request->last_name,
+                    'created_at' => $request->created_at,
+                    'status' => $request->status,
+                    'type' => 'faculty'
+                ];
+            });
+
+        // Merge and sort by date
+        return $studentRequests->concat($facultyRequests)
+            ->sortByDesc('created_at')
+            ->take(5);
+    }
+
 
     public function getReports(Request $request)
     {

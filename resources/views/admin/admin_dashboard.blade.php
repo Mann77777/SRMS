@@ -316,12 +316,8 @@
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                             Completed Requests</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $servicesCompleted ?? 0 }}
-                                            @if(isset($assignedRequests) && $assignedRequests > 0)
-                                            <span class="text-sm text-muted">
-                                                ({{ round(($servicesCompleted / $assignedRequests) * 100) }}%)
-                                            </span>
-                                            @endif
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            {{ $servicesCompleted ?? 0 }}
                                         </div>
                                     </div>
                                     <div class="col-auto">
@@ -358,37 +354,68 @@
             </div>
         </section>
 
-        <!-- TECHNICIAN QUICK ACTIONS -->
+        <!-- UITC STAFF QUICK ACTIONS -->
         <section class="quick-actions">
             <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <a href="{{ url('/assign-request') }}" class="btn btn-primary btn-block py-3">
-                                            <i class="fas fa-tasks mr-2"></i> View Tasks
-                                        </a>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <a href="{{ url('/assign-history') }}" class="btn btn-info btn-block py-3">
-                                            <i class="fas fa-history mr-2"></i> Service History
-                                        </a>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <a href="{{ url('/uitc-staff/reports') }}" class="btn btn-success btn-block py-3">
-                                            <i class="fas fa-chart-bar mr-2"></i> View Reports
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="action-buttons">
+                    <a href="{{ url('/assign-request') }}" class="action-button">
+                        <i class="fas fa-tasks"></i>
+                        <span>Assigned Request</span>
+                    </a>
+                    <a href="{{ url('/assign-history') }}" class="action-button">
+                        <i class="fas fa-history"></i>
+                        <span>Assigened History</span>
+                    </a>
+                    <a href="{{ url('/uitc-staff/reports') }}" class="action-button">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>My Report</span>
+                    </a>
                 </div>
+            </div>
+        </section>
+
+        <!-- RECENT ASSIGNED REQUESTS -->
+        <section class="recent-requests">
+            <div class="section-header">
+                <h2>Recent Assigned Requests</h2>
+                <a href="{{ url('/assign-request') }}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="request-table-wrapper">
+                <table class="request-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Service Type</th>
+                            <th>Requester</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($activeRequests ?? [] as $request)
+                        <tr>
+                            <td>
+                                <span class="clickable-request-id" data-id="{{ $request['id'] }}" data-type="{{ $request['type'] }}" style="cursor: pointer; color: #007bff; text-decoration: underline;">
+                                    {{ $request['id'] }}
+                                </span>
+                            </td>
+                            <td>{{ $request['service_type'] }}</td>
+                            <td>{{ $request['user_name'] }}</td>
+                            <td>{{ $request['created_at']->format('M d, Y h:i A') }}</td>
+                            <td>
+                                <span class="custom-badge custom-badge-info">In Progress</span>
+                            </td>                          
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <i class="fas fa-inbox fa-3x"></i>
+                                <p>No active assigned requests found</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </section>
         @endif

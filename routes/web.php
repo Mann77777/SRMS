@@ -428,9 +428,7 @@ Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
     ->name('admin.reject.service.request');
     
 // TECHNICIAN/UITC STAFF ROUTES
-Route::get('/assign-history', function () {
-    return view('uitc_staff.assign-history');
-})->name('uitc_staff.assign-history');
+
 
 Route::get('/assign-request', function () {
     return view('uitc_staff.assign-request');
@@ -454,11 +452,6 @@ Route::post('/uitc-staff/complete-request', [UITCStaffController::class, 'comple
     ->name('uitc.complete.request')
     ->middleware('auth:admin');
 
-// UITC Staff Assign History Routes
-Route::get('/uitc-staff/assign-history', [UITCStaffController::class, 'getAssignHistoryRequests'])
-    ->name('uitc.assign.history')
-    ->middleware(['auth:admin', 'role:uitc_staff']);
-
 Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');
 
 
@@ -474,9 +467,13 @@ Route::get('/faculty/request/{id}', [FacultyServiceRequestController::class, 'ge
 
 // Admin Report Routes
 Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin/reports', [App\Http\Controllers\AdminReportController::class, 'index'])->name('admin.reports');
-    Route::post('/admin/reports/export', [App\Http\Controllers\AdminReportController::class, 'exportExcel'])->name('admin.reports.export');
+    Route::get('/admin/reports', [AdminReportController::class, 'index'])->name('admin.reports');
+    Route::post('/admin/reports/export', [AdminReportController::class, 'exportExcel'])->name('admin.reports.export');
 });
+
+Route::get('/assign-history', [UITCStaffController::class, 'getCompletedRequests'])
+    ->name('uitc-staff.assign-history')
+    ->middleware(['auth:admin']);
 
    // Admin routes protected by admin guard
    Route::middleware(['auth'])->group(function () {

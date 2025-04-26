@@ -103,7 +103,7 @@
                 </li>
 
                 <li class="item">
-                    <a href="{{ url('/assign-history') }}" class="nav_link {{ request()->is('assign-history') ? 'active' : '' }}">
+                    <a href="{{ route('uitc-staff.assign-history') }}" class="nav_link {{ request()->is('assign-history') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bx-history"></i>
                         </span>

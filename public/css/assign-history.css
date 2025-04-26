@@ -146,3 +146,136 @@ button {
 .btn-status {
     background-color: #FFC107;  /* Yellow */
 }
+
+
+/* Customer satisfaction styles */
+.satisfaction-ratings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+.rating-item {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    border: 1px solid #ddd;
+}
+.rating-value {
+    font-weight: 600;
+    color: #28a745;
+}
+.rating-value.low {
+    color: #dc3545;
+}
+.rating-value.medium {
+    color: #ffc107;
+}
+.view-satisfaction-btn {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-left: 5px;
+}
+.view-satisfaction-btn:hover {
+    background-color: #138496;
+}
+.rating-stars {
+    color: #ffc107;
+    margin-left: 5px;
+}
+.satisfaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.satisfaction-title {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+.average-rating {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.comments-section {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #6c757d;
+}
+.comment-text {
+    font-style: italic;
+    color: #555;
+}
+
+/* Make radio buttons a bit larger */
+.form-check input[type="radio"] {
+    width: 18px;
+    height: 18px;
+}
+
+/* Custom styling for disabled but checked radio buttons */
+.form-check input[type="radio"]:checked {
+    opacity: 1;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-check input[type="radio"]:disabled:not(:checked) {
+    opacity: 0.3;
+}
+
+
+
+/* Pagination style */
+.pagination-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    align-items: center;
+}
+
+.pagination li {
+    margin: 0 5px;
+    display: inline-block;
+}
+
+.pagination li a,
+.pagination li span {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    background-color: #f4f4f4;
+    color: #333;
+    transition: background-color 0.3s;
+}
+
+.pagination li.active span {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination li a:hover {
+    background-color: #e0e0e0;
+}
+
+.pagination li.disabled span {
+    color: #aaa;
+    cursor: not-allowed;
+}

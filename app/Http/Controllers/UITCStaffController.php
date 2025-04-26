@@ -519,6 +519,163 @@ class UITCStaffController extends Controller
         }
     }
 
+
+    public function getCompletedRequests(Request $httpRequest)
+    {
+        try {
+            // Get the currently logged-in UITC staff member's ID
+            $uitcStaffId = Auth::guard('admin')->user()->id;
+            
+            // Initialize collection for all requests
+            $completedRequests = collect();
+            
+            // Get search and filter parameters
+            $search = $httpRequest->input('search', '');
+            $dateFrom = $httpRequest->input('date_from');
+            $dateTo = $httpRequest->input('date_to');
+            $status = $httpRequest->input('status', 'all');
+            
+            // 1. Query for Student service requests
+            $studentQuery = StudentServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
+                ->leftJoin('users', 'student_service_requests.user_id', '=', 'users.id')
+                ->select(
+                    'student_service_requests.*',
+                    'users.name as requester_name',
+                    'users.role as user_role',
+                    'users.email as requester_email',
+                    DB::raw("'student' as request_type")
+                );
+                
+            // 2. Query for Faculty service requests
+            $facultyQuery = FacultyServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
+                ->leftJoin('users', 'faculty_service_requests.user_id', '=', 'users.id')
+                ->select(
+                    'faculty_service_requests.*',
+                    'users.name as requester_name',
+                    'users.role as user_role',
+                    'users.email as requester_email',
+                    DB::raw("'faculty' as request_type")
+                );
+            
+            // Filter by status (Completed or Cancelled)
+            if ($status === 'all') {
+                $studentQuery->whereIn('student_service_requests.status', ['Completed', 'Cancelled']);
+                $facultyQuery->whereIn('faculty_service_requests.status', ['Completed', 'Cancelled']);
+            } else {
+                $studentQuery->where('student_service_requests.status', $status);
+                $facultyQuery->where('faculty_service_requests.status', $status);
+            }
+            
+            // Apply date range filter if provided
+            if ($dateFrom && $dateTo) {
+                $dateFrom = Carbon::parse($dateFrom)->startOfDay();
+                $dateTo = Carbon::parse($dateTo)->endOfDay();
+                
+                $studentQuery->whereBetween('student_service_requests.created_at', [$dateFrom, $dateTo]);
+                $facultyQuery->whereBetween('faculty_service_requests.created_at', [$dateFrom, $dateTo]);
+            }
+            
+            // Apply search filter if provided
+            if (!empty($search)) {
+                $studentQuery->where(function($q) use ($search) {
+                    $q->where('student_service_requests.first_name', 'like', "%{$search}%")
+                    ->orWhere('student_service_requests.last_name', 'like', "%{$search}%")
+                    ->orWhere('student_service_requests.service_category', 'like', "%{$search}%")
+                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('student_service_requests.id', 'like', "%{$search}%");
+                });
+                
+                $facultyQuery->where(function($q) use ($search) {
+                    $q->where('faculty_service_requests.first_name', 'like', "%{$search}%")
+                    ->orWhere('faculty_service_requests.last_name', 'like', "%{$search}%")
+                    ->orWhere('faculty_service_requests.service_category', 'like', "%{$search}%")
+                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('faculty_service_requests.id', 'like', "%{$search}%");
+                });
+            }
+            
+            // Sort by completion date (most recent first)
+            $studentQuery->orderBy('student_service_requests.completed_at', 'desc')
+                        ->orderBy('student_service_requests.updated_at', 'desc');
+            $facultyQuery->orderBy('faculty_service_requests.completed_at', 'desc')
+                        ->orderBy('faculty_service_requests.updated_at', 'desc');
+            
+            // Get student requests and faculty requests
+            $studentRequests = $studentQuery->get();
+            $facultyRequests = $facultyQuery->get();
+            
+            // Combine both collections
+            $allRequests = $studentRequests->concat($facultyRequests);
+            
+            // Sort the combined collection
+            $sortedRequests = $allRequests->sortByDesc(function($request) {
+                // First by completed_at date if available
+                if ($request->completed_at) {
+                    return Carbon::parse($request->completed_at)->timestamp;
+                }
+                // Fall back to updated_at date
+                return Carbon::parse($request->updated_at)->timestamp;
+            });
+            
+            // Format the request_data for each request
+            $formattedRequests = collect();
+            foreach ($sortedRequests as $serviceRequest) {
+                // Add a formatted request_data field
+                $serviceRequest->request_data = $this->formatRequestData($serviceRequest);
+                $formattedRequests->push($serviceRequest);
+            }
+            
+            // Paginate the results
+            $perPage = 10;
+            $page = $httpRequest->input('page', 1);
+            $offset = ($page - 1) * $perPage;
+            $total = $formattedRequests->count();
+            
+            $paginatedRequests = new \Illuminate\Pagination\LengthAwarePaginator(
+                $formattedRequests->slice($offset, $perPage),
+                $total,
+                $perPage,
+                $page,
+                ['path' => $httpRequest->url(), 'query' => $httpRequest->query()]
+            );
+            
+            // If it's an AJAX request, return JSON
+            if ($httpRequest->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $paginatedRequests
+                ]);
+            }
+            
+            // Return view with completed requests
+            return view('uitc_staff.assign-history', [
+                'completedRequests' => $paginatedRequests,
+                'totalRequests' => $total,
+                'currentPage' => $page
+            ]);
+            
+        } catch (\Exception $e) {
+            // Log the error
+            Log::error('Error fetching completed requests: ' . $e->getMessage(), [
+                'staff_id' => Auth::guard('admin')->id() ?? 'Unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // If it's an AJAX request, return JSON error
+            if ($httpRequest->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch completed requests',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+            
+            // For non-AJAX requests, redirect with error
+            return redirect()->back()->with('error', 'Unable to fetch completed requests: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Get active requests for the UITC Staff dashboard
      * 

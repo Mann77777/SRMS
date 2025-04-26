@@ -487,6 +487,15 @@ class AdminServiceRequestController extends Controller
 
         // Convert data to HTML format
         $output = [];
+        foreach ($data as $key => $value) {
+            // Handle the HTML link for the document directly
+            if ($key === 'Supporting Document') {
+                 $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . $value . '<br>';
+            } else {
+                $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';
+            }
+        }
+        return implode('', $output);
       }
 
       // Method to fetch all UITC Staff (likely for assignment dropdowns)

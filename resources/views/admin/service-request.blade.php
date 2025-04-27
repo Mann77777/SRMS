@@ -24,6 +24,8 @@
                 <option value="pending">Pending</option>
                 <option value="in progress">In Progress</option>
                 <option value="completed">Completed</option>
+                <option value="rejected">Rejected</option>
+                <option value="cancelled">Cancelled</option>
             </select>
             <!-- <div class="requests-btn">
                 <button type="button" class="delete-button" id="delete-btn">

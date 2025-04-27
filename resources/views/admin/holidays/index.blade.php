@@ -18,7 +18,7 @@
     @include('layouts.admin-sidebar')
 
     <div class="content">
-        <h1>Holiday Management</h1>
+        <h1>Schedule Management</h1>
         
         <div class="filter-container">
             <form method="GET" action="{{ route('admin.holidays.index') }}" class="form-inline">

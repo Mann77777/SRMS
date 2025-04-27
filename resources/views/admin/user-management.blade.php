@@ -24,48 +24,32 @@
             <h1>User Management</h1>
         </div>
         
-        <div class="top-controls">
-            <!-- Add User Button -->
-            <button class="btn btn-primary add-user-btn" data-toggle="modal" data-target="#addUserModal">
+        <!-- Restructured controls container -->
+        <div class="controls-container">
+            <!-- Left side - filters and search -->
+            <div class="filters-container">
+                <!-- Role Filter -->
+                <select name="user_role" id="role">
+                    <option value="all">All Users</option>
+                    <option value="student">Student</option>
+                    <option value="faculty">Faculty & Staff</option>
+                </select>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="user-search" name="user-search" placeholder="Search users...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right side - action button -->
+            <button class="add-user-btn" data-toggle="modal" data-target="#addUserModal">
                 <i class="fas fa-plus"></i> Add User
             </button>
         </div>
-        
-        <div class="dropdown-container">
-            <!-- Role Filter -->
-            <select name="user_role" id="role">
-                <option value="all">All Users</option>
-                <option value="student">Student</option>
-                <option value="faculty">Faculty & Staff</option>
-            </select>
 
-            <!-- Status Filter 
-            <select name="status" id="status">
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="pending_verification">Pending Verification</option>
-                <option value="verified">Verified</option>
-            </select> -->
-
-            <!-- Search Bar -->
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <input type="text" id="user-search" name="user-search" placeholder="Search users...">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-            </div>
-
-            <!-- Bulk Actions 
-            <div class="bulk-actions">
-                <button class="btn-export" id="export-csv">
-                    <i class="fas fa-file-export"></i> Export CSV
-                </button> 
-                <button class="btn-delete" id="bulk-delete">
-                    <i class="fas fa-trash"></i> Delete Selected
-                </button>
-            </div> -->
-        </div>
 
         <div class="user-table-container">
             <h4>Users List</h4>

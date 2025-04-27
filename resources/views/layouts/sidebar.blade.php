@@ -31,7 +31,7 @@
                 </li>
             @else
                 <li class="item">
-                    <a href="{{ url('/faculty-service') }}" class="nav_link {{ request()->is('faculty-service') ? 'active' : '' }}">
+                    <a href="{{ url('/faculty-request') }}" class="nav_link {{ request()->is('faculty-request') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-check-circle"></i>
                         </span>

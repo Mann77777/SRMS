@@ -256,7 +256,7 @@ class FacultyServiceRequestController extends Controller
     public function show($id)
     {
         $request = FacultyServiceRequest::findOrFail($id);
-        return view('users.faculty-service-view', ['request' => $request]);
+        return view('users.faculty-request-view', ['request' => $request]);
     }
 
     /**

@@ -23,7 +23,7 @@ body {
 .hero {
     padding: 30px 0;
     margin-bottom: 5px;
-    margin-top: 8%;
+    margin-top: 7%;
     margin-left: 20%;
 }
 
@@ -142,6 +142,7 @@ body {
 .recent-requests {
     max-width: 75%; /* Adjust the width as needed */
     margin: 0 auto; /* Center the container */
+    margin-bottom: 30px;
     background: white;
     border-radius: 10px;
     padding: 20px;
@@ -252,7 +253,7 @@ body {
 
 /* Service Categories */
 .service-categories {
-    margin-left: 21%;
+    margin-left: 20%;
     margin-bottom: 30px;
 }
 
@@ -263,8 +264,6 @@ body {
     text-align: center;
 
 }
-
-
 
 /* Empty State */
 .empty-state {

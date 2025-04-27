@@ -91,9 +91,9 @@ Route::post('/myprofile/set-password', [ProfileController::class, 'setPassword']
     // Faculty & Staff Service Request Routes
 Route::middleware(['auth'])->group(function () {
     // View faculty service form
-    Route::get('/faculty-service', function () {
-        return view('users.faculty-service');
-    })->name('faculty-service');
+    Route::get('/faculty-request', function () {
+        return view('users.faculty-request');
+    })->name('faculty-request');
     
     // Handle form submission
     Route::post('/faculty/service-request/store', [FacultyServiceRequestController::class, 'store'])

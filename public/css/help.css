@@ -19,15 +19,16 @@ body{
 }   
 
 .help{
-    margin-top: 130px;
-    padding: 0 30px; 
-    margin-left: 23%;
+    margin-top: 7%;
+    padding: 30px 0; 
+    margin-left: 21%;
 
 }
 .help h1{
     font-size: 2rem;
     margin-bottom: 20px;
-    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 .help h2{
     font-size: 1.2rem;

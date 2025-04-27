@@ -38,6 +38,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckUserStatus::class,  // Add this line here
+            \App\Http\Middleware\NoCacheHeaders::class, // Prevent browser caching after logout
         ],
 
         'api' => [
@@ -71,5 +72,6 @@ class Kernel extends HttpKernel
         'check.student' => \App\Http\Middleware\CheckStudentAccess::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'role' => \App\Http\Middleware\CheckRole::class,
+        'no-cache' => \App\Http\Middleware\NoCacheHeaders::class, // Alias for NoCacheHeaders middleware
     ];
 }

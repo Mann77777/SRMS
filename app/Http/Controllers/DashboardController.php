@@ -18,20 +18,28 @@ class DashboardController extends Controller
         $pendingRequests = 0;
         $inprogressRequests = 0;
         $completedRequests = 0;
+        $rejectedRequests = 0;     // Added for rejected requests
+        $cancelledRequests = 0;    // Added for cancelled requests
         $recentRequests = [];
 
         try {
             // Fetch total request counts for the user
             $totalRequests = StudentServiceRequest::where('user_id', $user->id)->count() +
-                             FacultyServiceRequest::where('user_id', $user->id)->count();
+                FacultyServiceRequest::where('user_id', $user->id)->count();
 
             // Fetch status counts for the user
             $pendingRequests = StudentServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count() +
-                              FacultyServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count();
+                FacultyServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count();
             $inprogressRequests = StudentServiceRequest::where('status', 'In Progress')->where('user_id', $user->id)->count() +
-                                 FacultyServiceRequest::where('status', 'In Progress')->where('user_id', $user->id)->count();
+                FacultyServiceRequest::where('status', 'In Progress')->where('user_id', $user->id)->count();
             $completedRequests = StudentServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count() +
-                                 FacultyServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count();
+                FacultyServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count();
+
+            // Add counts for rejected and cancelled requests
+            $rejectedRequests = StudentServiceRequest::where('status', 'Rejected')->where('user_id', $user->id)->count() +
+                FacultyServiceRequest::where('status', 'Rejected')->where('user_id', $user->id)->count();
+            $cancelledRequests = StudentServiceRequest::where('status', 'Cancelled')->where('user_id', $user->id)->count() +
+                FacultyServiceRequest::where('status', 'Cancelled')->where('user_id', $user->id)->count();
 
             // Fetch recent requests and transform them
             $studentRequests = StudentServiceRequest::where('user_id', $user->id)->latest()->take(3)->get();
@@ -79,6 +87,8 @@ class DashboardController extends Controller
             'pendingRequests' => $pendingRequests,
             'inprogressRequests' => $inprogressRequests,
             'completedRequests' => $completedRequests,
+            'rejectedRequests' => $rejectedRequests,
+            'cancelledRequests' => $cancelledRequests,
             'recentRequests' => $recentRequests,
         ]);
 
@@ -87,6 +97,8 @@ class DashboardController extends Controller
             'pendingRequests' => $pendingRequests,
             'inprogressRequests' => $inprogressRequests,
             'completedRequests' => $completedRequests,
+            'rejectedRequests' => $rejectedRequests,
+            'cancelledRequests' => $cancelledRequests,
             'recentRequests' => $recentRequests,
         ]);
     }

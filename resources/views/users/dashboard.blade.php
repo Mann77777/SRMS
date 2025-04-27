@@ -38,51 +38,118 @@
     </section>
 
 
-      <!-- STATUS OVERVIEW -->
-      <section class="status-overview">
+    <!-- STATUS OVERVIEW -->
+    <section class="status-overview">
         <div class="container">
+            <!-- First row -->
             <div class="row">
-                <div class="col-md-3">
-                    <div class="status-card total">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3>{{ $totalRequests ?? 0 }}</h3>
-                            <p>Total Requests</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="status-card pending">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3>{{ $pendingRequests ?? 0 }}</h3>
-                            <p>Pending</p>
+                <!-- Total Requests Card -->
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Total Requests</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalRequests ?? 0 }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="status-card processing">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div class="status-details">
-                            <h3>{{ $inprogressRequests ?? 0 }}</h3>
-                            <p>In Progress</p>
+
+                <!-- Pending Requests Card -->
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Pending</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pendingRequests ?? 0 }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="status-card completed">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-check-circle"></i>
+
+                <!-- In Progress Requests Card -->
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        In Progress</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $inprogressRequests ?? 0 }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-cog fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="status-details">
-                            <h3>{{ $completedRequests ?? 0 }}</h3>
-                            <p>Completed</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Second row -->
+            <div class="row">
+                <!-- Completed Requests Card -->
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Completed</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $completedRequests ?? 0 }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rejected Requests Card -->
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-danger shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Rejected</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $rejectedRequests ?? 0 }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancelled Requests Card -->
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-secondary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                        Cancelled</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $cancelledRequests ?? 0 }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-ban fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

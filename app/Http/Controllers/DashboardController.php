@@ -110,10 +110,14 @@ class DashboardController extends Controller
         if ($type === 'student') {
             if ($request->service_category === 'create') {
                 $services[] = 'Create MS Office/TUP Email Account';
-            } elseif ($request->service_category === 'reset_email_password') {
-               $services[] = 'Reset MS Office/TUP Email Password';
-            } else if ($request->service_category === 'dtr') {
-                $services[] = "Daily Time Record";
+         } elseif ($request->service_category === 'reset_email_password') {
+            $services[] = 'Reset MS Office/TUP Email Password';
+         } elseif ($request->service_category === 'change_of_data_ms') { // Added case
+            $services[] = 'Change of Data (MS Office)';
+         } elseif ($request->service_category === 'change_of_data_portal') { // Added case
+            $services[] = 'Change of Data (Portal)';
+         } else if ($request->service_category === 'dtr') {
+             $services[] = "Daily Time Record";
             }
              else if ($request->service_category === 'biometric_record') {
                $services[] = "Biometric Record";

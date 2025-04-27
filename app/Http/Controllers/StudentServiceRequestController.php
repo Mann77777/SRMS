@@ -69,13 +69,44 @@ class StudentServiceRequestController extends Controller
                 break;
         }
 
-        // Optional additional notes
-        $studentRequest->additional_notes = $request->input('additional_notes');
-
-        // Save the request
-        $studentRequest->save();
-
-        // Generate a unique display ID with SSR prefix
+         // Optional additional notes
+         $studentRequest->additional_notes = $request->input('additional_notes');
+ 
+         // Add logging before save
+         \Log::info('Attempting to save student request with data:', [
+             'user_id' => $studentRequest->user_id,
+             'service_category' => $studentRequest->service_category, // Log the value being saved
+             'first_name' => $studentRequest->first_name,
+             'last_name' => $studentRequest->last_name,
+             'student_id' => $studentRequest->student_id,
+             'status' => $studentRequest->status,
+              'additional_notes' => $studentRequest->additional_notes, // Log this too
+          ]);
+  
+          // Save the request with explicit success/failure logging
+          $saveSuccess = false;
+          try {
+              $saveSuccess = $studentRequest->save();
+              if ($saveSuccess) {
+                  \Log::info('Student request SAVED successfully.', ['request_id' => $studentRequest->id]);
+              } else {
+                  \Log::error('Student request save() method returned false.', ['request_data' => $studentRequest->toArray()]);
+              }
+          } catch (\Exception $e) {
+              \Log::error('Exception during Student request save.', [
+                  'error_message' => $e->getMessage(),
+                  'request_data' => $studentRequest->toArray(),
+                  'trace' => $e->getTraceAsString() // Optional: include stack trace for deep debug
+              ]);
+              // Optionally rethrow or handle the exception, e.g., return error to user
+              // For now, we just log it and let the process continue to see if redirect happens
+          }
+  
+          // Log after save attempt (indicates code reached this point)
+          \Log::info('Student request save block finished.', ['save_success' => $saveSuccess, 'request_id' => $studentRequest->id ?? null]);
+  
+          // Generate a unique display ID with SSR prefix (only if save was successful)
+          $displayId = $saveSuccess ? ('SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT)) : 'SAVE_FAILED';
         $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
 
         // Check if today is a non-working day (weekend or holiday)
@@ -354,12 +385,15 @@ class StudentServiceRequestController extends Controller
                     $serviceRequest->preferred_time = $validatedData['preferred_time'];
                     break;
                 case 'others':
-                    $serviceRequest->description = $validatedData['description'];
-                    break;
-            }
-
-            if ($requestData->hasFile('supporting_document')) {
-                if ($serviceRequest->supporting_document) {
+                     $serviceRequest->description = $validatedData['description'];
+                     break;
+             }
+ 
+             // Save additional notes if provided
+             $serviceRequest->additional_notes = $requestData->input('additional_notes'); // Added this line
+ 
+             if ($requestData->hasFile('supporting_document')) {
+                 if ($serviceRequest->supporting_document) {
                     Storage::disk('public')->delete($serviceRequest->supporting_document);
                 }
                 $file = $requestData->file('supporting_document');

@@ -468,7 +468,12 @@
                 <div class="form-section">
                     <div class="row justify-content-center">
                         <div class="col-md-6 text-center">
-                            <button type="submit" class="submitbtn">Submit Request</button>
+                            <button type="submit" class="submitbtn" id="submitButton">
+                                <span class="button-text">Submit Request</span>
+                                <span class="spinner" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i> Submitting...
+                                </span>
+                            </button>
                         </div>
                     </div>
                 </div>

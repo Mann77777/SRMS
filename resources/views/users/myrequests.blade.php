@@ -53,6 +53,7 @@
                         </thead>
                         <tbody>
                             @foreach ($requests as $request)
+                            {{-- @dd($request) --}} {{-- Removed dd() --}}
                             <tr>
                                 <td>
                                     <span class="clickable-request-id" data-id="{{ $request->id }}" style="cursor: pointer; color: #007bff; text-decoration: underline;">
@@ -64,67 +65,49 @@
                                     </span>
                                 </td>   
                                 <td>
-                                @switch($request->service_category)
-                                    @case('create')
+                                    {{-- Using if/elseif as an alternative to switch --}}
+                                    @php $category = trim((string) $request->service_category); @endphp
+                                    @if ($category === 'create')
                                         Create MS Office/TUP Email Account
-                                        @break
-                                    @case('reset_email_password')
+                                    @elseif ($category === 'reset_email_password')
                                         Reset MS Office/TUP Email Password
-                                        @break
-                                    @case('change_of_data_ms')
+                                    @elseif ($category === 'change_of_data_ms')
                                         Change of Data (MS Office)
-                                        @break
-                                    @case('reset_tup_web_password')
+                                    @elseif ($category === 'reset_tup_web_password')
                                         Reset TUP Web Password
-                                        @break
-                                    @case('reset_ers_password')
+                                    @elseif ($category === 'reset_ers_password')
                                         Reset ERS Password
-                                        @break
-                                    @case('change_of_data_portal')
+                                    @elseif ($category === 'change_of_data_portal')
                                         Change of Data (Portal)
-                                        @break
-                                    @case('dtr')
+                                    @elseif ($category === 'dtr')
                                         Daily Time Record
-                                        @break
-                                    @case('biometric_record')
+                                    @elseif ($category === 'biometric_record')
                                         Biometric Record
-                                        @break
-                                    @case('biometrics_enrollement')
+                                    @elseif ($category === 'biometrics_enrollement')
                                         Biometrics Enrollment
-                                        @break
-                                    @case('new_internet')
+                                    @elseif ($category === 'new_internet')
                                         New Internet Connection
-                                        @break
-                                    @case('new_telephone')
+                                    @elseif ($category === 'new_telephone')
                                         New Telephone Connection
-                                        @break
-                                    @case('repair_and_maintenance')
+                                    @elseif ($category === 'repair_and_maintenance')
                                         Internet/Telephone Repair and Maintenance
-                                        @break
-                                    @case('computer_repair_maintenance')
+                                    @elseif ($category === 'computer_repair_maintenance')
                                         Computer Repair and Maintenance
-                                        @break
-                                    @case('printer_repair_maintenance')
+                                    @elseif ($category === 'printer_repair_maintenance')
                                         Printer Repair and Maintenance
-                                        @break
-                                    @case('request_led_screen')
+                                    @elseif ($category === 'request_led_screen')
                                         LED Screen Request
-                                        @break
-                                    @case('install_application')
+                                    @elseif ($category === 'install_application')
                                         Install Application/Information System/Software
-                                        @break
-                                    @case('post_publication')
+                                    @elseif ($category === 'post_publication')
                                         Post Publication/Update of Information Website
-                                        @break
-                                    @case('data_docs_reports')
+                                    @elseif ($category === 'data_docs_reports')
                                         Data, Documents and Reports
-                                        @break
-                                    @case('others')
+                                    @elseif ($category === 'others')
                                         Other Service
-                                        @break
-                                    @default
-                                        {{ $request->service_category }}
-                                @endswitch
+                                    @else
+                                        {{ $category ?: 'No service selected' }}
+                                    @endif
                                 </td>
                                 <td>
                                     <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>

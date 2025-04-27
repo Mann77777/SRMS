@@ -552,9 +552,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const terms = document.getElementById('agreeTerms');
             if (terms && !terms.checked) {
                 e.preventDefault();
-                alert('Please agree to the terms and conditions');
-                return;
-            }
-        });
-    }
-});
+                 alert('Please agree to the terms and conditions');
+                 return;
+             }
+ 
+             // If all validations pass, show spinner and disable button
+             const submitButton = document.getElementById('submitButton');
+             const buttonText = submitButton.querySelector('.button-text');
+             const spinner = submitButton.querySelector('.spinner');
+ 
+             if (buttonText && spinner) {
+                 buttonText.style.display = 'none';
+                 spinner.style.display = 'inline-block'; // Or 'block'
+                 submitButton.disabled = true;
+             }
+             // Form submission will proceed now
+         });
+     }
+ });

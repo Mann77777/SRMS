@@ -66,7 +66,8 @@ class FacultyServiceRequest extends Model
         'transaction_type',
         'actions_taken',
         'completion_report',
-        
+        'additional_notes', // Added additional_notes
+
         // Biometrics Enrollment fields
         'middle_name',
         'college',

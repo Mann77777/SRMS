@@ -384,14 +384,30 @@
             var serviceCategoryDropdown = document.getElementById('serviceCategory');
             serviceCategoryDropdown.addEventListener('change', showFormFields);
 
-            // Trigger initial form setup
-            showFormFields();
-
-            // Set minimum date for preferred_date to today
-            setMinimumDate();
-        });
-
-        // Function to set minimum date to today
+             // Trigger initial form setup
+             showFormFields();
+ 
+             // Set minimum date for preferred_date to today
+             setMinimumDate();
+ 
+             // Add a submit listener to ensure the hidden field is set
+             var studentForm = document.querySelector('form[action="{{ route('student.service.request.submit') }}"]');
+             if (studentForm) {
+                 studentForm.addEventListener('submit', function(event) {
+                     // Ensure the hidden input has the latest value from the dropdown
+                     var visibleCategory = document.getElementById('serviceCategory').value;
+                     document.getElementById('selectedServiceCategory').value = visibleCategory;
+ 
+                     // Optional: Add a check here to prevent submission if category is still empty
+                     if (!visibleCategory) {
+                         alert('Please select a service category before submitting.');
+                         event.preventDefault(); // Stop form submission
+                     }
+                 });
+             }
+         });
+ 
+         // Function to set minimum date to today
         function setMinimumDate() {
             var today = new Date();
             var dd = String(today.getDate()).padStart(2, '0');

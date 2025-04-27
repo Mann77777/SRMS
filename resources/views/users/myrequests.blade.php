@@ -376,17 +376,19 @@ function buildDetailedRequestInfo(response, userRole) {
             }
             break;
             
-        case 'new_internet':
-        case 'new_telephone':
-        case 'repair_and_maintenance':
-        case 'computer_repair_maintenance':
-        case 'printer_repair_maintenance':
-            if (response.location) {
-                infoHtml += `<p><strong>Location:</strong> ${response.location}</p>`;
-            }
-            if (response.problem_encountered) {
-                infoHtml += `<p><strong>Problems Encountered:</strong> ${response.problem_encountered}</p>`;
-            }
+         case 'new_internet':
+         case 'new_telephone':
+         case 'new_internet':
+         case 'new_telephone':
+         case 'repair_and_maintenance':
+         case 'computer_repair_maintenance':
+         case 'printer_repair_maintenance':
+             // Show location for all these types
+             if (response.location) {
+                 infoHtml += `<p><strong>Location:</strong> ${response.location}</p>`;
+             }
+             // Show problems encountered for all these types (will show N/A if null)
+             infoHtml += `<p><strong>Problems Encountered:</strong> ${response.problem_encountered || 'N/A'}</p>`;
             break;
             
         case 'request_led_screen':

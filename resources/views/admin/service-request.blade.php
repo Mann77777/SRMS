@@ -25,11 +25,11 @@
                 <option value="in progress">In Progress</option>
                 <option value="completed">Completed</option>
             </select>
-            <div class="requests-btn">
+            <!-- <div class="requests-btn">
                 <button type="button" class="delete-button" id="delete-btn">
                     <i class="fas fa-trash"></i> Delete Selected
                 </button>
-            </div>
+            </div> -->
         </div>
 
         <div class="request-table-container">

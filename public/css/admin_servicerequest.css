@@ -9,7 +9,7 @@
 body{
     margin: 0;
     padding: 0;
-    padding-top: 10px; /* Space for navbar */
+    padding-top: 10px;
     font-family: "Montserrat", sans-serif;
     background-position: center;
     background-repeat: no-repeat;
@@ -18,13 +18,13 @@ body{
     height: 130vh;
 }   
 .content {
-    margin-top: 8%;
-    margin-left: 23%;
-    padding: 20px;
+    margin-top: 7%;
+    margin-left: 21%;
+    padding: 30px 0;
 }
 .content h1{
     font-size: 2rem;
-    font-weight: 650;
+    font-weight: 600;
     text-transform: uppercase;
 }
 
@@ -44,6 +44,28 @@ select {
     background-color: #fff;
     margin-right: 20px;
     cursor: pointer;
+}
+
+.search-container{
+    display: flex;
+    justify-content: center; /* Horizontally centers the button */
+    align-items: center;     /* Vertically centers the button if needed */
+}
+.search-container input {
+    width: 250px; /* Set width for search input */
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+.search-btn{
+    padding: 10px 20px;
+    margin-left: 2%;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: #04AA6D;
+    color: white;
 }
 
 .delete-btn {

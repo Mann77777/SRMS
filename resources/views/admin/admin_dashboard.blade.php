@@ -11,12 +11,12 @@
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <script src="{{ asset('js/notifications.js') }}"></script>
-    
     <title>Dashboard</title>
 </head>
 <body>
     <!-- Include Navbar -->
     @include('layouts.admin-navbar')
+    <!-- Include Sidebar -->
     @include('layouts.admin-sidebar')
 
     <div class="content">

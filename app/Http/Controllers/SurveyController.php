@@ -96,4 +96,36 @@ class SurveyController extends Controller
         return redirect()->route('show.service.survey', ['requestId' => $requestId])
                          ->with('success', 'Thank you for your feedback! Your survey has been submitted successfully.');
     }
+
+     /**
+     * View survey details for a specific request
+     */
+    public function viewSurvey($requestId)
+    {
+        $user = Auth::user();
+        $survey = null;
+        $serviceRequest = null;
+        
+        // Find the request and associated survey based on user role
+        if ($user->role === "Student") {
+            $serviceRequest = StudentServiceRequest::findOrFail($requestId);
+            $survey = CustomerSatisfaction::where('request_id', $requestId)
+                                         ->where('request_type', 'Student')
+                                         ->firstOrFail();
+        } elseif ($user->role === "Faculty & Staff") {
+            $serviceRequest = FacultyServiceRequest::findOrFail($requestId);
+            $survey = CustomerSatisfaction::where('request_id', $requestId)
+                                         ->where('request_type', 'Faculty & Staff')
+                                         ->firstOrFail();
+        } else {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+        
+        // Ensure only the request owner can view the survey
+        if ($serviceRequest->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+        
+        return view('users.view-survey', compact('survey', 'serviceRequest'));
+    }
 }

@@ -271,6 +271,11 @@ Route::post('/submit-survey', [StudentServiceRequestController::class, 'submitSe
     ->name('submit.survey')
     ->middleware('auth');
 
+// Route for viewing a submitted survey (for request history page)
+Route::get('/view-survey/{requestId}', [App\Http\Controllers\RequestsController::class, 'viewSurvey'])
+    ->middleware(['auth'])
+    ->name('view.survey');
+
 Route::get('/messages', function () {
     return view('users.messages');
 })->name('messages');

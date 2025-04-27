@@ -166,4 +166,36 @@ class RequestsController extends Controller
         // Handle unexpected role or unauthorized access
         return redirect()->route('myrequests')->with('error', 'Unauthorized access to update request.');
     }
+
+    /**
+     * Redirect to view survey for a specific request
+     * This is to be added to the existing RequestsController class
+     */
+    public function viewSurvey($requestId)
+    {
+        $user = Auth::user();
+        $request = null;
+        
+        // Verify the request exists for the current user
+        if ($user->role === "Student") {
+            $request = StudentServiceRequest::findOrFail($requestId);
+        } elseif ($user->role === "Faculty & Staff") {
+            $request = FacultyServiceRequest::findOrFail($requestId);
+        } else {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+        
+        // Check the request belongs to the current user
+        if ($request->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+        
+        // Check if the request has been surveyed
+        if (!$request->is_surveyed) {
+            return redirect()->back()->with('error', 'No survey found for this request');
+        }
+        
+        // Redirect to the survey controller's view method
+        return app(SurveyController::class)->viewSurvey($requestId);
+    }
 }

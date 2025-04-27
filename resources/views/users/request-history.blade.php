@@ -9,6 +9,28 @@
     <link href="{{ asset('css/service-history.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Service History</title>
+    <style>
+        /* Additional styles for survey status */
+        .custom-badge {
+            display: inline-block;
+            padding: 0.25em 0.6em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .custom-badge-success {
+            color: #fff;
+            background-color: #28a745;
+        }
+        .btn-view-survey {
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
     
@@ -18,8 +40,6 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
-
- 
     <div class="content">
         <h1>Request History</h1>
     <!--    <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p> -->
@@ -128,7 +148,12 @@
                                         <i class="fas fa-star"></i> Rate Service
                                     </a>
                                 @elseif($request->is_surveyed)
-                                    <span class="custom-badge custom-badge-success">Feedback Submitted</span>
+                                    <div>
+                                        <span class="custom-badge custom-badge-success">Feedback Submitted</span>
+                                        <a href="{{ route('view.survey', $request->id) }}" class="btn btn-sm btn-info btn-view-survey">
+                                            <i class="fas fa-eye"></i> View Feedback
+                                        </a>
+                                    </div>
                                 @else
                                     <!-- No action needed -->
                                 @endif
@@ -153,8 +178,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
-    @stack('scripts') 
-
-    </style>
+    @stack('scripts')
 </body>
 </html>

@@ -338,6 +338,7 @@
                                     <th>In Progress</th>
                                     <th>Pending</th>
                                     <th>Cancelled</th>
+                                    <th>Rejected</th>
                                     <th>Completion Rate</th>
                                     <th>Avg Resolution (days)</th>
                                 </tr>
@@ -351,6 +352,7 @@
                                     <td>{{ $data['in_progress'] }}</td>
                                     <td>{{ $data['pending'] }}</td>
                                     <td>{{ $data['cancelled'] }}</td>
+                                    <td>{{ $data['rejected'] ?? 0 }}</td>
                                     <td>
                                         {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) : 0 }}%
                                     </td>
@@ -398,6 +400,8 @@
                                     <th>Completed</th>
                                     <th>In Progress</th>
                                     <th>Pending</th>
+                                    <th>Cancelled</th>
+                                    <th>Rejected</th>
                                     <th>Completion Rate</th>
                                     <th>Avg Resolution (days)</th>
                                     <th>SLA Met Rate</th>
@@ -411,6 +415,8 @@
                                     <td>{{ $data['completed'] }}</td>
                                     <td>{{ $data['in_progress'] }}</td>
                                     <td>{{ $data['pending'] }}</td>
+                                    <td>{{ $data['cancelled'] }}</td>
+                                    <td>{{ $data['rejected'] ?? 0 }}</td>
                                     <td>
                                         {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) : 0 }}%
                                     </td>

@@ -138,6 +138,18 @@ button {
     font-weight: 500;
 }
 
+.btn-approve, .btn-reject {
+    width: 110px; /* Set a fixed width for both buttons */
+    display: inline-block;
+    text-align: center;
+}
+
+/* For better icon alignment */
+.btn-approve svg, .btn-reject svg {
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
 .btn-approve {
     background-color: #16A34A;  /* Green */
 }

@@ -153,8 +153,12 @@
                                 </td>
                                 <td>
                                     @if($request->status != 'Completed' && $request->status != 'Rejected' && $request->status != 'Cancelled' && $request->status != 'In Progress')
-                                        <button type="button" class="btn-edit" data-id="{{ $request->id }}">Edit</button>
-                                        <button type="button" class="btn-cancel" data-id="{{ $request->id }}">Cancel</button>
+                                    <button type="button" class="btn-edit" data-id="{{ $request->id }}">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn-cancel" data-id="{{ $request->id }}">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
                                     @endif
                                 </td>
                             </tr>

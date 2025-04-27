@@ -114,6 +114,11 @@ button {
     font-weight: 500;
 }
 
+.btn-edit, .btn-cancel {
+    width: 100px; /* Set a fixed width for both buttons */
+    text-align: center;
+  }
+
 .btn-edit{
     background-color: #04AA6D;
 }

@@ -151,6 +151,19 @@ button {
     font-size: 15px;
     font-weight: 500;
 }
+
+/* Add this to your existing CSS */
+.btn-edit, .btn-status, .btn-reset, .btn-delete {
+    width: 120px; /* Set same width for all buttons */
+    text-align: center;
+    padding: 8px 0; /* Consistent padding */
+}
+
+/* Icon alignment */
+.btn-edit svg, .btn-status svg, .btn-reset svg, .btn-delete svg {
+    vertical-align: middle;
+    margin-right: 5px;
+}
 .btn-edit {
     background-color: #FFC107;  /* Yellow */
 }

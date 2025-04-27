@@ -24,6 +24,9 @@ class HolidayController extends Controller
         
         // Format for display
         $formattedHolidays = $holidays->map(function ($holiday) {
+            // Ensure the type field is explicitly set
+            $type = $holiday->type ?? 'holiday';
+            
             return [
                 'id' => $holiday->id,
                 'name' => $holiday->name,
@@ -33,7 +36,7 @@ class HolidayController extends Controller
                 'is_recurring' => $holiday->is_recurring,
                 'recurring_month' => $holiday->recurring_month,
                 'recurring_day' => $holiday->recurring_day,
-                'type' => $holiday->type ?? 'holiday',  // Default to 'holiday' if not set
+                'type' => $type,  // Explicitly set the type
                 'start_date' => $holiday->start_date ? $holiday->start_date->format('F j, Y') : null,
                 'end_date' => $holiday->end_date ? $holiday->end_date->format('F j, Y') : null,
             ];

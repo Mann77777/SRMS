@@ -103,6 +103,17 @@ select {
     background-color: #f8f9fa;
 }
 
+.btn-complete {
+    width: 120px; /* Set same width for all buttons */
+    text-align: center;
+    padding: 8px 0; /* Consistent padding */
+}
+
+/* Icon alignment */
+.btn-complete {
+    vertical-align: middle;
+    margin-right: 5px;
+}
 
 .btn-complete {
     background-color: #16A34A;  /* Bootstrap success green */

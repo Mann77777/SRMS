@@ -56,15 +56,15 @@
                 </div>
             </div>
 
-            <!-- Bulk Actions -->
+            <!-- Bulk Actions 
             <div class="bulk-actions">
-              <!--  <button class="btn-export" id="export-csv">
+                <button class="btn-export" id="export-csv">
                     <i class="fas fa-file-export"></i> Export CSV
-                </button> -->
+                </button> 
                 <button class="btn-delete" id="bulk-delete">
                     <i class="fas fa-trash"></i> Delete Selected
                 </button>
-            </div>
+            </div> -->
         </div>
 
         <div class="user-table-container">
@@ -73,7 +73,7 @@
                 <table class="users-table">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" id="select-all"></th>
+                            <!-- <th><input type="checkbox" id="select-all"></th> -->
                             <th>ID</th>
                             <th>User Data</th>
                             <th>Role</th>
@@ -86,7 +86,7 @@
                     <tbody id="users-table-body">
                         @foreach ($users as $user)
                         <tr>
-                            <td><input type="checkbox" class="user-select" value="{{ $user->id }}"></td>
+                            <!-- <td><input type="checkbox" class="user-select" value="{{ $user->id }}"></td> -->
                             <td>{{ $user->id }}</td>
                             <td>
                             <strong>Name: </strong>{{ $user->name }}<br>
@@ -135,10 +135,31 @@
                             </td>
 
                             <td class="b">
-                                <button class="btn-edit" title="Edit" data-id="{{ $user->id }}">Edit</button>
-                                <button class="btn-status" title="Toggle Status" data-id="{{ $user->id }}">Status</button>
-                                <button class="btn-reset" title="Reset Password" data-id="{{ $user->id }}">Reset</button>
-                                <button class="btn-delete" title="Delete" data-id="{{ $user->id }}">Delete</button>
+                                <button class="btn-edit" title="Edit" data-id="{{ $user->id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5z"/>
+                                    </svg> Edit
+                                </button>
+
+                                <button class="btn-status" title="Toggle Status" data-id="{{ $user->id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
+                                    </svg> Status
+                                </button>
+
+                                <button class="btn-reset" title="Reset Password" data-id="{{ $user->id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                                        <path d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                                    </svg> Reset
+                                </button>
+
+                                <button class="btn-delete" title="Delete" data-id="{{ $user->id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                    </svg> Delete
+                                </button>
                             </td>
                         </tr>
                         @endforeach

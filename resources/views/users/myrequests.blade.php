@@ -333,12 +333,13 @@ function buildDetailedRequestInfo(response, userRole) {
             }
             break;
             
+        case 'biometric_record': // Added this case
         case 'dtr':
-            if (response.dtr_months) {
-                infoHtml += `<p><strong>DTR Months:</strong> ${response.dtr_months}</p>`;
-            }
+            // Display fields for both DTR and Biometric Record
+            // Always display the label, show 'N/A' if the value is null, undefined, or empty
+            infoHtml += `<p><strong>Month(s) of Record:</strong> ${response.dtr_months || 'N/A'}</p>`; // Generic label
             if (response.dtr_with_details !== undefined) {
-                infoHtml += `<p><strong>Include In/Out Details:</strong> ${response.dtr_with_details ? 'Yes' : 'No'}</p>`;
+                infoHtml += `<p><strong>Include In/Out Details:</strong> ${response.dtr_with_details ? 'Yes' : 'No'}</p>`; // Display this for both cases
             }
             break;
             
@@ -520,6 +521,8 @@ $(document).ready(function() {
             method: 'GET',
             headers: { 'X-CSRF-TOKEN': token },
             success: function(response) {
+                // Removed debugging console.log
+
                 if (response.error) {
                     alert('Error: ' + response.error);
                     return;
@@ -750,3 +753,4 @@ if (response.status === 'Pending') {
 </script>
 </body>
 </html>
+</environment_details>

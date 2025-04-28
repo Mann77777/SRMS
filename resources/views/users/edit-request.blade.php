@@ -165,15 +165,16 @@
                         </div>
                         @break
 
+                    @case('biometric_record') // Added this case
                     @case('dtr') {{-- Faculty Only --}}
                         <div class="form-group">
-                            <label for="dtr_months">Month(s) of DTR</label>
+                            <label for="dtr_months">Month(s) of Record</label> {{-- Made label more generic --}}
                             <input type="text" class="form-control" id="dtr_months" name="dtr_months" value="{{ old('dtr_months', $request->dtr_months) }}" required>
                         </div>
                          <div class="form-check">
                              <input class="form-check-input" type="checkbox" id="dtr_with_details" name="dtr_with_details" value="1" {{ old('dtr_with_details', $request->dtr_with_details) ? 'checked' : '' }}>
                              <label class="form-check-label" for="dtr_with_details">
-                                 Include In/Out Details
+                                 Include In/Out Details (if applicable) {{-- Clarified label --}}
                              </label>
                          </div>
                         @break

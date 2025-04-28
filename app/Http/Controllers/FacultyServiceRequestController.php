@@ -45,9 +45,10 @@ class FacultyServiceRequestController extends Controller
                      // Supporting document is optional on create, required validation might be too strict here unless intended
                      $rules['supporting_document'] = 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048';
                      break;
+                case 'biometric_record': // Added this case
                 case 'dtr':
                      $rules['dtr_months'] = 'required|string|max:255';
-                     $rules['dtr_with_details'] = 'sometimes|boolean';
+                     $rules['dtr_with_details'] = 'sometimes|boolean'; // Keep this for DTR, might not apply to biometric_record but harmless if not submitted
                      break;
                 case 'biometrics_enrollement':
                      $rules['middle_name'] = 'nullable|string|max:255'; // Often optional
@@ -401,6 +402,7 @@ class FacultyServiceRequestController extends Controller
                  $rules['data_type'] = 'required|string|max:255';
                  $rules['new_data'] = 'required|string|max:1000';
                  break;
+            case 'biometric_record': // Added this case
             case 'dtr':
                  $rules['dtr_months'] = 'required|string|max:255';
                  $rules['dtr_with_details'] = 'sometimes|boolean'; // Use boolean validation

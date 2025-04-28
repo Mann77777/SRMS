@@ -176,8 +176,8 @@
                 });
             }
 
-            // Approve button click event
-            $('.btn-approve').on('click', function() {
+            // Approve button click event (using event delegation)
+            $(document).on('click', '.btn-approve', function() {
                 const requestId = $(this).data('id');
                 const requestType = $(this).data('type');
                 const requestDetails = $(this).data('details');

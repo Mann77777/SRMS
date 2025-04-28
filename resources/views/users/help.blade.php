@@ -19,7 +19,7 @@
     @include('layouts.sidebar')
 
     
-    <div class="help">
+    <div class="main-content help"> {{-- Added main-content class --}}
         <h1>Help</h1>
         <h2>Frequently Asked Questions</h2>
         

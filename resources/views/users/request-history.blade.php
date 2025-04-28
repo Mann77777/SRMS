@@ -40,7 +40,7 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
-    <div class="content">
+    <div class="main-content"> {{-- Changed class from content to main-content --}}
         <h1>Request History</h1>
     <!--    <p>Welcome, <strong>{{ Auth::user()->username }}!</strong></p> -->
        

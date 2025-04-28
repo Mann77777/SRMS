@@ -22,7 +22,7 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
-    <div class="student-content">
+    <div class="main-content student-content"> {{-- Added main-content class --}}
         <div class="student-header">
             <h1>Student Service Request</h1>
         </div>

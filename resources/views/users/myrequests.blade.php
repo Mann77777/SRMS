@@ -19,7 +19,7 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
-    <div class="content">
+    <div class="main-content"> {{-- Changed class from content to main-content --}}
         <h1>My Request</h1>
         <div class="form-container">
             <div class="dropdown-container">

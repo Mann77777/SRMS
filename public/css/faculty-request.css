@@ -70,3 +70,62 @@ body {
 .submitbtn:hover {
     background-color: #f12245;
 }
+
+/* --- Responsive Styles --- */
+
+/* Medium screens (tablets, smaller laptops) */
+@media (max-width: 992px) {
+    .faculty-content {
+        /* Margin will be handled by .main-content */
+        padding: 20px; /* Add padding */
+    }
+}
+
+/* Small screens (tablets in portrait, large phones) */
+@media (max-width: 768px) {
+    .faculty-content {
+        margin-top: 10%; /* Adjust top margin */
+        padding: 15px; /* Adjust padding */
+    }
+    .faculty-header h1 {
+        font-size: 1.7rem;
+    }
+    /* Make form elements full width */
+    .form-control, /* Assuming Bootstrap classes */
+    .form-select,
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        width: 100%;
+        margin-bottom: 10px; /* Add space below inputs */
+    }
+    /* Adjust label font size if needed */
+    label {
+        font-size: 0.95rem;
+    }
+}
+
+/* Extra small screens (phones) */
+@media (max-width: 576px) {
+     .faculty-content {
+        margin-top: 15%; /* Further adjust top margin */
+        padding: 10px; /* Reduce padding */
+    }
+    .faculty-header h1 {
+        font-size: 1.5rem;
+    }
+    .form-section h5 { /* Adjust section titles */
+        font-size: 1.1rem;
+    }
+     label {
+        font-size: 0.9rem;
+    }
+    .submitbtn {
+        width: 100%; /* Make button full width */
+        padding: 12px;
+    }
+}

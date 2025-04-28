@@ -403,4 +403,34 @@ body{
     .sidebar.close .bottom_content {
       left: -100%;
     }
+
+    /* Adjust main content area */
+    .main-content {
+        margin-left: 0 !important; /* Override margin for small screens */
+        padding: 80px 15px 15px 15px; /* Adjust padding for smaller screens */
+        width: 100% !important; /* Ensure full width */
+    }
+    .sidebar.close ~ .main-content { /* Ensure margin stays 0 when sidebar is toggled on small screens */
+         margin-left: 0 !important;
+         width: 100% !important;
+    }
+}
+
+/* --- Additions for Main Content Area --- */
+
+/* Style for the main content area next to the sidebar */
+.main-content {
+    margin-left: 260px; /* Default margin for open sidebar */
+    padding: 90px 20px 20px 20px; /* Adjust padding: top(navbar)+space, right, bottom, left */
+    transition: margin-left 0.5s ease, width 0.5s ease; /* Smooth transition */
+    position: relative; /* Needed for stacking context if required */
+    width: calc(100% - 260px); /* Adjust width based on sidebar */
+    min-height: calc(100vh - 70px); /* Ensure content area fills viewport height minus navbar */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+/* Adjust main content when sidebar is closed on larger screens */
+.sidebar.close ~ .main-content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
 }

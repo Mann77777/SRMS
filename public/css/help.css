@@ -88,16 +88,56 @@ a:hover {
     text-decoration: underline; /* Underline on hover for links */
 }
 
+/* --- Responsive Styles --- */
 
-@media (max-width: 480px) {
+/* Medium screens (tablets, smaller laptops) */
+@media (max-width: 992px) {
     .help {
-        margin-top: 25%;
-        margin-left: 2%;
-    }  
+        /* Margin will be handled by .main-content */
+        padding: 20px; /* Add padding */
+    }
+}
+
+/* Small screens (tablets in portrait, large phones) */
+@media (max-width: 768px) {
+    .help {
+        margin-top: 10%; /* Adjust top margin */
+        padding: 15px; /* Adjust padding */
+    }
+    .help h1 {
+        font-size: 1.7rem;
+    }
+    .help h2 {
+        font-size: 1.1rem;
+    }
+    .faq-question,
+    .faq-answer {
+        padding: 12px; /* Adjust padding */
+        font-size: 0.95rem;
+    }
+    p {
+        font-size: 0.95rem;
+    }
+}
+
+/* Extra small screens (phones) */
+@media (max-width: 576px) {
+     .help {
+        margin-top: 15%; /* Further adjust top margin */
+        padding: 10px; /* Reduce padding */
+    }
     .help h1 {
         font-size: 1.5rem;
-    }  
+    }
     .help h2 {
         font-size: 1rem;
+    }
+     .faq-question,
+    .faq-answer {
+        padding: 10px; /* Further adjust padding */
+        font-size: 0.9rem;
+    }
+     p {
+        font-size: 0.9rem;
     }
 }

@@ -133,3 +133,68 @@ body {
     background-color: #28a745;
     color: white;
 }
+
+/* --- Responsive Styles --- */
+
+/* Medium screens (tablets, smaller laptops) */
+@media (max-width: 992px) {
+    .content {
+        /* Margin will be handled by .main-content */
+        padding: 20px; /* Add padding */
+    }
+}
+
+/* Small screens (tablets in portrait, large phones) */
+@media (max-width: 768px) {
+    .content {
+        margin-top: 10%; /* Adjust top margin */
+        padding: 15px; /* Adjust padding */
+    }
+    .content h1 {
+        font-size: 1.7rem;
+    }
+    .history-table th,
+    .history-table td {
+        padding: 10px 8px; /* Reduce padding */
+        font-size: 0.9rem; /* Slightly smaller font */
+    }
+    .pagination li a,
+    .pagination li span {
+        padding: 6px 10px; /* Adjust pagination padding */
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra small screens (phones) */
+@media (max-width: 576px) {
+     .content {
+        margin-top: 15%; /* Further adjust top margin */
+        padding: 10px; /* Reduce padding */
+    }
+    .content h1 {
+        font-size: 1.5rem;
+    }
+    .history-table th,
+    .history-table td {
+        font-size: 0.85rem; /* Further reduce font size */
+        padding: 8px 5px;
+    }
+    /* Example: Hide less critical columns on very small screens */
+    /*
+    .history-table th:nth-child(2), // Hide 2nd column header
+    .history-table td:nth-child(2) { // Hide 2nd column data
+        display: none;
+    }
+    .history-table th:nth-child(4), // Hide 4th column header
+    .history-table td:nth-child(4) { // Hide 4th column data
+        display: none;
+    }
+    */
+     .pagination li {
+        margin: 0 3px; /* Reduce pagination margin */
+    }
+    .pagination li a,
+    .pagination li span {
+        padding: 5px 8px; /* Further adjust pagination padding */
+    }
+}

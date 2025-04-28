@@ -19,7 +19,7 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebar')
 
-    <div class="faculty-content">
+    <div class="main-content faculty-content"> {{-- Added main-content class --}}
         <div class="faculty-header">
             <h1>Faculty & Staff Service Request</h1>
         </div>

@@ -16,32 +16,31 @@ body{
     background-size: cover;
     background-color:  #f0f0f0;
     height: 130vh;
-}   
+}
 
-/* NAVBAR STYLE */
+/* NAVBAR STYLE - Reverted to Original */
 .navbar {
     position: fixed;
     top: 0;
     width: 100%;
     left: 0;
-    background-color: #fff9f9;
+    background-color: #fff9f9; /* Original white background */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 15px 30px;
+    padding: 15px 30px; /* Original padding */
     z-index: 1000;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for visibility */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Restored shadow */
 }
 
 .navbar-title {
     font-size: 17px; /* Adjust font size */
     font-weight: 600; /* Make it slightly bolder */
-    color: #333; /* Darker color for better readability */
+    color: #333; /* Original dark text */
     max-width: 300px; /* Limit width */
     white-space: nowrap; /* Prevent wrapping */
-
 }
-  
+
 .logo_item {
     display: flex;
     align-items: center;
@@ -50,13 +49,13 @@ body{
     font-weight: 500;
 }
 
-.navbar .logo_item img { 
+.navbar .logo_item img {
     width: 60px;
     height: 60px;
     object-fit: cover;
     border-radius: 50%;
   }
-  
+
 .navbar-content {
     display: flex;
     align-items: center;
@@ -65,23 +64,20 @@ body{
 
 .navbar-content i {
     cursor: pointer;
-    font-size: 20px;    
-}
-  
-.navbar-menu a:hover {
-    color: #adadad;
-    border-radius: 5px;
+    font-size: 20px;
+    color: #C8102E; /* Original red icons */
 }
 
 .profile-icon {
     font-size: 1.5em;
+    color: #C8102E; /* Original red icon */
 }
 .notification-icon i{
-    color: #333;
+    color: #C8102E; /* Original red icon */
     font-size: 1.5rem;
 }
 .profile-img-navbar {
-    width: 40px;  
+    width: 40px;
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
@@ -93,28 +89,34 @@ body{
 .dropdown-content{
     display: none; /* Hide dropdown by default */
     position: absolute;
-    background-color: #fff9f9;
+    background-color: #fff9f9; /* Original white background */
     min-width: 150px;
     z-index: 1;
     margin-top: 1px;
     border-radius: 5px;
     right: 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Added subtle shadow for dropdown */
 }
 .dropdown-content a{
-    color: #333;
-    padding: 15px;
+    color: #333; /* Original dark text */
+    padding: 12px 16px; /* Adjusted padding */
     text-decoration: none;
     display: block;
     text-transform: none;
+    font-size: 14px; /* Slightly smaller font */
+}
+.dropdown-content a:hover {
+    background-color: #e9ecef; /* Original light grey hover */
+    color: #C8102E; /* Red text on hover */
 }
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
 
-/* SIDEBAR STYLE */
+/* SIDEBAR STYLE - Kept Red Gradient */
 .sidebar {
-    background-color: #fff9f9;
+    background: linear-gradient(to bottom, #C8102E, #B00020); /* Adjusted TUP Red gradient */
     width: 260px;
     position: fixed;
     top: 0;
@@ -123,19 +125,12 @@ body{
     padding: 80px 10px;
     z-index: 100;
     overflow-y: scroll;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for visibility */
+    box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.15); /* Subtle inner right shadow */
     transition: all 0.5s ease;
 }
 
 .sidebar .logo_item {
-    /*display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 20px;
-    margin-top: 20px; */
     display: none;
-
 }
 
 .sidebar .logo_item img {
@@ -147,19 +142,22 @@ body{
 
 /* Style for the active sidebar link */
 .nav_link.active {
-    font-weight: bold; 
-    color: #007bff; 
+    font-weight: 600; /* Slightly bolder */
+    color: #FFFFFF; /* White text */
+    background-color: transparent; /* Remove background */
+    border-left: 4px solid #FFFFFF; /* White left border for active indicator */
+    padding-left: 11px; /* Adjust padding to compensate for border */
 }
 .nav_link.active .navlink_icon i {
-    color: #007bff; /* Change icon color for active link */
+    color: #FFFFFF; /* White icon */
 }
 
 .sidebar.close {
     padding: 60px 0;
     width: 80px;
 }
-  
-  
+
+
 .sidebar::-webkit-scrollbar {
     display: none;
 }
@@ -171,62 +169,54 @@ body{
 .menu_title {
     margin: 15px 0;
     padding: 0 20px;
-    font-size: 18px;
+    font-size: 16px; /* Slightly smaller */
+    color: rgba(255, 255, 255, 0.7); /* Lighter white for titles */
+    text-transform: uppercase; /* Uppercase titles */
+    letter-spacing: 0.5px; /* Add letter spacing */
 }
 
 .sidebar.close .menu_title {
     padding: 6px 30px;
 }
-  
+
 .menu_title::before {
-    color: var(--grey-color);
+    /* Removed default content */
     white-space: nowrap;
 }
 
-.menu_dahsboard::before {
-    content: "Dashboard";
-}
-
-.menu_editor::before {
-    content: "Editor";
-}
-  
-.menu_setting::before {
-    content: "Setting";
-}
-  
 .sidebar.close .menu_title::before {
     content: "";
     position: absolute;
     height: 2px;
     width: 18px;
     border-radius: 12px;
-    background: var(--grey-color-light);
+    background: rgba(255, 255, 255, 0.5); /* Lighter white line */
 }
-  
+
 .menu_items {
     padding: 0;
     list-style: none;
 }
 
 .menu_items .item {
-    margin-bottom: -15px; /* Adjust this value for spacing */
+    margin-bottom: -10px; /* Reduced negative margin */
 }
 
 .navlink {
-    margin-top: 12%;  /* Adjust this value as needed */
+    margin-top: 10%; /* Adjusted spacing */
 }
 
 .navlink_icon {
     position: relative;
-    font-size: 22px;
+    font-size: 20px; /* Slightly smaller icons */
     min-width: 50px;
     line-height: 40px;
     display: inline-block;
     text-align: center;
     border-radius: 6px;
-    margin-top: 12%;
+    margin-top: 10%; /* Adjusted spacing */
     margin-left: -1.25rem;
+    color: #FFFFFF; /* Ensure icon color is white */
 }
 
 .navlink_icon::before {
@@ -238,31 +228,42 @@ body{
 }
 
 .navlink_icon:hover {
-    background: var(--blue-color);
+    background: none; /* Removed background on icon hover */
 }
 
 .sidebar .nav_link {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 4px 15px;
-    border-radius: 8px;
+    padding: 8px 15px; /* Adjusted padding */
+    border-radius: 6px; /* Slightly smaller radius */
     text-decoration: none;
-    color: var(--grey-color);
+    color: #FFFFFF; /* White text */
     white-space: nowrap;
+    font-size: 15px; /* Slightly smaller font */
+    transition: background-color 0.2s ease, border-left-color 0.2s ease; /* Smoother transitions */
+    border-left: 4px solid transparent; /* Add transparent border for alignment */
+    margin-bottom: 2px; /* Add small margin between links */
+}
+
+/* Hover state for sidebar links */
+.sidebar .nav_link:hover {
+    background-color: #A0001C; /* Adjusted darker red hover */
+    color: #FFFFFF; /* Ensure text stays white */
+    border-left-color: #A0001C; /* Match background on hover */
+}
+/* Add subtle icon nudge on hover */
+.sidebar .nav_link:hover .navlink_icon {
+    transform: translateX(2px);
+    transition: transform 0.2s ease;
 }
 
 .sidebar.close .navlink {
     display: none;
-} 
-
-/* .nav_link:hover {
-    color: var(--white-color);
-    background: var(--blue-color); 
-} */
+}
 
 .sidebar.close .nav_link:hover {
-    background: #fff9f9;
+    background: none; /* Removed background hover when closed */
 }
 
 .submenu_item {
@@ -271,6 +272,7 @@ body{
 
 .submenu {
     display: none;
+    padding-left: 10px; /* Indent submenu */
 }
 
 .submenu_item .arrow-left {
@@ -278,12 +280,13 @@ body{
     right: 10px;
     display: inline-block;
     margin-right: auto;
+    transition: transform 0.3s ease; /* Smooth arrow rotation */
 }
-  
+
 .sidebar.close .submenu {
     display: none;
 }
-  
+
 .show_submenu ~ .submenu {
     display: block;
 }
@@ -291,15 +294,30 @@ body{
 .show_submenu .arrow-left {
     transform: rotate(90deg);
 }
-  
+
 .submenu .sublink {
-    padding: 15px 15px 15px 52px;
+    padding: 10px 15px 10px 52px; /* Adjusted padding */
+    color: rgba(255, 255, 255, 0.85); /* Slightly lighter white for submenu */
+    border-radius: 6px;
+    font-size: 14px; /* Smaller font for submenu */
+    transition: background-color 0.2s ease; /* Added transition */
+}
+/* Add subtle icon nudge on hover for submenu */
+.submenu .sublink:hover .navlink_icon { /* Assuming icons might be added later */
+    transform: translateX(2px);
+    transition: transform 0.2s ease;
+}
+
+/* Hover state for submenu links */
+.submenu .sublink:hover {
+    background-color: #A0001C; /* Adjusted darker red hover */
+    color: #FFFFFF; /* Ensure text stays white */
 }
 
 .bottom_content {
     position: fixed;
-    bottom: 60px;
-    right: 15;
+    bottom: 0; /* Changed to stick to bottom */
+    right: 0; /* Align with sidebar edge */
     width: 260px;
     cursor: pointer;
     transition: all 0.5s ease;
@@ -314,24 +332,26 @@ body{
     padding: 18px 0;
     text-align: center;
     width: 100%;
-    color: var(--grey-color);
-    border-top: 1px solid var(--grey-color-light);
-    background-color: var(--white-color);
+    color: #FFFFFF; /* White text */
+    background: linear-gradient(to bottom, #C8102E, #B00020); /* Adjusted TUP Red gradient */
 }
 
-.bottom i {
+.bottom i { /* Icons in bottom bar */
     font-size: 20px;
+    color: #FFFFFF; /* White icons */
 }
 
-.bottom span {
+.bottom span { /* Text in bottom bar */
     font-size: 18px;
+    color: #FFFFFF; /* White text */
 }
-  
+
 .sidebar.close .bottom_content {
-    width: 50px;
-    left: 15px;
+    width: 80px; /* Match closed sidebar width */
+    left: 0; /* Align with closed sidebar */
+    right: auto;
 }
-  
+
 .sidebar.close .bottom span {
     display: none;
 }
@@ -347,8 +367,8 @@ body{
 
 @media screen and (max-width: 768px) {
     .navbar .logo_item img {
-        display: none; 
-    } 
+        display: none;
+    }
     .navbar-title {
         display: none;
     }
@@ -372,7 +392,7 @@ body{
       display: block;
       margin-right: 10px;
       cursor: pointer;
-      color: var(--grey-color);
+      color: #C8102E; /* Reverted hamburger icon to red */
     }
     .sidebar.close {
       left: -100%;
@@ -384,4 +404,3 @@ body{
       left: -100%;
     }
 }
-  

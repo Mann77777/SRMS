@@ -210,23 +210,10 @@ function createNotificationElement(notification, isUnread) {
             markAsRead(notification.id);
         }
         
-        // Determine redirect URL based on notification type
-        let redirectUrl = '/myrequests';
+        // Determine redirect URL - always go to myrequests
+        let redirectUrl = '/myrequests'; 
         
-        // If it contains a specific request ID, redirect to that request's details
-        if (data.request_id) {
-            const userRole = document.body.dataset.userRole; // Add data-user-role to your body tag
-            if (userRole === 'Student') {
-                redirectUrl = `/student-requests/${data.request_id}`;
-            } else if (userRole === 'Faculty & Staff') {
-                redirectUrl = `/faculty-requests/${data.request_id}`;
-            } else if (userRole === 'Admin') {
-                redirectUrl = '/admin_dashboard/service-request';
-            } else if (userRole === 'UITC Staff') {
-                redirectUrl = '/uitc-staff/assigned-requests';
-            }
-        }
-        
+        // Redirect to the myrequests page
         window.location.href = redirectUrl;
     });
     

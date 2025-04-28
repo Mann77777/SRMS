@@ -21,26 +21,99 @@ class FacultyServiceRequestController extends Controller
         try {
             Log::info('Incoming request data:', $request->all());
     
-            // Basic validation for common required fields
-            $request->validate([
+            // Define base validation rules
+            $rules = [
                 'service_category' => 'required',
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-            ]);
+                // Add other common fields if needed
+            ];
     
+            // Add specific validation rules based on the selected service category
+            $serviceCategory = $request->input('service_category');
+            switch ($serviceCategory) {
+                // (Add cases for other categories as needed for robustness, mirroring the update method)
+                case 'reset_email_password':
+                case 'reset_tup_web_password':
+                case 'reset_ers_password':
+                     $rules['account_email'] = 'required|email|max:255';
+                     break;
+                case 'change_of_data_ms':
+                case 'change_of_data_portal':
+                     $rules['data_type'] = 'required|string|max:255';
+                     $rules['new_data'] = 'required|string|max:1000';
+                     // Supporting document is optional on create, required validation might be too strict here unless intended
+                     $rules['supporting_document'] = 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048';
+                     break;
+                case 'dtr':
+                     $rules['dtr_months'] = 'required|string|max:255';
+                     $rules['dtr_with_details'] = 'sometimes|boolean';
+                     break;
+                case 'biometrics_enrollement':
+                     $rules['middle_name'] = 'nullable|string|max:255'; // Often optional
+                     $rules['college'] = 'required|string|max:255';
+                     $rules['department'] = 'required|string|max:255';
+                     $rules['plantilla_position'] = 'required|string|max:255';
+                     $rules['date_of_birth'] = 'required|date';
+                     $rules['phone_number'] = 'required|string|max:20'; // Consider adding regex validation
+                     $rules['address'] = 'required|string|max:500';
+                     $rules['blood_type'] = 'nullable|string|max:10';
+                     $rules['emergency_contact_person'] = 'required|string|max:255';
+                     $rules['emergency_contact_number'] = 'required|string|max:20'; // Consider adding regex validation
+                     break;
+                 case 'new_internet':
+                 case 'new_telephone':
+                 case 'repair_and_maintenance':
+                 case 'computer_repair_maintenance':
+                 case 'printer_repair_maintenance':
+                      $rules['location'] = 'required|string|max:255';
+                      // problem_encountered is only required for repair/maintenance types
+                      if (in_array($serviceCategory, ['repair_and_maintenance', 'computer_repair_maintenance', 'printer_repair_maintenance'])) {
+                          $rules['problem_encountered'] = 'required|string|max:1000';
+                      } else {
+                          $rules['problem_encountered'] = 'nullable|string|max:1000';
+                      }
+                      break;
+                 case 'request_led_screen':
+                      $rules['preferred_date'] = 'required|date|after_or_equal:today'; // Ensure date is not in the past
+                      $rules['preferred_time'] = 'required|string'; // Consider time format validation
+                      $rules['led_screen_details'] = 'nullable|string|max:1000';
+                      break;
+                 case 'install_application': // <<< --- ADDED THIS CASE ---
+                      $rules['application_name'] = 'required|string|max:255';
+                      $rules['installation_purpose'] = 'required|string|max:1000';
+                      $rules['installation_notes'] = 'nullable|string|max:1000';
+                      $rules['location'] = 'required|string|max:255'; // Location is also shown in the form for this type
+                      break;
+                 case 'post_publication':
+                      $rules['publication_author'] = 'required|string|max:255';
+                      $rules['publication_editor'] = 'required|string|max:255';
+                      $rules['publication_start_date'] = 'required|date';
+                      $rules['publication_end_date'] = 'required|date|after_or_equal:publication_start_date';
+                      break;
+                 case 'data_docs_reports':
+                      $rules['data_documents_details'] = 'required|string|max:1000';
+                      break;
+                 case 'others':
+                      $rules['description'] = 'required|string|max:1000';
+                      break;
+            }
+
+            // Validate the request with the combined rules
+            // Validate the request with the combined rules and get validated data
+            $validatedData = $request->validate($rules);
+
             // Get the ACTUAL database columns, not just what's in the model
             $tableColumns = Schema::getColumnListing('faculty_service_requests');
             
-            // Get all input data
-            $inputData = $request->all();
-            
-            // Initialize filtered data array
+            // Initialize filtered data array using only validated data
             $filteredData = [];
             
-            // Only include fields that exist in the database
-            foreach ($tableColumns as $column) {
-                if (isset($inputData[$column])) {
-                    $filteredData[$column] = $inputData[$column];
+            // Only include validated fields that exist as actual database columns
+            // This prevents attempting to save fields that passed validation but don't have a corresponding column
+            foreach ($validatedData as $key => $value) {
+                if (in_array($key, $tableColumns)) {
+                    $filteredData[$key] = $value;
                 }
             }
             
@@ -235,22 +308,18 @@ class FacultyServiceRequestController extends Controller
             if ($request->user_id !== Auth::id()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            
-            // Structure the response to include staff information properly
-            $responseData = $request->toArray();
-            
-            // Make sure the assigned staff data is properly included
-            if ($request->assignedUITCStaff) {
-                $responseData['assigned_uitc_staff'] = [
-                    'id' => $request->assignedUITCStaff->id,
-                    'name' => $request->assignedUITCStaff->name
-                ];
-            }
-            
-            return response()->json($responseData);
+
+            // Return the full request object directly. Laravel will serialize it correctly.
+            // This ensures all attributes, including those specific to certain service types,
+            // and loaded relationships (like assignedUITCStaff) are included.
+            return response()->json($request);
         } catch (\Exception $e) {
             \Log::error('Error getting request details: ' . $e->getMessage());
-            return response()->json(['error' => 'Request not found'], 404);
+            // Return a more specific error for not found vs. other errors if possible
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                 return response()->json(['error' => 'Request not found'], 404);
+            }
+            return response()->json(['error' => 'An error occurred while fetching request details.'], 500); // General server error
         }
     }
     public function show($id)

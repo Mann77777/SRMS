@@ -404,15 +404,10 @@ function buildDetailedRequestInfo(response, userRole) {
             break;
             
         case 'install_application':
-            if (response.application_name) {
-                infoHtml += `<p><strong>Application Name:</strong> ${response.application_name}</p>`;
-            }
-            if (response.installation_purpose) {
-                infoHtml += `<p><strong>Purpose of Installation:</strong> ${response.installation_purpose}</p>`;
-            }
-            if (response.installation_notes) {
-                infoHtml += `<p><strong>Additional Requirements:</strong> ${response.installation_notes}</p>`;
-            }
+            // Always display the label, show 'N/A' if the value is null, undefined, or empty
+            infoHtml += `<p><strong>Application Name:</strong> ${response.application_name || 'N/A'}</p>`;
+            infoHtml += `<p><strong>Purpose of Installation:</strong> ${response.installation_purpose || 'N/A'}</p>`;
+            infoHtml += `<p><strong>Additional Requirements:</strong> ${response.installation_notes || 'N/A'}</p>`;
             break;
             
         case 'post_publication':

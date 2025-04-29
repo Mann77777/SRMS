@@ -477,13 +477,13 @@ private function getActiveRequests($staffId)
                 ->count() +
                 FacultyServiceRequest::where('status', $status)
                 ->whereDate('created_at', $date)
-                ->count();
-        }
-        
-        // For completed requests, check updated_at (when they were marked as completed)
-        elseif ($status === 'Completed') {
-            return StudentServiceRequest::where('status', $status)
-                ->whereDate('updated_at', $date)
+                 ->count();
+         }
+         
+         // For completed or rejected requests, check updated_at (when they were marked as such)
+         elseif ($status === 'Completed' || $status === 'Rejected') {
+             return StudentServiceRequest::where('status', $status)
+                 ->whereDate('updated_at', $date)
                 ->count() +
                 FacultyServiceRequest::where('status', $status)
                 ->whereDate('updated_at', $date)

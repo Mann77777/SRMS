@@ -10,7 +10,7 @@
 body {
     margin: 0;
     padding: 0;
-    padding-top: 10px; /* Space for navbar */
+    /* padding-top: 10px; */ /* Removed insufficient padding */
     font-family: "Montserrat", sans-serif;
     background-position: center;
     background-repeat: no-repeat;
@@ -19,15 +19,16 @@ body {
     height: 130vh;
 }
 
-/* Main Content Wrapper */
-.main-content {
+/* Main Content Wrapper - Changed selector to .content and added padding-top */
+.content {
     margin-left: 250px; /* Adjust this value based on your sidebar's width */
     padding: 20px;
+    padding-top: 90px; /* Added padding to clear navbar */
     transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
 }
 
 /* Adjust main content margin when sidebar is collapsed (add class 'sidebar-collapsed' to body) */
-body.sidebar-collapsed .main-content {
+body.sidebar-collapsed .content { /* Changed selector */
     margin-left: 80px; /* Adjust to collapsed sidebar width */
 }
 
@@ -546,7 +547,7 @@ canvas {
 }
 
 @media (max-width: 992px) { /* Adjust breakpoint for sidebar */
-    .main-content {
+    .content { /* Changed selector */
         margin-left: 80px; /* Adjust to collapsed sidebar width for medium screens */
     }
     /* If sidebar is completely hidden on smaller screens, set margin to 0 */
@@ -557,9 +558,10 @@ canvas {
 
 
 @media (max-width: 768px) {
-    .main-content {
+    .content { /* Changed selector */
         margin-left: 0; /* Remove margin when sidebar is likely hidden or overlayed */
         padding: 15px; /* Adjust padding for smaller screens */
+        padding-top: 80px; /* Adjust top padding for smaller screens if navbar height changes */
     }
     .hero {
         /* margin-left: 0; */ /* Already handled by main-content */

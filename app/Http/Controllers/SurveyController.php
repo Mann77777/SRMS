@@ -93,7 +93,7 @@ class SurveyController extends Controller
         session()->flash('survey_submitted', true);
         
         // Redirect back to the same page to show the modal
-        return redirect()->route('show.service.survey', ['requestId' => $requestId])
+        return redirect()->route('show.customer.satisfaction', ['requestId' => $requestId])
                          ->with('success', 'Thank you for your feedback! Your survey has been submitted successfully.');
     }
 

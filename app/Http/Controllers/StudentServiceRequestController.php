@@ -252,7 +252,7 @@ class StudentServiceRequestController extends Controller
         if ($request->status !== 'Completed') {
             return redirect()->back()->with('error', 'Survey is only available for completed requests');
         }
-        return view('users.service-survey', compact('request'));
+        return view('users.customer-satisfaction', compact('request'));
     }
 
     public function submitServiceSurvey(Request $request)

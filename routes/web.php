@@ -263,9 +263,9 @@ Route::get('/request-history', function () {
     }
 })->name('request.history')->middleware('auth');
 
-Route::get('/service-survey/{requestId}', [StudentServiceRequestController::class, 'showServiceSurvey'])
-    ->name('service.survey')
-    ->middleware('auth');
+/* Route::get('/customer-satisfaction/{requestId}', [StudentServiceRequestController::class, 'showServiceSurvey'])
+    ->name('customer.satisfaction')
+    ->middleware('auth'); */
 
 Route::post('/submit-survey', [StudentServiceRequestController::class, 'submitServiceSurvey'])
     ->name('submit.survey')
@@ -519,7 +519,7 @@ Route::get('/customer-satisfaction/{requestId}', [RequestsController::class, 'sh
 // Removed duplicate route for submit-survey and using SurveyController properly
 Route::post('/submit-survey', [SurveyController::class, 'submitSurvey'])->name('submit.survey.new');
 
-Route::get('/service-survey/{requestId}', [RequestsController::class, 'showServiceSurvey'])->name('show.service.survey');
+Route::get('/customer-satisfaction/{requestId}', [RequestsController::class, 'showServiceSurvey'])->name('show.customer.satisfaction');
 
 // Holiday Management Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function() {

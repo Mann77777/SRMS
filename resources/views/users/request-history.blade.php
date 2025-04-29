@@ -144,7 +144,7 @@
                             
                             <td>
                                 @if($request->status === 'Completed' && !$request->is_surveyed)
-                                    <a href="{{ route('show.service.survey', $request->id) }}" class="btn btn-sm btn-primary">
+                                    <a href="{{ route('show.customer.satisfaction', $request->id) }}" class="btn btn-sm btn-primary">
                                         <i class="fas fa-star"></i> Rate Service
                                     </a>
                                 @elseif($request->is_surveyed)

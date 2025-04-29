@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\FacultyServiceRequest;
 use App\Models\StudentServiceRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\ServiceRequestAssigned; // Keep if used elsewhere (e.g., rejection potentially)
@@ -497,6 +498,96 @@ class AdminServiceRequestController extends Controller
         }
         return implode('', $output);
       }
+
+      /**
+ * View the supporting document attached to a service request
+ *
+ * @param int $requestId The ID of the request
+ * @param string $type The type of request (student/faculty), passed as a query parameter
+ * @return \Illuminate\Http\Response
+ */
+public function viewSupportingDocument(Request $request, $requestId)
+{
+    // Get the type from query string or default to checking both types
+    $type = $request->query('type', null);
+    
+    try {
+        $documentPath = null;
+        $fileName = null;
+
+        // Check for the document based on request type
+        if ($type == 'student' || $type === null) {
+            $studentRequest = StudentServiceRequest::find($requestId);
+            if ($studentRequest && $studentRequest->supporting_document) {
+                $documentPath = storage_path('app/public/' . $studentRequest->supporting_document);
+                $fileName = basename($studentRequest->supporting_document);
+            }
+        }
+        
+        if (($type == 'faculty' || $type === null) && $documentPath === null) {
+            $facultyRequest = FacultyServiceRequest::find($requestId);
+            if ($facultyRequest && $facultyRequest->supporting_document) {
+                $documentPath = storage_path('app/public/' . $facultyRequest->supporting_document);
+                $fileName = basename($facultyRequest->supporting_document);
+            }
+        }
+
+        if (!$documentPath || !file_exists($documentPath)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Supporting document not found'
+            ], 404);
+        }
+
+        // Determine file type and proper content type header
+        $extension = pathinfo($documentPath, PATHINFO_EXTENSION);
+        $contentType = $this->getContentType($extension);
+
+        // Return the file with appropriate headers
+        return response()->file($documentPath, [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error viewing supporting document: ' . $e->getMessage(), [
+            'request_id' => $requestId,
+            'type' => $type,
+            'error_trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Error retrieving the supporting document'
+        ], 500);
+    }
+}
+
+    /**
+     * Helper method to determine content type based on file extension
+     *
+     * @param string $extension File extension
+     * @return string Content type
+     */
+    private function getContentType($extension)
+    {
+        $contentTypes = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'ppt' => 'application/vnd.ms-powerpoint',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'txt' => 'text/plain',
+            'csv' => 'text/csv',
+        ];
+
+        return $contentTypes[strtolower($extension)] ?? 'application/octet-stream';
+    }
 
       // Method to fetch all UITC Staff (likely for assignment dropdowns)
       public function getUITCStaff()

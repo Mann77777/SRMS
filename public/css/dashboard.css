@@ -19,12 +19,25 @@ body {
     height: 130vh;
 }
 
+/* Main Content Wrapper */
+.main-content {
+    margin-left: 250px; /* Adjust this value based on your sidebar's width */
+    padding: 20px;
+    transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
+}
+
+/* Adjust main content margin when sidebar is collapsed (add class 'sidebar-collapsed' to body) */
+body.sidebar-collapsed .main-content {
+    margin-left: 80px; /* Adjust to collapsed sidebar width */
+}
+
+
 /* Hero Section */
 .hero {
     padding: 30px 0;
     margin-bottom: 5px;
-    margin-top: 7%;
-    margin-left: 20%;
+    /* margin-top: 7%; */ /* Removed fixed top margin */
+    /* margin-left: 20%; */ /* Removed fixed left margin */
 }
 
 .hero-content h1 {
@@ -42,7 +55,7 @@ body {
 /* Quick Actions */
 .quick-actions {
     margin-bottom: 30px;
-    margin-left: 20%;
+    /* margin-left: 20%; */ /* Removed fixed left margin */
 }
 
 .action-buttons {
@@ -77,8 +90,9 @@ body {
 
 /* Status Overview */
 .status-overview {
-    margin-left: 20%;
-    margin-top: -2%;
+    /* margin-left: 20%; */ /* Removed fixed left margin */
+    /* margin-top: -2%; */ /* Removed fixed top margin */
+    margin-bottom: 30px; /* Add some bottom margin */
 }
 
 .status-card {
@@ -140,13 +154,13 @@ body {
 
 /* Recent Requests */
 .recent-requests {
-    max-width: 75%; /* Adjust the width as needed */
-    margin: 0 auto; /* Center the container */
+    /* max-width: 75%; */ /* Removed fixed max-width */
+    /* margin: 0 auto; */ /* Removed auto margin */
     margin-bottom: 30px;
     background: white;
     border-radius: 10px;
     padding: 20px;
-    margin-left: 21%;
+    /* margin-left: 21%; */ /* Removed fixed left margin */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
@@ -253,7 +267,7 @@ body {
 
 /* Service Categories */
 .service-categories {
-    margin-left: 20%;
+    /* margin-left: 20%; */ /* Removed fixed left margin */
     margin-bottom: 30px;
 }
 
@@ -422,13 +436,13 @@ body {
 
 /* Chart Section - Match other sections */
 .charts-section {
-    max-width: 75%;
-    margin: 0 auto;
+    /* max-width: 75%; */ /* Removed fixed max-width */
+    /* margin: 0 auto; */ /* Removed auto margin */
     background: white;
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 30px;
-    margin-left: 21%;
+    /* margin-left: 21%; */ /* Removed fixed left margin */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
@@ -531,28 +545,43 @@ canvas {
     }
 }
 
+@media (max-width: 992px) { /* Adjust breakpoint for sidebar */
+    .main-content {
+        margin-left: 80px; /* Adjust to collapsed sidebar width for medium screens */
+    }
+    /* If sidebar is completely hidden on smaller screens, set margin to 0 */
+    /* body.sidebar-hidden .main-content {
+        margin-left: 0;
+    } */
+}
+
+
 @media (max-width: 768px) {
+    .main-content {
+        margin-left: 0; /* Remove margin when sidebar is likely hidden or overlayed */
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
     .hero {
-        margin-left: 0; /* Remove fixed margin */
+        /* margin-left: 0; */ /* Already handled by main-content */
         padding: 20px 0; /* Adjust padding */
     }
     .quick-actions {
-        margin-left: 0; /* Remove fixed margin */
+       /* margin-left: 0; */ /* Already handled by main-content */
     }
     .status-overview {
-        margin-left: 0; /* Remove fixed margin */
-        margin-top: 0; /* Adjust top margin */
+       /* margin-left: 0; */ /* Already handled by main-content */
+       /* margin-top: 0; */ /* Already handled by main-content */
     }
      .recent-requests {
-        margin-left: 0; /* Remove fixed margin */
-        max-width: 100%; /* Allow full width */
+       /* margin-left: 0; */ /* Already handled by main-content */
+       /* max-width: 100%; */ /* Let it take container width */
     }
     .service-categories {
-        margin-left: 0; /* Remove fixed margin */
+       /* margin-left: 0; */ /* Already handled by main-content */
     }
     .charts-section {
-        margin-left: 0; /* Remove fixed margin */
-        max-width: 100%; /* Allow full width */
+       /* margin-left: 0; */ /* Already handled by main-content */
+       /* max-width: 100%; */ /* Let it take container width */
     }
 
     .hero-content h1 {

@@ -307,15 +307,20 @@
     <script>
         // Make showFormFields a global function
         function showFormFields() {
-            var serviceCategory = document.getElementById('serviceCategory').value;
-            document.getElementById('selectedServiceCategory').value = serviceCategory;
+            var serviceCategory = document.getElementById('serviceCategory')?.value || '';
+            var selectedCategoryField = document.getElementById('selectedServiceCategory');
+            if (selectedCategoryField) {
+                selectedCategoryField.value = serviceCategory;
+            }
             
             // Hide all additional form sections first
-            document.getElementById('personalInfoForm').style.display = 'none';
-            document.getElementById('resetForm').style.display = 'none';
-            document.getElementById('changeOfDataForm').style.display = 'none';
-            document.getElementById('useled').style.display = 'none';
-            document.getElementById('otherServicesForm').style.display = 'none';
+            const sections = ['personalInfoForm', 'resetForm', 'changeOfDataForm', 'useled', 'otherServicesForm'];
+            sections.forEach(function(id) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
 
             // Remove required attribute from all optional fields
             var optionalFields = [
@@ -329,7 +334,7 @@
             ];
 
             optionalFields.forEach(function(fieldName) {
-                var field = document.querySelector(`[name="${fieldName}"]`);
+                var field = document.querySelector('[name="' + fieldName + '"]');
                 if (field) {
                     field.removeAttribute('required');
                 }
@@ -338,95 +343,137 @@
             // Show appropriate form sections based on selected category
             switch(serviceCategory) {
                 case 'create':
-                    document.getElementById('personalInfoForm').style.display = 'block';
+                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    if (personalInfoForm) personalInfoForm.style.display = 'block';
                     break;
                 case 'reset_email_password':
                 case 'reset_tup_web_password':
                 case 'reset_ers_password':
-                    document.getElementById('personalInfoForm').style.display = 'block';
-                    document.getElementById('resetForm').style.display = 'block';
+                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    var resetForm = document.getElementById('resetForm');
+                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    if (resetForm) resetForm.style.display = 'block';
                     
                     // Add required to specific fields
-                    document.querySelector('[name="account_email"]').setAttribute('required', 'required');
+                    var accountEmail = document.querySelector('[name="account_email"]');
+                    if (accountEmail) accountEmail.setAttribute('required', 'required');
                     break;
                 case 'change_of_data_ms':
                 case 'change_of_data_portal':
-                    document.getElementById('personalInfoForm').style.display = 'block';
-                    document.getElementById('changeOfDataForm').style.display = 'block';
+                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    var changeOfDataForm = document.getElementById('changeOfDataForm');
+                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    if (changeOfDataForm) changeOfDataForm.style.display = 'block';
                     
                     // Add required to specific fields
-                    document.querySelector('[name="data_type"]').setAttribute('required', 'required');
-                    document.querySelector('[name="new_data"]').setAttribute('required', 'required');
-                    document.querySelector('[name="supporting_document"]').setAttribute('required', 'required');
+                    var dataTypeField = document.querySelector('[name="data_type"]');
+                    var newDataField = document.querySelector('[name="new_data"]');
+                    var supportingDocField = document.querySelector('[name="supporting_document"]');
+                    
+                    if (dataTypeField) dataTypeField.setAttribute('required', 'required');
+                    if (newDataField) newDataField.setAttribute('required', 'required');
+                    if (supportingDocField) supportingDocField.setAttribute('required', 'required');
                     break;
                 case 'request_led_screen':
-                    document.getElementById('personalInfoForm').style.display = 'block';
-                    document.getElementById('useled').style.display = 'block';
+                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    var useLedForm = document.getElementById('useled');
+                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    if (useLedForm) useLedForm.style.display = 'block';
                     
                     // Add required to specific fields
-                    document.querySelector('[name="preferred_date"]').setAttribute('required', 'required');
-                    document.querySelector('[name="preferred_time"]').setAttribute('required', 'required');
+                    var preferredDateField = document.querySelector('[name="preferred_date"]');
+                    var preferredTimeField = document.querySelector('[name="preferred_time"]');
+                    
+                    if (preferredDateField) preferredDateField.setAttribute('required', 'required');
+                    if (preferredTimeField) preferredTimeField.setAttribute('required', 'required');
 
                     // Set minimum date for the date picker
                     setMinimumDate();
                     break;
                 case 'others':
-                    document.getElementById('personalInfoForm').style.display = 'block';
-                    document.getElementById('otherServicesForm').style.display = 'block';
+                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    var otherServicesForm = document.getElementById('otherServicesForm');
+                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    if (otherServicesForm) otherServicesForm.style.display = 'block';
                     
                     // Add required to specific fields
-                    document.querySelector('[name="description"]').setAttribute('required', 'required');
+                    var descriptionField = document.querySelector('[name="description"]');
+                    if (descriptionField) descriptionField.setAttribute('required', 'required');
                     break;
             }
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            var serviceCategoryDropdown = document.getElementById('serviceCategory');
-            serviceCategoryDropdown.addEventListener('change', showFormFields);
-
-             // Trigger initial form setup
-             showFormFields();
- 
-             // Set minimum date for preferred_date to today
-             setMinimumDate();
- 
-             // Add a submit listener to ensure the hidden field is set
-             var studentForm = document.querySelector('form[action="{{ route('student.service.request.submit') }}"]');
-             if (studentForm) {
-                 studentForm.addEventListener('submit', function(event) {
-                     // Ensure the hidden input has the latest value from the dropdown
-                     var visibleCategory = document.getElementById('serviceCategory').value;
-                     document.getElementById('selectedServiceCategory').value = visibleCategory;
- 
-                     // Optional: Add a check here to prevent submission if category is still empty
-                     if (!visibleCategory) {
-                         alert('Please select a service category before submitting.');
-                         event.preventDefault(); // Stop form submission
-                     }
-                 });
-             }
-         });
- 
-         // Function to set minimum date to today
+        // Function to set minimum date to today
         function setMinimumDate() {
+            var dateField = document.getElementById('preferred_date');
+            if (!dateField) return;
+            
             var today = new Date();
             var dd = String(today.getDate()).padStart(2, '0');
             var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
             var yyyy = today.getFullYear();
             
             today = yyyy + '-' + mm + '-' + dd;
-            document.getElementById('preferred_date').min = today;
+            dateField.min = today;
         }
 
         function closeSuccessModal() {
-        $('#serviceRequestSuccessModal').modal('hide');
-        window.location.href = "{{ route('myrequests') }}";
+            if (typeof $ !== 'undefined' && $('#serviceRequestSuccessModal').length) {
+                $('#serviceRequestSuccessModal').modal('hide');
+            }
+            
+            // Safe way to handle route URL
+            var myRequestsUrl = ''; // This value should be populated by the server
+            if (typeof routeUrls !== 'undefined' && routeUrls.myrequests) {
+                myRequestsUrl = routeUrls.myrequests;
+            }
+            window.location.href = myRequestsUrl;
         }
 
-        $(document).ready(function() {
-            @if(session('showSuccessModal'))
-                $('#serviceRequestSuccessModal').modal('show');
-            @endif
+        // Ensure jQuery is available before using it
+        document.addEventListener("DOMContentLoaded", function() {
+            var serviceCategoryDropdown = document.getElementById('serviceCategory');
+            if (serviceCategoryDropdown) {
+                serviceCategoryDropdown.addEventListener('change', showFormFields);
+            }
+
+            // Trigger initial form setup
+            showFormFields();
+ 
+            // Set minimum date for preferred_date to today
+            setMinimumDate();
+ 
+            // Add a submit listener to ensure the hidden field is set
+            // Use a more reliable selector that doesn't rely on blade syntax directly
+            var studentForm = document.querySelector('form'); // Or use a class/ID that's more reliable
+            if (studentForm) {
+                studentForm.addEventListener('submit', function(event) {
+                    // Ensure the hidden input has the latest value from the dropdown
+                    var serviceCategoryElem = document.getElementById('serviceCategory');
+                    var selectedCategoryElem = document.getElementById('selectedServiceCategory');
+                    
+                    if (serviceCategoryElem && selectedCategoryElem) {
+                        var visibleCategory = serviceCategoryElem.value;
+                        selectedCategoryElem.value = visibleCategory;
+     
+                        // Optional: Add a check here to prevent submission if category is still empty
+                        if (!visibleCategory) {
+                            alert('Please select a service category before submitting.');
+                            event.preventDefault(); // Stop form submission
+                        }
+                    }
+                });
+            }
+            
+            // Handle jQuery operations safely
+            if (typeof $ !== 'undefined') {
+                $(document).ready(function() {
+                    // Check for success modal flag
+                    if (typeof showSuccessModal !== 'undefined' && showSuccessModal === true) {
+                        $('#serviceRequestSuccessModal').modal('show');
+                    }
+                });
+            }
         });
     </script>
 

@@ -519,7 +519,7 @@ Route::get('/customer-satisfaction/{requestId}', [RequestsController::class, 'sh
 // Removed duplicate route for submit-survey and using SurveyController properly
 Route::post('/submit-survey', [SurveyController::class, 'submitSurvey'])->name('submit.survey.new');
 
-Route::get('/customer-satisfaction/{requestId}', [RequestsController::class, 'showServiceSurvey'])->name('show.se-rvice.survey');
+Route::get('/service-survey/{requestId}', [RequestsController::class, 'showServiceSurvey'])->name('show.service.survey');
 
 // Holiday Management Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function() {

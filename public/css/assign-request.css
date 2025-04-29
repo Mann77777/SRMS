@@ -18,13 +18,13 @@ body{
     height: 130vh;
 }   
 .content {
-    margin-top: 8%;
+    margin-top: 7%;
     margin-left: 20%;
     padding: 20px;
 }
 .content h1{
     font-size: 2rem;
-    font-weight: 650;
+    font-weight: 600;
     text-transform: uppercase;
 }
 
@@ -47,33 +47,26 @@ select {
     cursor: pointer;
 }
 
-.search-container {
-    position: relative;
-    width: 100%;
-    max-width: 300px;
+.search-container{
+    display: flex;
+    justify-content: center; /* Horizontally centers the button */
+    align-items: center;     /* Vertically centers the button if needed */
 }
-
-.search-input-wrapper {
-    position: relative;
-    width: 100%;
-}
-
 .search-container input {
-    width: 100%;
-    padding: 10px 15px 10px 40px; /* Added left padding for icon */
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    width: 250px; /* Set width for search input */
+    padding: 10px;
     font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
 }
-
-.search-container .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #666;
-    font-size: 14px;
-    pointer-events: none; /* Makes the icon not interfere with the input */
+.search-btn{
+    padding: 10px 20px;
+    margin-left: 2%;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: #04AA6D;
+    color: white;
 }
 .assignreq-table-container{
     background-color: white;

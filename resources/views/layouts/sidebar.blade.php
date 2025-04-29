@@ -70,7 +70,7 @@
                 </a>
             </li> -->
 
-            <!-- Help Link -->
+            <!-- Help Link 
             <li class="item">
                 <a href="{{ url('/help') }}" class="nav_link {{ request()->is('help') ? 'active' : '' }}">
                     <span class="navlink_icon">
@@ -78,7 +78,7 @@
                     </span>
                     <span class="navlink">Help</span>
                 </a>
-            </li>
+            </li> -->
         </ul>
     </div>
 </aside>

@@ -25,14 +25,6 @@
         <h1>Assigned Requests</h1>
 
         <div class="dropdown-container">
-            <!-- Search Bar -->
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <input type="text" id="user-search" name="user-search" placeholder="Search users...">
-                    <i class="fas fa-search search-icon"></i>
-                </div>            
-            </div>
-
             <!-- Status Filter -->
             <select name="status" id="status">
                 <option value="all">All Status</option>
@@ -41,13 +33,19 @@
                 <option value="Cancelled">Cancelled</option>
             </select>
 
-            <!-- Transaction Filter -->
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" name="search" id="search-input" placeholder="Search...">
+                <button class="search-btn" type="button">Search</button>
+            </div>
+
+            <!-- Transaction Filter 
             <select name="transaction_type" id="transaction_type">
                 <option value="all">All Transaction</option>
                 <option value="simple">Simple Transaction</option>
                 <option value="complex">Complex Transaction</option>
                 <option value="highly technical">Highly Technical Transaction</option>
-            </select>
+            </select> -->
         </div>
 
         <div class="assignreq-table-container">
@@ -61,7 +59,7 @@
                             <th>Role</th>
                             <th>Date & Time Submitted</th>
                             <th>Date & Time Completed</th>
-                            <th>Transaction Type</th>
+                            <!-- <th>Transaction Type</th> -->
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -132,7 +130,7 @@
                                     –
                                 @endif
                             </td>
-                            <td>
+                            <!-- <td>
                                 @if(isset($request->transaction_type))
                                     @switch(strtolower($request->transaction_type))
                                         @case('simple')
@@ -150,7 +148,7 @@
                                 @else
                                     <span class="transaction-badge transaction-simple">Simple</span>
                                 @endif
-                        </td>
+                        </td> -->
                             <td>
                                 @if($request->status == 'Pending')
                                     <span class="custom-badge custom-badge-warning">{{ $request->status }}</span>

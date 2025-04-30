@@ -13,6 +13,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $role = strtolower($request->input('role', 'all'));
+        $searchTerm = $request->input('search'); // Get search term
         
         // Get regular users, explicitly excluding technicians
         $usersQuery = User::query()->whereNotIn('role', ['Technician']);
@@ -26,6 +27,18 @@ class UserController extends Controller
             } elseif ($role === 'student') {
                 $usersQuery->where('role', 'Student');
             }
+        }
+
+        // Apply search filter if search term exists
+        if ($searchTerm) {
+            $searchTermLower = strtolower($searchTerm); // Convert search term to lowercase
+            $usersQuery->where(function ($q) use ($searchTermLower) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$searchTermLower}%"])
+                  ->orWhereRaw('LOWER(username) LIKE ?', ["%{$searchTermLower}%"])
+                  ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchTermLower}%"]);
+                  // Add other fields to search if needed, e.g., student_id
+                  // ->orWhere('student_id', 'LIKE', "%{$searchTermLower}%"); // Ensure student_id is comparable
+            });
         }
         
         // Get results

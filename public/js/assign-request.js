@@ -1,9 +1,11 @@
+
+
 document.addEventListener('DOMContentLoaded', function() {
     // Function to apply filters
     function applyFilters() {
         const status = document.getElementById('status').value;
         const transactionType = document.getElementById('transaction_type').value;
-        const searchTerm = document.getElementById('user-search').value;
+        const searchTerm = document.getElementById('search-input').value; // Corrected ID
         const role = document.getElementById('role').value;
         
         // Build query string
@@ -38,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusFilter = document.getElementById('status');
     const transactionFilter = document.getElementById('transaction_type');
     const roleFilter = document.getElementById('role');
-    const searchInput = document.getElementById('user-search');
+    const searchInput = document.getElementById('search-input'); // Corrected ID
     
     if (statusFilter) statusFilter.addEventListener('change', applyFilters);
     if (transactionFilter) transactionFilter.addEventListener('change', applyFilters);
@@ -183,7 +185,7 @@ $(document).ready(function() {
     function applyFilters() {
         const status = $('#status').val();
         const transactionType = $('#transaction_type').val();
-        const searchTerm = $('#user-search').val();
+        const searchTerm = $('#search-input').val(); // Corrected ID
         
         console.log("Applying filters:", { status, transactionType, searchTerm });
         
@@ -224,21 +226,15 @@ $(document).ready(function() {
         applyFilters();
     });
     
-    // Handle search with debounce
-    let searchTimeout;
-    $('#user-search').on('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            console.log("Search term:", $('#user-search').val());
-            applyFilters();
-        }, 500);
+    // Handle search button click
+    $('.search-btn').on('click', function() { // Use the button class from HTML
+        applyFilters();
     });
     
     // Handle Enter key in search field
-    $('#user-search').on('keydown', function(e) {
+    $('#search-input').on('keydown', function(e) { // Corrected ID
         if (e.key === 'Enter') {
             e.preventDefault();
-            clearTimeout(searchTimeout);
             applyFilters();
         }
     });
@@ -542,7 +538,7 @@ $(document).ready(function() {
         
         // Set search input
         if (urlParams.has('search')) {
-            $('#user-search').val(urlParams.get('search'));
+            $('#search-input').val(urlParams.get('search')); // Corrected ID
             console.log("Set search to:", urlParams.get('search'));
         }
     }

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +29,13 @@
                 <option value="rejected">Rejected</option>
                 <option value="cancelled">Cancelled</option>
             </select>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" name="search" id="search-input" placeholder="Search...">
+                <button class="search-btn" type="button">Search</button>
+            </div>
+
             <!-- <div class="requests-btn">
                 <button type="button" class="delete-button" id="delete-btn">
                     <i class="fas fa-trash"></i> Delete Selected
@@ -377,10 +386,28 @@
             // Handle Status Filter
             $('#status').on('change', function() {
                 const selectedStatus = $(this).val();
-                fetchRequests(selectedStatus); // Call function to fetch data via AJAX
+                const searchTerm = $('#search-input').val(); // Get current search term
+                fetchRequests(selectedStatus, searchTerm); // Pass search term
             });
 
-            function fetchRequests(status, page = 1) {
+            // Handle Search Input (Enter Key)
+            $('#search-input').on('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent form submission if it's inside a form
+                    const selectedStatus = $('#status').val();
+                    const searchTerm = $(this).val();
+                    fetchRequests(selectedStatus, searchTerm);
+                }
+            });
+
+            // Handle Search Button Click
+            $('.search-btn').on('click', function() {
+                const selectedStatus = $('#status').val();
+                const searchTerm = $('#search-input').val();
+                fetchRequests(selectedStatus, searchTerm);
+            });
+
+            function fetchRequests(status, searchTerm = '', page = 1) { // Add searchTerm parameter
                 // Add a loading indicator (optional)
                 $('.request-table tbody').html('<tr><td colspan="8" style="text-align: center;">Loading...</td></tr>');
 
@@ -389,6 +416,7 @@
                     method: 'GET',
                     data: {
                         status: status,
+                        search: searchTerm, // Add search term to data
                         page: page // Pass the page number for pagination
                     },
                     success: function(response) {
@@ -418,7 +446,8 @@
                 event.preventDefault();
                 const page = $(this).attr('href').split('page=')[1];
                 const selectedStatus = $('#status').val();
-                fetchRequests(selectedStatus, page);
+                const searchTerm = $('#search-input').val(); // Get current search term for pagination
+                fetchRequests(selectedStatus, searchTerm, page); // Pass search term for pagination
             });
 
             // Function to rebind event listeners after AJAX update

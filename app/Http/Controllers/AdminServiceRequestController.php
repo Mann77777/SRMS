@@ -164,7 +164,7 @@ class AdminServiceRequestController extends Controller
             'change_of_data_portal' => 'Change of Data (Portal)',
             'dtr' => 'Daily Time Record',
             'biometric_record' => 'Biometric Record',
-            'biometrics_enrollement' => 'Biometrics Enrollment', // Typo: enrollment
+            'biometrics_enrollment' => 'Biometrics Enrollment', // Corrected typo
             'new_internet' => 'New Internet Connection',
             'new_telephone' => 'New Telephone Connection',
             'repair_and_maintenance' => 'Internet/Telephone Repair and Maintenance',
@@ -294,9 +294,7 @@ class AdminServiceRequestController extends Controller
         if ($request->status === 'Rejected' && $request->rejection_reason) {
             $data['Rejection Reason'] = $request->rejection_reason;
         }
-        if ($request->status === 'Rejected' && $request->admin_notes) {
-            $data['Admin Notes'] = $request->admin_notes;
-        }
+        // Removed redundant check for admin_notes when status is Rejected
 
         // Convert data to HTML format
         $output = [];
@@ -351,7 +349,7 @@ class AdminServiceRequestController extends Controller
                 $data['Include In/Out Details'] = isset($request->dtr_with_details) ? ($request->dtr_with_details ? 'Yes' : 'No') : 'N/A';
                 break;
 
-            case 'biometrics_enrollement': // Typo: enrollment
+            case 'biometrics_enrollment': // Corrected typo
                 // List all expected fields for clarity
                 $bioFields = [
                     'middle_name' => 'Middle Name',
@@ -365,38 +363,9 @@ class AdminServiceRequestController extends Controller
                     'emergency_contact_person' => 'Emergency Contact Person',
                     'emergency_contact_number' => 'Emergency Contact Number'
                 ];
-                if (isset($request->middle_name)) {
-                    $data['Middle Name'] = $request->middle_name;
-                }
-                if (isset($request->college)) {
-                    $data['College'] = $request->college;
-                }
-                if (isset($request->department)) {
-                    $data['Department'] = $request->department;
-                }
-                if (isset($request->plantilla_position)) {
-                    $data['Plantilla Position'] = $request->plantilla_position;
-                }
-                if (isset($request->date_of_birth)) {
-                    $data['Date of Birth'] = $this->formatDate($request->date_of_birth);
-                }
-                if (isset($request->phone_number)) {
-                    $data['Phone Number'] = $request->phone_number;
-                }
-                if (isset($request->address)) {
-                    $data['Address'] = $request->address;
-                }
-                if (isset($request->blood_type)) {
-                    $data['Blood Type'] = $request->blood_type;
-                }
-                if (isset($request->emergency_contact_person)) {
-                    $data['Emergency Contact Person'] = $request->emergency_contact_person;
-                }
-                if (isset($request->emergency_contact_number)) {
-                    $data['Emergency Contact Number'] = $request->emergency_contact_number;
-                }
+                // Removed redundant individual isset checks
 
-                foreach ($bioFields as $field => $label) { // Corrected variable name here
+                foreach ($bioFields as $field => $label) {
                     // Include the field even if it's null, showing "Not provided" for empty values
                     $data[$label] = isset($request->$field) && !empty($request->$field)
                         ? ($field === 'date_of_birth' ? $this->formatDate($request->$field) : $request->$field) // Format date specifically
@@ -482,9 +451,7 @@ class AdminServiceRequestController extends Controller
         if ($request->status === 'Rejected' && $request->rejection_reason) {
             $data['Rejection Reason'] = $request->rejection_reason;
         }
-        if ($request->admin_notes) {
-            $data['Admin Notes'] = $request->admin_notes;
-        }
+        // Removed the second, redundant check for admin_notes
 
         // Convert data to HTML format
         $output = [];
@@ -1045,6 +1012,7 @@ public function viewSupportingDocument(Request $request, $requestId)
     public function filterRequests(Request $request)
     {
         $status = $request->input('status');
+        $searchTerm = $request->input('search'); // Get search term
         $page = $request->input('page', 1);
         $perPage = 10; // Number of items per page
 
@@ -1056,6 +1024,23 @@ public function viewSupportingDocument(Request $request, $requestId)
             if ($status && $status !== 'all') {
                 $studentQuery->where('status', $status);
             }
+
+            // Apply search filter if search term exists
+            if ($searchTerm) {
+                $studentQuery->where(function ($q) use ($searchTerm) {
+                    $q->where('id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('first_name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('last_name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('student_id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('service_category', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                      ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                          $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                                    ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                      });
+                });
+            }
+
             $newStudentRequests = $studentQuery->get();
             foreach($newStudentRequests as $req) { // Use different variable name to avoid conflict
                 $user = $req->user;
@@ -1079,6 +1064,24 @@ public function viewSupportingDocument(Request $request, $requestId)
             if ($status && $status !== 'all') {
                 $facultyQuery->where('status', $status);
             }
+
+            // Apply search filter if search term exists
+            if ($searchTerm) {
+                $facultyQuery->where(function ($q) use ($searchTerm) {
+                    $q->where('id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('first_name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('last_name', 'LIKE', "%{$searchTerm}%")
+                      // Add faculty_id search if that field exists on the model
+                      // ->orWhere('faculty_id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('service_category', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                      ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                          $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                                    ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                      });
+                });
+            }
+
             $facultyRequests = $facultyQuery->get();
             foreach($facultyRequests as $req) { // Use different variable name
                 $user = $req->user;

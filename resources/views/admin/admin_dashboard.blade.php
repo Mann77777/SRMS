@@ -102,7 +102,7 @@
                 <!-- Second row -->
                 <div class="row">
                     <!-- Completed Requests Card -->
-                    <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-success shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -118,8 +118,27 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Overdue Requests Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-overdue shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Overdue Requests</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $overdueRequests ?? 0 }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Rejected Requests Card -->
-                    <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-danger shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -137,7 +156,7 @@
                     </div>
 
                     <!-- Active UITC Staff Card -->
-                    <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-secondary shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -264,6 +283,8 @@
                                         <span class="custom-badge custom-badge-info">{{ $request['status'] }}</span>
                                     @elseif($request['status'] == 'Completed')
                                         <span class="custom-badge custom-badge-success">{{ $request['status'] }}</span>
+                                    @elseif($request['status'] == 'Overdue')
+                                        <span class="custom-badge custom-badge-overdue">{{ $request['status'] }}</span>
                                     @elseif($request['status'] == 'Cancelled')
                                         <span class="custom-badge custom-badge-danger">{{ $request['status'] }}</span>
                                     @else
@@ -291,7 +312,7 @@
             <div class="container">
                 <div class="row">
                     <!-- Assigned Requests Card -->
-                    <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-primary shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -308,8 +329,26 @@
                         </div>
                     </div>
 
+                    <!-- Overdue Requests Card (Added) -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-overdue shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Overdue Requests</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $overdueRequests ?? 0 }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Completed Requests Card -->
-                    <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-success shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -329,7 +368,7 @@
                     </div>
 
                     <!-- Average Rating Card -->
-                    <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-warning shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -403,7 +442,13 @@
                             <td>{{ $request['user_name'] }}</td>
                             <td>{{ $request['created_at']->format('M d, Y h:i A') }}</td>
                             <td>
-                                <span class="custom-badge custom-badge-info">In Progress</span>
+                                @if($request['status'] == 'In Progress')
+                                    <span class="custom-badge custom-badge-info">{{ $request['status'] }}</span>
+                                @elseif($request['status'] == 'Overdue')
+                                    <span class="custom-badge custom-badge-overdue">{{ $request['status'] }}</span>
+                                @else
+                                    <span class="custom-badge custom-badge-secondary">{{ $request['status'] }}</span>
+                                @endif
                             </td>                          
                         </tr>
                         @empty

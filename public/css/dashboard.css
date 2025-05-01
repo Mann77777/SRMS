@@ -227,6 +227,10 @@ body.sidebar-collapsed .content { /* Changed selector */
     background: rgba(40, 167, 69, 0.1);
     color: #28a745;
 }
+.custom-badge-overdue {
+    background-color: #ff9800; /* Orange color */
+    color: white;
+}
 
 .action-buttons {
     display: flex;
@@ -567,24 +571,7 @@ canvas {
         /* margin-left: 0; */ /* Already handled by main-content */
         padding: 20px 0; /* Adjust padding */
     }
-    .quick-actions {
-       /* margin-left: 0; */ /* Already handled by main-content */
-    }
-    .status-overview {
-       /* margin-left: 0; */ /* Already handled by main-content */
-       /* margin-top: 0; */ /* Already handled by main-content */
-    }
-     .recent-requests {
-       /* margin-left: 0; */ /* Already handled by main-content */
-       /* max-width: 100%; */ /* Let it take container width */
-    }
-    .service-categories {
-       /* margin-left: 0; */ /* Already handled by main-content */
-    }
-    .charts-section {
-       /* margin-left: 0; */ /* Already handled by main-content */
-       /* max-width: 100%; */ /* Let it take container width */
-    }
+
 
     .hero-content h1 {
         font-size: 1.6rem; /* Slightly adjust font size */

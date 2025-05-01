@@ -180,7 +180,33 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            
+                <!-- Overdue Requests Card -->
+            <div class="col-md-3">
+                <div class="card border-left-overdue shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Overdue Requests</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['overdue_requests'] ?? 0 }}</div>
+                                <div class="small text-muted">
+                                    @if(isset($stats['total_requests']) && $stats['total_requests'] > 0 && isset($stats['overdue_requests']))
+                                        {{ round(($stats['overdue_requests'] / $stats['total_requests']) * 100) }}% of total requests
+                                    @else
+                                        0% of total requests
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="col-md-4">
                 <div class="card border-left-info shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -200,7 +226,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         
         <!-- Second Row: Charts -->
@@ -231,7 +257,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> 
         </div>
 
         <!-- Add this code to reports.blade.php before the Daily Activity Chart section -->
@@ -315,7 +341,7 @@
                                 <canvas id="categoriesChart"></canvas>
                             </div>
                             
-                            <h5 class="mt-4">All Requested Services</h5>
+                            <!-- <h5 class="mt-4">All Requested Services</h5>
                             <ul class="list-group">
                                 @foreach($categoryStats as $category => $data)
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -323,7 +349,7 @@
                                         <span class="badge badge-primary badge-pill">{{ $data['total'] }}</span>
                                     </li>
                                 @endforeach
-                            </ul>
+                            </ul> -->
                         @else
                             <div class="alert alert-warning">
                                 No service category data available for the selected time period.
@@ -371,6 +397,81 @@
                 </div>
             </div>
         </div>
+
+        <div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-exclamation-triangle mr-2"></i> Overdue Requests
+            </div>
+            <div class="card-body">
+                @if(isset($overdueRequests) && count($overdueRequests) > 0)
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Service</th>
+                                    <th>Requester</th>
+                                    <th>Transaction Type</th>
+                                    <th>Days Overdue</th>
+                                    <th>Expected Days</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($overdueRequests as $request)
+                                    <tr>
+                                        <td>{{ $request->id }}</td>
+                                        <td>
+                                            @php
+                                                $categoryName = '';
+                                                if (isset($request->service_category)) {
+                                                    switch ($request->service_category) {
+                                                        case 'create': $categoryName = 'Create MS Office/TUP Email Account'; break;
+                                                        case 'reset_email_password': $categoryName = 'Reset MS Office/TUP Email Password'; break;
+                                                        case 'change_of_data_ms': $categoryName = 'Change of Data (MS Office)'; break;
+                                                        case 'reset_tup_web_password': $categoryName = 'Reset TUP Web Password'; break;
+                                                        case 'reset_ers_password': $categoryName = 'Reset ERS Password'; break;
+                                                        case 'change_of_data_portal': $categoryName = 'Change of Data (Portal)'; break;
+                                                        case 'dtr': $categoryName = 'Daily Time Record'; break;
+                                                        case 'biometric_record': $categoryName = 'Biometric Record'; break;
+                                                        case 'biometrics_enrollement': $categoryName = 'Biometrics Enrollment'; break;
+                                                        case 'new_internet': $categoryName = 'New Internet Connection'; break;
+                                                        case 'new_telephone': $categoryName = 'New Telephone Connection'; break;
+                                                        case 'repair_and_maintenance': $categoryName = 'Internet/Telephone Repair and Maintenance'; break;
+                                                        case 'computer_repair_maintenance': $categoryName = 'Computer Repair and Maintenance'; break;
+                                                        case 'printer_repair_maintenance': $categoryName = 'Printer Repair and Maintenance'; break;
+                                                        case 'request_led_screen': $categoryName = 'LED Screen Request'; break;
+                                                        case 'install_application': $categoryName = 'Install Application/Information System/Software'; break;
+                                                        case 'post_publication': $categoryName = 'Post Publication/Update of Information Website'; break;
+                                                        case 'data_docs_reports': $categoryName = 'Data, Documents and Reports'; break;
+                                                        case 'others': $categoryName = 'Other Service'; break;
+                                                        default: $categoryName = $request->service_category; break;
+                                                    }
+                                                }
+                                            @endphp
+                                            {{ $categoryName }}
+                                        </td>
+                                        <td>{{ $request->first_name }} {{ $request->last_name }}</td>
+                                        <td>{{ $request->transaction_type ?? 'Standard' }}</td>
+                                        <td class="text-danger font-weight-bold">{{ $request->days_overdue }}</td>
+                                        <td>{{ $request->business_days_limit ?? 'N/A' }} days</td>
+                                       
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                  
+                @else
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle mr-2"></i> No overdue requests found for the selected time period.
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
         
         <!-- NEW: Recent Activity Timeline -->
         <div class="row mt-4">
@@ -423,7 +524,7 @@
                                         <th>Total</th>
                                         <th>Completed</th>
                                         <th>In Progress</th>
-                                        <th>Cancelled</th>
+                                        <th>Overdue</th>
                                         <th>Completion Rate</th>
                                         <th>Avg. Resolution Time</th>
                                     </tr>
@@ -435,7 +536,7 @@
                                             <td>{{ $data['total'] }}</td>
                                             <td>{{ $data['completed'] }}</td>
                                             <td>{{ $data['in_progress'] }}</td>
-                                            <td>{{ $data['cancelled'] }}</td>
+                                            <td>{{ $data['overdue'] }}</td>
                                             <td>
                                                 {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100) : 0 }}%
                                             </td>
@@ -456,6 +557,8 @@
             </div>
         </div>
     </div>
+
+    
     
     <!-- Include necessary JS files -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -484,17 +587,17 @@
             var statusDistributionChart = new Chart(statusCtx, {
                 type: 'pie',
                 data: {
-                    labels: ['Completed', 'In Progress', 'Cancelled'],
+                    labels: ['Completed', 'In Progress', 'Overdue'],
                     datasets: [{
                         data: [
                             {{ $stats['completed_requests'] }}, 
                             {{ $stats['in_progress_requests'] }}, 
-                            {{ $stats['cancelled_requests'] }}
+                            {{ $stats['overdue_requests'] ?? 0 }},
                         ],
                         backgroundColor: [
                             '#28a745',  // Green for Completed
                             '#17a2b8',  // Blue for In Progress
-                            '#dc3545'   // Red for Cancelled
+                            '#ff9800',  // Orange for Overdue
                         ]
                     }]
                 },
@@ -510,114 +613,141 @@
             });
             
             // Monthly Trends Chart
-            var trendsCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
-            var monthlyTrendsChart = new Chart(trendsCtx, {
-                type: 'line',
-                data: {
-                    labels: [
-                        @foreach($monthlyTrends as $month => $data)
-                            '{{ $month }}',
-                        @endforeach
-                    ],
-                    datasets: [{
-                        label: 'Total Requests',
-                        data: [
-                            @foreach($monthlyTrends as $data)
-                                {{ $data['total'] }},
-                            @endforeach
-                        ],
-                        borderColor: '#6c757d',
-                        backgroundColor: 'rgba(108, 117, 125, 0.1)',
-                        borderWidth: 2,
-                        fill: true
-                    }, {
-                        label: 'Completed Requests',
-                        data: [
-                            @foreach($monthlyTrends as $data)
-                                {{ $data['completed'] }},
-                            @endforeach
-                        ],
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        borderWidth: 2,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
+            var trendsCtx = document.getElementById('monthlyTrendsChart');
+                if (trendsCtx) {
+                    trendsCtx = trendsCtx.getContext('2d');
+                    var monthlyTrendsChart = new Chart(trendsCtx, {
+                        type: 'line',
+                        data: {
+                            labels: [
+                                @foreach($monthlyTrends as $month => $data)
+                                    '{{ $month }}',
+                                @endforeach
+                            ],
+                            datasets: [{
+                                label: 'Total Requests',
+                                data: [
+                                    @foreach($monthlyTrends as $data)
+                                        {{ $data['total'] ?? 0 }},
+                                    @endforeach
+                                ],
+                                borderColor: '#6c757d',
+                                backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                                borderWidth: 2,
+                                fill: true
+                            }, {
+                                label: 'Completed Requests',
+                                data: [
+                                    @foreach($monthlyTrends as $data)
+                                        {{ $data['completed'] ?? 0 }},
+                                    @endforeach
+                                ],
+                                borderColor: '#28a745',
+                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                borderWidth: 2,
+                                fill: true
+                            }, {
+                                label: 'Overdue Requests',
+                                data: [
+                                    @foreach($monthlyTrends as $data)
+                                        {{ $data['overdue'] ?? 0 }},
+                                    @endforeach
+                                ],
+                                borderColor: '#ff9800',
+                                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                borderWidth: 2,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
                             }
                         }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
+                    });
                 }
-            });
             
             // NEW: Daily Activity Chart
-            var dailyCtx = document.getElementById('dailyActivityChart').getContext('2d');
-            var dailyActivityChart = new Chart(dailyCtx, {
-                type: 'bar',
-                data: {
-                    labels: [
-                        @foreach($dailyActivity as $date => $data)
-                            '{{ $date }}',
-                        @endforeach
-                    ],
-                    datasets: [{
-                        label: 'New Requests',
-                        data: [
-                            @foreach($dailyActivity as $data)
-                                {{ $data['new'] }},
+            var dailyCtx = document.getElementById('dailyActivityChart');
+            if (dailyCtx) {
+                dailyCtx = dailyCtx.getContext('2d');
+                var dailyActivityChart = new Chart(dailyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [
+                            @foreach($dailyActivity as $date => $data)
+                                '{{ $date }}',
                             @endforeach
                         ],
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgb(54, 162, 235)',
-                        borderWidth: 1
-                    }, {
-                        label: 'Completed Requests',
-                        data: [
-                            @foreach($dailyActivity as $data)
-                                {{ $data['completed'] }},
-                            @endforeach
-                        ],
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgb(75, 192, 192)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45
+                        datasets: [{
+                            label: 'New Requests',
+                            data: [
+                                @foreach($dailyActivity as $data)
+                                    {{ $data['new'] ?? 0 }},
+                                @endforeach
+                            ],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1
+                        }, {
+                            label: 'Completed Requests',
+                            data: [
+                                @foreach($dailyActivity as $data)
+                                    {{ $data['completed'] ?? 0 }},
+                                @endforeach
+                            ],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 1
+                        }, {
+                            label: 'Overdue Requests',
+                            data: [
+                                @foreach($dailyActivity as $data)
+                                    {{ $data['overdue'] ?? 0 }},
+                                @endforeach
+                            ],
+                            backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                            borderColor: 'rgb(255, 152, 0)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
                             }
                         },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
                             }
                         }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
                     }
-                }
-            });
+                });
+            }
             
             // Satisfaction Metrics Chart
             @if($stats['satisfaction_count'] > 0)
@@ -680,10 +810,12 @@
             @if(count($categoryStats) > 0)
                 var categoryLabels = [];
                 var categoryData = [];
+                var categoryOverdueData = [];
                 
                 @foreach($categoryStats as $category => $data)
                     categoryLabels.push('{{ $category }}');
                     categoryData.push({{ $data['total'] }});
+                    categoryOverdueData.push({{ $data['overdue'] ?? 0 }}); // Add overdue data
                 @endforeach
                 
                 var categoriesCtx = document.getElementById('categoriesChart').getContext('2d');

@@ -54,6 +54,7 @@ class AdminDashboardController extends Controller
                 'requestReceive' => 0,
                 'assignRequest' => 0,
                 'inProgressRequests' => 0, // Add this for In Progress card
+                'overdueRequests' => 0, // Add this for Overdue card
                 'servicesCompleted' => 0,
                 'rejectedRequests' => 0,
                 'assignStaff' => 0,
@@ -82,7 +83,14 @@ private function getBasicDashboardData($isUitcStaff, $staffId)
                     FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
                         ->where('status', 'In Progress')
                         ->count();
-        
+        // Get all overdue requests for this UITC staff
+        $data['overdueRequests'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                    ->where('status', 'Overdue')
+                    ->count() +
+                FacultyServiceRequest::where('assigned_uitc_staff_id', $staffId)
+                    ->where('status', 'Overdue')
+                    ->count();
+                    
         // Get all completed requests for this UITC staff (not just today's)
         $data['servicesCompleted'] = StudentServiceRequest::where('assigned_uitc_staff_id', $staffId)
                         ->where('status', 'Completed')
@@ -131,7 +139,12 @@ private function getBasicDashboardData($isUitcStaff, $staffId)
                                     ->count() +
                                   FacultyServiceRequest::where('status', 'In Progress')
                                     ->count();
-        
+        // Overdue requests - get all "Overdue" requests
+        $data['overdueRequests'] = StudentServiceRequest::where('status', 'Overdue')
+                                    ->count() +
+                                FacultyServiceRequest::where('status', 'Overdue')
+                                    ->count();
+            
         // Completed requests - completed today
         $data['servicesCompleted'] = $this->countRequestsByStatusAndDate('Completed', $today);
         

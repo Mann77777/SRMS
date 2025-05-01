@@ -253,6 +253,12 @@ button {
     background-color: #dc3545;
     color: white;
 }
+
+.custom-badge-overdue {
+    background-color: #ff9800; /* Orange color */
+    color: white;
+}
+
 .custom-badge-secondary {
     background-color: #6c757d;
     color: white;

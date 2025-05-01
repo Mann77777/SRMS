@@ -69,6 +69,8 @@ function initRequestStatisticsChart() {
     const weekRequests = parseInt(ctx.dataset.weekRequests) || 0;
     const monthRequests = parseInt(ctx.dataset.monthRequests) || 0;
     const yearRequests = parseInt(ctx.dataset.yearRequests) || 0;
+    const overdueRequests = parseInt(ctx.dataset.overdueRequests || 0); // Add overdue requests
+
     
     console.log('Statistics Chart Data:', {
         totalRequests, weekRequests, monthRequests, yearRequests

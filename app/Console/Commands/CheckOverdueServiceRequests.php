@@ -190,18 +190,17 @@ class CheckOverdueServiceRequests extends Command
         
         Log::info("Request ID {$request->id}: {$businessDaysElapsed} business days elapsed, limit is {$businessDaysLimit}");
         
-        // If exceeded limit, mark as cancelled
+        // If exceeded limit, mark as overdue instead of cancelled
         if ($businessDaysElapsed > $businessDaysLimit) {
-            // Update the request
+            // Update the request - changed status from 'Cancelled' to 'Overdue'
             $request->update([
-                'status' => 'Cancelled',
-                'rejection_reason' => 'Timed out',
-                'admin_notes' => ($request->admin_notes ?? '') . "\n\nThis request was automatically cancelled after exceeding the time limit of {$businessDaysLimit} business days for {$transactionType}.",
+                'status' => 'Overdue',
+                'admin_notes' => ($request->admin_notes ?? '') . "\n\nThis request has exceeded the time limit of {$businessDaysLimit} business days for {$transactionType} and has been marked as overdue.",
                 'updated_at' => now()
             ]);
             
             // Log the timeout
-            $message = "Service request {$request->id} automatically cancelled due to timeout. Transaction type: {$transactionType}, Limit: {$businessDaysLimit} days, Elapsed: {$businessDaysElapsed} days";
+            $message = "Service request {$request->id} marked as overdue. Transaction type: {$transactionType}, Limit: {$businessDaysLimit} days, Elapsed: {$businessDaysElapsed} days";
             Log::info($message);
             
             if ($this->option('details')) {
@@ -233,8 +232,6 @@ class CheckOverdueServiceRequests extends Command
         $today = Carbon::today();
         $holidayDates = $this->getHolidayDates();
         
-        // Debug output here...
-        
         $businessDays = 0;
         $currentDate = $startDate->copy();
         
@@ -245,8 +242,6 @@ class CheckOverdueServiceRequests extends Command
             
             $dateStr = $currentDate->format('Y-m-d');
             $isHoliday = in_array($dateStr, $holidayDates);
-            
-            // Debug output here...
             
             if (!$isWeekend && !$isHoliday) {
                 $businessDays++;

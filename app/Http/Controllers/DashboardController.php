@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $inprogressRequests = 0;
         $completedRequests = 0;
         $rejectedRequests = 0;     // Added for rejected requests
-        $cancelledRequests = 0;    // Added for cancelled requests
+        $overdueRequests = 0;      // Changed from cancelledRequests to overdueRequests
         $recentRequests = [];
 
         try {
@@ -30,16 +30,20 @@ class DashboardController extends Controller
             // Fetch status counts for the user
             $pendingRequests = StudentServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count() +
                 FacultyServiceRequest::where('status', 'Pending')->where('user_id', $user->id)->count();
+            
             $inprogressRequests = StudentServiceRequest::where('status', 'In Progress')->where('user_id', $user->id)->count() +
                 FacultyServiceRequest::where('status', 'In Progress')->where('user_id', $user->id)->count();
+            
             $completedRequests = StudentServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count() +
                 FacultyServiceRequest::where('status', 'Completed')->where('user_id', $user->id)->count();
 
             // Add counts for rejected and cancelled requests
             $rejectedRequests = StudentServiceRequest::where('status', 'Rejected')->where('user_id', $user->id)->count() +
                 FacultyServiceRequest::where('status', 'Rejected')->where('user_id', $user->id)->count();
-            $cancelledRequests = StudentServiceRequest::where('status', 'Cancelled')->where('user_id', $user->id)->count() +
-                FacultyServiceRequest::where('status', 'Cancelled')->where('user_id', $user->id)->count();
+           
+                // Changed from Cancelled to Overdue
+            $overdueRequests = StudentServiceRequest::where('status', 'Overdue')->where('user_id', $user->id)->count() +
+                FacultyServiceRequest::where('status', 'Overdue')->where('user_id', $user->id)->count();
 
             // Fetch recent requests and transform them
             $studentRequests = StudentServiceRequest::where('user_id', $user->id)->latest()->take(3)->get();
@@ -88,7 +92,7 @@ class DashboardController extends Controller
             'inprogressRequests' => $inprogressRequests,
             'completedRequests' => $completedRequests,
             'rejectedRequests' => $rejectedRequests,
-            'cancelledRequests' => $cancelledRequests,
+            'overdueRequests' => $overdueRequests,  // Changed from cancelledRequests to overdueRequests
             'recentRequests' => $recentRequests,
         ]);
 
@@ -98,7 +102,7 @@ class DashboardController extends Controller
             'inprogressRequests' => $inprogressRequests,
             'completedRequests' => $completedRequests,
             'rejectedRequests' => $rejectedRequests,
-            'cancelledRequests' => $cancelledRequests,
+            'overdueRequests' => $overdueRequests,  // Changed from cancelledRequests to overdueRequests
             'recentRequests' => $recentRequests,
         ]);
     }

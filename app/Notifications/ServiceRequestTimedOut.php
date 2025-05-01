@@ -58,17 +58,16 @@ class ServiceRequestTimedOut extends Notification implements ShouldQueue
         $url = url('/student/service-requests');  // Adjust this URL as needed
         
         return (new MailMessage)
-            ->subject('Service Request Automatically Cancelled - Time Limit Exceeded')
+            ->subject('Service Request Overdue Notice - Time Limit Exceeded')
             ->greeting('Dear ' . $this->requestorName)
-            ->line('We regret to inform you that your service request has been automatically cancelled due to inactivity.')
+            ->line('We would like to inform you that your service request has exceeded the expected completion time.')
             ->line('Request Details:')
             ->line('Request ID: ' . $this->requestId)
             ->line('Service: ' . $this->serviceCategory)
             ->line('This request was classified as a "' . $this->transactionType . '" which has a time limit of ' . $this->businessDaysLimit . ' business days.')
-            ->line('The assigned UITC staff did not complete this request within the allotted time, so the system has automatically cancelled it.')
+            ->line('The assigned UITC staff has not completed this request within the allotted time. The request is now marked as "Overdue" and will continue to be processed.')
             ->action('View Your Requests', $url)
-            ->line('If you still need this service, please submit a new request.')
-            ->line('We apologize for any inconvenience this might have caused.');
+            ->line('We apologize for any inconvenience this might have caused and are working to complete your request as soon as possible.');
     }
 
     /**
@@ -85,8 +84,8 @@ class ServiceRequestTimedOut extends Notification implements ShouldQueue
             'requestor_name' => $this->requestorName,
             'business_days_limit' => $this->businessDaysLimit,
             'transaction_type' => $this->transactionType,
-            'message' => 'Your service request has been automatically cancelled due to inactivity',
-            'type' => 'request_timed_out'
+            'message' => 'Your service request has exceeded the expected completion time and is now marked as overdue',
+            'type' => 'request_overdue'
         ];
     }
 }

@@ -28,6 +28,7 @@
                     <option value="Pending">Pending</option>
                     <option value="In Progress">In Progress</option>
                     <option value="Completed">Completed</option>
+                    <option value="Overdue">Overdue</option>
                     <option value="Rejected">Rejected</option>
                     <option value="Cancelled">Cancelled</option>
                 </select>
@@ -128,6 +129,8 @@
                                         <span class="custom-badge custom-badge-info">{{ $request->status }}</span>
                                     @elseif($request->status == 'Completed')
                                         <span class="custom-badge custom-badge-success">{{ $request->status }}</span>
+                                    @elseif($request->status == 'Overdue')
+                                        <span class="custom-badge custom-badge-overdue">{{ $request->status }}</span>
                                     @elseif($request->status == 'Cancelled')
                                         <span class="custom-badge custom-badge-danger">{{ $request->status }}</span>
                                     @else

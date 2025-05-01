@@ -20,17 +20,17 @@
     @include('layouts.admin-sidebar')
 
     <div class="content">
-        <h1>Assignment History</h1>
+        <h1>Assigned History</h1>
 
-        <div class="dropdown-container">
-            <!-- Search Bar -->
+        <!-- <div class="dropdown-container">
+            Search Bar 
             <div class="search-container">
                 <div class="search-input-wrapper">
                     <input type="text" id="history-search" name="history-search" placeholder="Search history..." value="{{ request('search') }}">
                     <i class="fas fa-search search-icon"></i>
                 </div>            
             </div>
-        </div>
+        </div> -->
 
         <div class="assignhistory-table-container">
             <h4>Assigned Request History</h4>
@@ -66,39 +66,23 @@
                                         @endphp
                                         
                                         @if($satisfaction)
-                                            <div class="d-flex align-items-center">
-                                                <span class="average-rating">
-                                                    {{ number_format($satisfaction->average_rating, 1) }}
-                                                    <span class="rating-stars">
-                                                        @for($i = 1; $i <= 5; $i++)
-                                                            @if($i <= round($satisfaction->average_rating))
-                                                                <i class="fas fa-star"></i>
-                                                            @elseif($i - 0.5 <= $satisfaction->average_rating)
-                                                                <i class="fas fa-star-half-alt"></i>
-                                                            @else
-                                                                <i class="far fa-star"></i>
-                                                            @endif
-                                                        @endfor
-                                                    </span>
-                                                </span>
-                                                <button class="view-satisfaction-btn" 
-                                                        data-toggle="modal" 
-                                                        data-target="#satisfactionModal" 
-                                                        data-id="{{ $request->id }}"
-                                                        data-type="{{ $request->request_type }}"
-                                                        data-responsiveness="{{ $satisfaction->responsiveness }}"
-                                                        data-reliability="{{ $satisfaction->reliability }}"
-                                                        data-access="{{ $satisfaction->access_facilities }}"
-                                                        data-communication="{{ $satisfaction->communication }}"
-                                                        data-costs="{{ $satisfaction->costs }}"
-                                                        data-integrity="{{ $satisfaction->integrity }}"
-                                                        data-assurance="{{ $satisfaction->assurance }}"
-                                                        data-outcome="{{ $satisfaction->outcome }}"
-                                                        data-average="{{ $satisfaction->average_rating }}"
-                                                        data-comments="{{ $satisfaction->additional_comments }}">
-                                                    <i class="fas fa-eye"></i> View
-                                                </button>
-                                            </div>
+                                            <button class="view-satisfaction-btn btn btn-sm btn-info" 
+                                                    data-toggle="modal" 
+                                                    data-target="#satisfactionModal" 
+                                                    data-id="{{ $request->id }}"
+                                                    data-type="{{ $request->request_type }}"
+                                                    data-responsiveness="{{ $satisfaction->responsiveness }}"
+                                                    data-reliability="{{ $satisfaction->reliability }}"
+                                                    data-access="{{ $satisfaction->access_facilities }}"
+                                                    data-communication="{{ $satisfaction->communication }}"
+                                                    data-costs="{{ $satisfaction->costs }}"
+                                                    data-integrity="{{ $satisfaction->integrity }}"
+                                                    data-assurance="{{ $satisfaction->assurance }}"
+                                                    data-outcome="{{ $satisfaction->outcome }}"
+                                                    data-average="{{ $satisfaction->average_rating }}"
+                                                    data-comments="{{ $satisfaction->additional_comments }}">
+                                                <i class="fas fa-eye"></i> View Feedback
+                                            </button>
                                         @else
                                             <span class="text-muted">No feedback</span>
                                         @endif

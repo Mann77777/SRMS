@@ -781,14 +781,17 @@ class UITCStaffController extends Controller
                 
             // 3. Combine both collections
             $allRequests = $studentRequests->concat($facultyRequests);
-            
+            $overdueRequests = $this->getOverdueRequestsDetails($allRequests);
+
             // 4. Prepare statistics
             $stats = [
                 'total_requests' => $allRequests->count(),
                 'completed_requests' => $allRequests->where('status', 'Completed')->count(),
                 'in_progress_requests' => $allRequests->where('status', 'In Progress')->count(),
                 'cancelled_requests' => $allRequests->where('status', 'Cancelled')->count(),
+                'overdue_requests' => $allRequests->where('status', 'Overdue')->count(), // Add this line
             ];
+            $overdueRequests = $this->getOverdueRequestsDetails($allRequests);
             
             // 5. Calculate average resolution time for completed requests
             $completedRequests = $allRequests->where('status', 'Completed');
@@ -913,6 +916,10 @@ class UITCStaffController extends Controller
                     case 'Cancelled':
                         $categoryStats[$formattedCategory]['cancelled']++;
                         break;
+                    case 'Overdue':  // Add this case to correctly count overdue requests
+                        $categoryStats[$formattedCategory]['overdue']++;
+                        break;
+
                 }
             }
             
@@ -925,26 +932,48 @@ class UITCStaffController extends Controller
                 }
             }
             
-            // 8. Get monthly trends data
+            // 8. Get monthly trends data with overdue counts
             $monthlyTrends = [];
             $startMonth = $startDate->copy();
             $endMonth = $endDate->copy();
-            
+
             while ($startMonth->lt($endMonth)) {
                 $monthKey = $startMonth->format('M Y');
                 $monthStart = $startMonth->copy()->startOfMonth();
                 $monthEnd = $startMonth->copy()->endOfMonth();
                 
+                // Get all requests created in this month
+                $monthRequests = $allRequests->filter(function($request) use ($monthStart, $monthEnd) {
+                    $requestDate = Carbon::parse($request->created_at);
+                    return $requestDate->gte($monthStart) && $requestDate->lte($monthEnd);
+                });
+                
+                // Get completed requests that were completed in this month
+                $monthCompleted = $allRequests->filter(function($request) use ($monthStart, $monthEnd) {
+                    if ($request->status !== 'Completed') return false;
+                    $completedDate = Carbon::parse($request->updated_at);
+                    return $completedDate->gte($monthStart) && $completedDate->lte($monthEnd);
+                });
+                
+                // Get overdue requests that were marked as overdue in this month
+                $monthOverdue = $allRequests->filter(function($request) use ($monthStart, $monthEnd) {
+                    if ($request->status !== 'Overdue') return false;
+                    $overdueDate = Carbon::parse($request->updated_at);
+                    return $overdueDate->gte($monthStart) && $overdueDate->lte($monthEnd);
+                });
+                
+                // Store the data for this month
                 $monthlyTrends[$monthKey] = [
-                    'total' => $allRequests->whereBetween('created_at', [$monthStart, $monthEnd])->count(),
-                    'completed' => $allRequests->where('status', 'Completed')->whereBetween('updated_at', [$monthStart, $monthEnd])->count(),
+                    'total' => $monthRequests->count(),
+                    'completed' => $monthCompleted->count(),
+                    'overdue' => $monthOverdue->count(), // Add overdue count
                     'month_number' => $startMonth->month,
                     'year' => $startMonth->year,
                 ];
                 
                 $startMonth->addMonth();
             }
-            
+
             // Sort by month and year
             ksort($monthlyTrends);
             
@@ -1000,6 +1029,7 @@ class UITCStaffController extends Controller
                 'slaStats' => $slaStats,
                 'recentActivity' => $recentActivity,
                 'improvementRecommendations' => $improvementRecommendations,
+                'overdueRequests' => $overdueRequests, // Add this line
             ]);
             
         } catch (\Exception $e) {
@@ -1035,10 +1065,19 @@ class UITCStaffController extends Controller
                 $completedDate = Carbon::parse($request->updated_at)->startOfDay();
                 return $completedDate->eq($currentDate->startOfDay());
             });
+
+            // NEW: Overdue requests on this day
+            // Get requests that were marked as overdue on this day
+            $dailyOverdue = $allRequests->filter(function($request) use ($currentDate) {
+                if ($request->status !== 'Overdue') return false;
+                $overdueDate = Carbon::parse($request->updated_at)->startOfDay();
+                return $overdueDate->eq($currentDate->startOfDay());
+            });
             
             $dailyActivity[$dateFormatted] = [
                 'new' => $dailyRequests->count(),
                 'completed' => $dailyCompleted->count(),
+                'overdue' => $dailyOverdue->count(), // Add overdue count
             ];
             
             $currentDate->addDay();
@@ -1046,7 +1085,71 @@ class UITCStaffController extends Controller
         
         return $dailyActivity;
     }
-    
+
+    /**
+     * Get detailed information about overdue requests
+     * 
+     * @param Collection $allRequests Collection of service requests
+     * @param int $limit Maximum number of requests to return (0 for all)
+     * @return Collection Collection of overdue requests with additional information
+     */
+    private function getOverdueRequestsDetails($allRequests, $limit = 5) 
+    {
+        // Get requests with 'Overdue' status
+        $overdueRequests = $allRequests->where('status', 'Overdue');
+        
+        // If no overdue requests, return empty collection
+        if ($overdueRequests->isEmpty()) {
+            return collect([]);
+        }
+        
+        // Define transaction type time limits (in business days)
+        $transactionLimits = [
+            'Simple Transaction' => 3,
+            'Complex Transaction' => 7,
+            'Highly Technical Transaction' => 20,
+            'default' => 5 // Default if transaction type is not specified
+        ];
+        
+        // Add additional information to each overdue request
+        $overdueRequests = $overdueRequests->map(function($request) use ($transactionLimits) {
+            // Get the transaction type (with default fallback)
+            $transactionType = $request->transaction_type ?? 'default';
+            
+            // Get the time limit for this transaction type
+            $businessDaysLimit = $transactionLimits[$transactionType] ?? $transactionLimits['default'];
+            
+            // Calculate how long the request has been assigned
+            $assignedDate = Carbon::parse($request->updated_at);
+            $currentDate = Carbon::now();
+            $daysElapsed = $assignedDate->diffInDays($currentDate);
+            
+            // Calculate approximate days overdue (without business day calculation)
+            // In a real implementation, you might want to use a more accurate business day calculation
+            $daysOverdue = max(0, $daysElapsed - $businessDaysLimit);
+            
+            // Store these values with the request
+            $request->days_elapsed = $daysElapsed;
+            $request->days_overdue = $daysOverdue;
+            $request->business_days_limit = $businessDaysLimit;
+            
+            // Calculate a priority score (higher = more urgent)
+            // This formula prioritizes requests that are more overdue and have shorter time limits
+            $priorityScore = ($daysOverdue / max(1, $businessDaysLimit)) * 100;
+            $request->priority_score = round($priorityScore);
+            
+            return $request;
+        })
+        ->sortByDesc('priority_score'); // Sort by priority (most urgent first)
+        
+        // Limit the number of requests if specified
+        if ($limit > 0) {
+            $overdueRequests = $overdueRequests->take($limit);
+        }
+        
+        return $overdueRequests;
+    }
+        
     // Helper method to get SLA performance data
     private function getSLAPerformanceData($allRequests) {
         // Define SLA thresholds in hours for different service categories
@@ -1174,264 +1277,293 @@ class UITCStaffController extends Controller
     
     // Update exportReports method to include new data
     public function exportReports(Request $request)
-{
-    try {
-        // Get the currently logged-in UITC staff member's ID
-        $uitcStaffId = Auth::guard('admin')->user()->id;
-        $staffName = Auth::guard('admin')->user()->name;
-        
-        // Get the period filter (default to current month)
-        $period = $request->input('period', 'month');
-        $customStartDate = $request->input('custom_start_date');
-        $customEndDate = $request->input('custom_end_date');
-        
-        // Set date range based on period
-        $startDate = null;
-        $endDate = Carbon::now();
-        
-        switch ($period) {
-            case 'week':
-                $startDate = Carbon::now()->subWeek();
-                break;
-            case 'month':
-                $startDate = Carbon::now()->startOfMonth();
-                break;
-            case 'quarter':
-                $startDate = Carbon::now()->subMonths(3);
-                break;
-            case 'year':
-                $startDate = Carbon::now()->subYear();
-                break;
-            case 'custom':
-                if ($customStartDate && $customEndDate) {
-                    $startDate = Carbon::parse($customStartDate);
-                    $endDate = Carbon::parse($customEndDate)->endOfDay();
-                } else {
+    {
+        try {
+
+            // Set a longer execution time for this specific request
+            ini_set('max_execution_time', 300);
+            
+            // Increase memory limit if needed
+            ini_set('memory_limit', '512M');
+
+            // Get the currently logged-in UITC staff member's ID
+            $uitcStaffId = Auth::guard('admin')->user()->id;
+            $staffName = Auth::guard('admin')->user()->name;
+            
+            // Get the period filter (default to current month)
+            $period = $request->input('period', 'month');
+            $customStartDate = $request->input('custom_start_date');
+            $customEndDate = $request->input('custom_end_date');
+            
+            // Set date range based on period
+            $startDate = null;
+            $endDate = Carbon::now();
+            
+            switch ($period) {
+                case 'week':
+                    $startDate = Carbon::now()->subWeek();
+                    break;
+                case 'month':
                     $startDate = Carbon::now()->startOfMonth();
+                    break;
+                case 'quarter':
+                    $startDate = Carbon::now()->subMonths(3);
+                    break;
+                case 'year':
+                    $startDate = Carbon::now()->subYear();
+                    break;
+                case 'custom':
+                    if ($customStartDate && $customEndDate) {
+                        $startDate = Carbon::parse($customStartDate);
+                        $endDate = Carbon::parse($customEndDate)->endOfDay();
+                    } else {
+                        $startDate = Carbon::now()->startOfMonth();
+                    }
+                    break;
+                default:
+                    $startDate = Carbon::now()->startOfMonth();
+            }
+            
+            // 1. Get student requests assigned to this staff
+            $studentRequests = StudentServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->get();
+                
+            // 2. Get faculty requests assigned to this staff
+            $facultyRequests = FacultyServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->get();
+                
+            // 3. Combine both collections
+            $allRequests = $studentRequests->concat($facultyRequests);
+            
+            // Get overdue requests - important to define this before using it
+            $overdueRequests = $this->getOverdueRequestsDetails($allRequests);
+            
+            // 4. Prepare statistics (same as in getReports method)
+            $stats = [
+                'total_requests' => $allRequests->count(),
+                'completed_requests' => $allRequests->where('status', 'Completed')->count(),
+                'pending_requests' => $allRequests->where('status', 'Pending')->count(),
+                'in_progress_requests' => $allRequests->where('status', 'In Progress')->count(),
+                'cancelled_requests' => $allRequests->where('status', 'Cancelled')->count(),
+                'overdue_requests' => $allRequests->where('status', 'Overdue')->count(), // Make sure this is defined
+            ];
+            
+            // 5. Calculate resolution time statistics
+            $completedRequests = $allRequests->where('status', 'Completed');
+            
+            $totalResolutionDays = 0;
+            $resolutionTimes = [];
+            $fastestResolution = PHP_INT_MAX;
+            $slowestResolution = 0;
+            
+            foreach ($completedRequests as $request) {
+                $createdAt = Carbon::parse($request->created_at);
+                $completedAt = Carbon::parse($request->updated_at);
+                $daysToResolve = $createdAt->diffInDays($completedAt);
+                
+                if ($daysToResolve < $fastestResolution) {
+                    $fastestResolution = $daysToResolve;
                 }
-                break;
-            default:
-                $startDate = Carbon::now()->startOfMonth();
-        }
-        
-        // 1. Get student requests assigned to this staff
-        $studentRequests = StudentServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->get();
-            
-        // 2. Get faculty requests assigned to this staff
-        $facultyRequests = FacultyServiceRequest::where('assigned_uitc_staff_id', $uitcStaffId)
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->get();
-            
-        // 3. Combine both collections
-        $allRequests = $studentRequests->concat($facultyRequests);
-        
-        // 4. Prepare statistics (same as in getReports method)
-        $stats = [
-            'total_requests' => $allRequests->count(),
-            'completed_requests' => $allRequests->where('status', 'Completed')->count(),
-            'pending_requests' => $allRequests->where('status', 'Pending')->count(),
-            'in_progress_requests' => $allRequests->where('status', 'In Progress')->count(),
-            'cancelled_requests' => $allRequests->where('status', 'Cancelled')->count(),
-        ];
-        
-        // 5. Calculate resolution time statistics
-        $completedRequests = $allRequests->where('status', 'Completed');
-        
-        $totalResolutionDays = 0;
-        $resolutionTimes = [];
-        $fastestResolution = PHP_INT_MAX;
-        $slowestResolution = 0;
-        
-        foreach ($completedRequests as $request) {
-            $createdAt = Carbon::parse($request->created_at);
-            $completedAt = Carbon::parse($request->updated_at);
-            $daysToResolve = $createdAt->diffInDays($completedAt);
-            
-            if ($daysToResolve < $fastestResolution) {
-                $fastestResolution = $daysToResolve;
+                
+                if ($daysToResolve > $slowestResolution) {
+                    $slowestResolution = $daysToResolve;
+                }
+                
+                $totalResolutionDays += $daysToResolve;
+                $resolutionTimes[] = $daysToResolve;
             }
             
-            if ($daysToResolve > $slowestResolution) {
-                $slowestResolution = $daysToResolve;
-            }
-            
-            $totalResolutionDays += $daysToResolve;
-            $resolutionTimes[] = $daysToResolve;
-        }
-        
-        $stats['avg_resolution_time'] = $completedRequests->count() > 0 
-            ? round($totalResolutionDays / $completedRequests->count(), 1) 
-            : 0;
-            
-        // Calculate median resolution time
-        if (count($resolutionTimes) > 0) {
-            sort($resolutionTimes);
-            $middle = floor(count($resolutionTimes) / 2);
-            $stats['median_resolution_time'] = count($resolutionTimes) % 2 == 0 
-                ? ($resolutionTimes[$middle - 1] + $resolutionTimes[$middle]) / 2 
-                : $resolutionTimes[$middle];
-        } else {
-            $stats['median_resolution_time'] = 0;
-        }
-        
-        $timeStats = [
-            'fastest_resolution' => $fastestResolution != PHP_INT_MAX ? $fastestResolution : 0,
-            'slowest_resolution' => $slowestResolution
-        ];
-        
-        // 6. Get customer satisfaction data
-        $customerSatisfactionData = CustomerSatisfaction::whereIn('request_id', $allRequests->pluck('id'))
-            ->where(function($query) {
-                $query->where('request_type', 'Student')
-                      ->orWhere('request_type', 'Faculty & Staff');
-            })
-            ->get();
-            
-        // Calculate average ratings
-        $stats['satisfaction_count'] = $customerSatisfactionData->count();
-        
-        if ($customerSatisfactionData->count() > 0) {
-            $stats['avg_responsiveness'] = round($customerSatisfactionData->avg('responsiveness'), 1);
-            $stats['avg_reliability'] = round($customerSatisfactionData->avg('reliability'), 1);
-            $stats['avg_access_facilities'] = round($customerSatisfactionData->avg('access_facilities'), 1);
-            $stats['avg_communication'] = round($customerSatisfactionData->avg('communication'), 1);
-            $stats['avg_costs'] = round($customerSatisfactionData->avg('costs'), 1);
-            $stats['avg_integrity'] = round($customerSatisfactionData->avg('integrity'), 1);
-            $stats['avg_assurance'] = round($customerSatisfactionData->avg('assurance'), 1);
-            $stats['avg_outcome'] = round($customerSatisfactionData->avg('outcome'), 1);
-            $stats['avg_overall_rating'] = round($customerSatisfactionData->avg('average_rating'), 1);
-        } else {
-            $stats['avg_responsiveness'] = 0;
-            $stats['avg_reliability'] = 0;
-            $stats['avg_access_facilities'] = 0;
-            $stats['avg_communication'] = 0;
-            $stats['avg_costs'] = 0;
-            $stats['avg_integrity'] = 0;
-            $stats['avg_assurance'] = 0;
-            $stats['avg_outcome'] = 0;
-            $stats['avg_overall_rating'] = 0;
-        }
-        
-        // 7. Get request counts by service category and calculate avg resolution time
-        $categoryStats = [];
-        $categoryAvgResolution = [];
-        
-        foreach ($allRequests as $request) {
-            $category = $request->service_category;
-            $formattedCategory = $this->formatServiceCategory($category);
-            
-            if (!isset($categoryStats[$formattedCategory])) {
-                $categoryStats[$formattedCategory] = [
-                    'total' => 0,
-                    'completed' => 0,
-                    'pending' => 0,
-                    'in_progress' => 0,
-                    'cancelled' => 0,
-                    'resolution_times' => [],
-                ];
-            }
-            
-            $categoryStats[$formattedCategory]['total']++;
-            
-            switch ($request->status) {
-                case 'Completed':
-                    $categoryStats[$formattedCategory]['completed']++;
-                    $createdAt = Carbon::parse($request->created_at);
-                    $completedAt = Carbon::parse($request->updated_at);
-                    $daysToResolve = $createdAt->diffInDays($completedAt);
-                    $categoryStats[$formattedCategory]['resolution_times'][] = $daysToResolve;
-                    break;
-                case 'Pending':
-                    $categoryStats[$formattedCategory]['pending']++;
-                    break;
-                case 'In Progress':
-                    $categoryStats[$formattedCategory]['in_progress']++;
-                    break;
-                case 'Cancelled':
-                    $categoryStats[$formattedCategory]['cancelled']++;
-                    break;
-            }
-        }
-        
-        // Calculate average resolution time per category
-        foreach ($categoryStats as $category => $data) {
-            if (!empty($data['resolution_times'])) {
-                $categoryAvgResolution[$category] = round(array_sum($data['resolution_times']) / count($data['resolution_times']), 1);
+            $stats['avg_resolution_time'] = $completedRequests->count() > 0 
+                ? round($totalResolutionDays / $completedRequests->count(), 1) 
+                : 0;
+                
+            // Calculate median resolution time
+            if (count($resolutionTimes) > 0) {
+                sort($resolutionTimes);
+                $middle = floor(count($resolutionTimes) / 2);
+                $stats['median_resolution_time'] = count($resolutionTimes) % 2 == 0 
+                    ? ($resolutionTimes[$middle - 1] + $resolutionTimes[$middle]) / 2 
+                    : $resolutionTimes[$middle];
             } else {
-                $categoryAvgResolution[$category] = 'N/A';
+                $stats['median_resolution_time'] = 0;
             }
+            
+            $timeStats = [
+                'fastest_resolution' => $fastestResolution != PHP_INT_MAX ? $fastestResolution : 0,
+                'slowest_resolution' => $slowestResolution
+            ];
+            
+            // 6. Get customer satisfaction data
+            $customerSatisfactionData = CustomerSatisfaction::whereIn('request_id', $allRequests->pluck('id'))
+                ->where(function($query) {
+                    $query->where('request_type', 'Student')
+                          ->orWhere('request_type', 'Faculty & Staff');
+                })
+                ->get();
+                
+            // Calculate average ratings
+            $stats['satisfaction_count'] = $customerSatisfactionData->count();
+            
+            if ($customerSatisfactionData->count() > 0) {
+                $stats['avg_responsiveness'] = round($customerSatisfactionData->avg('responsiveness'), 1);
+                $stats['avg_reliability'] = round($customerSatisfactionData->avg('reliability'), 1);
+                $stats['avg_access_facilities'] = round($customerSatisfactionData->avg('access_facilities'), 1);
+                $stats['avg_communication'] = round($customerSatisfactionData->avg('communication'), 1);
+                $stats['avg_costs'] = round($customerSatisfactionData->avg('costs'), 1);
+                $stats['avg_integrity'] = round($customerSatisfactionData->avg('integrity'), 1);
+                $stats['avg_assurance'] = round($customerSatisfactionData->avg('assurance'), 1);
+                $stats['avg_outcome'] = round($customerSatisfactionData->avg('outcome'), 1);
+                $stats['avg_overall_rating'] = round($customerSatisfactionData->avg('average_rating'), 1);
+            } else {
+                $stats['avg_responsiveness'] = 0;
+                $stats['avg_reliability'] = 0;
+                $stats['avg_access_facilities'] = 0;
+                $stats['avg_communication'] = 0;
+                $stats['avg_costs'] = 0;
+                $stats['avg_integrity'] = 0;
+                $stats['avg_assurance'] = 0;
+                $stats['avg_outcome'] = 0;
+                $stats['avg_overall_rating'] = 0;
+            }
+            
+            // 7. Get request counts by service category and calculate avg resolution time
+            $categoryStats = [];
+            $categoryAvgResolution = [];
+            
+            foreach ($allRequests as $request) {
+                $category = $request->service_category;
+                $formattedCategory = $this->formatServiceCategory($category);
+                
+                if (!isset($categoryStats[$formattedCategory])) {
+                    $categoryStats[$formattedCategory] = [
+                        'total' => 0,
+                        'completed' => 0,
+                        'pending' => 0,
+                        'in_progress' => 0,
+                        'cancelled' => 0,
+                        'overdue' => 0,
+                        'resolution_times' => [],
+                    ];
+                }
+                
+                $categoryStats[$formattedCategory]['total']++;
+                
+                switch ($request->status) {
+                    case 'Completed':
+                        $categoryStats[$formattedCategory]['completed']++;
+                        $createdAt = Carbon::parse($request->created_at);
+                        $completedAt = Carbon::parse($request->updated_at);
+                        $daysToResolve = $createdAt->diffInDays($completedAt);
+                        $categoryStats[$formattedCategory]['resolution_times'][] = $daysToResolve;
+                        break;
+                    case 'Pending':
+                        $categoryStats[$formattedCategory]['pending']++;
+                        break;
+                    case 'In Progress':
+                        $categoryStats[$formattedCategory]['in_progress']++;
+                        break;
+                    case 'Cancelled':
+                        $categoryStats[$formattedCategory]['cancelled']++;
+                        break;
+                    case 'Overdue':
+                        $categoryStats[$formattedCategory]['overdue']++;
+                        break;
+                }
+            }
+            
+            // Calculate average resolution time per category
+            foreach ($categoryStats as $category => $data) {
+                if (!empty($data['resolution_times'])) {
+                    $categoryAvgResolution[$category] = round(array_sum($data['resolution_times']) / count($data['resolution_times']), 1);
+                } else {
+                    $categoryAvgResolution[$category] = 'N/A';
+                }
+            }
+            
+            // 8. Get daily activity data
+            $dailyActivity = $this->getDailyActivityData($startDate, $endDate, $allRequests);
+            
+            // 9. Get SLA performance data
+            $slaStats = $this->getSLAPerformanceData($allRequests);
+            
+            // 10. Get recent activity timeline
+            $recentActivity = $this->getRecentActivityData($allRequests, 15); // Get the 15 most recent activities
+            
+            // 11. Generate improvement recommendations - MOVED AFTER slaStats and categoryStats are defined
+            $improvementRecommendations = $this->generateImprovementRecommendations(
+                $stats, 
+                $slaStats,
+                $categoryStats,
+                [
+                    'avg_responsiveness' => $stats['avg_responsiveness'] ?? 0,
+                    'avg_reliability' => $stats['avg_reliability'] ?? 0,
+                    'avg_access_facilities' => $stats['avg_access_facilities'] ?? 0,
+                    'avg_communication' => $stats['avg_communication'] ?? 0,
+                    'avg_costs' => $stats['avg_costs'] ?? 0,
+                    'avg_integrity' => $stats['avg_integrity'] ?? 0,
+                    'avg_assurance' => $stats['avg_assurance'] ?? 0,
+                    'avg_outcome' => $stats['avg_outcome'] ?? 0,
+                ]
+            );
+            
+            // Add this code to encode the logo
+            $logoPath = public_path('images/tuplogo.png');
+            $logoData = null;
+            
+            if (file_exists($logoPath)) {
+                $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+            
+            // Create a function to format service categories in the view
+            $formatServiceCategory = function($category) {
+                return $this->formatServiceCategory($category);
+            };
+
+            // Sort the categoryStats by total requests (descending)
+            uasort($categoryStats, function ($a, $b) {
+                return $b['total'] - $a['total'];
+            });
+            
+            // Take only the top 5 overdueRequests
+            $limitedOverdueRequests = $overdueRequests->take(5);
+            
+            // Generate PDF using DomPDF
+            $pdf = \App::make('dompdf.wrapper');
+            $pdf->loadView('uitc_staff.reports_pdf_simplified', [
+                'stats' => $stats,
+                'timeStats' => $timeStats,
+                'startDate' => $startDate->format('M d, Y'),
+                'endDate' => $endDate->format('M d, Y'),
+                'staffName' => $staffName,
+                'categoryStats' => $categoryStats, // Already sorted above
+                'slaStats' => $slaStats,
+                'overdueRequests' => $limitedOverdueRequests,
+                'improvementRecommendations' => $improvementRecommendations
+            ]);
+            
+            // Set PDF options if needed
+            $pdf->setPaper('a4', 'portrait');
+            $pdf->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+            
+            // Return the PDF for download with a dynamic filename
+            return $pdf->download('UITC_Staff_Report_' . Carbon::now()->format('Y-m-d_H-i-s') . '.pdf');
+            
+        } catch (\Exception $e) {
+            // Log the error
+            Log::error('Error exporting reports: ' . $e->getMessage(), [
+                'staff_id' => Auth::guard('admin')->id() ?? 'Unknown',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Redirect with error
+            return redirect()->back()->with('error', 'Unable to export reports: ' . $e->getMessage());
         }
-        
-        // 8. Get daily activity data
-        $dailyActivity = $this->getDailyActivityData($startDate, $endDate, $allRequests);
-        
-        // 9. Get SLA performance data
-        $slaStats = $this->getSLAPerformanceData($allRequests);
-        
-        // 10. Get recent activity timeline
-        $recentActivity = $this->getRecentActivityData($allRequests, 15); // Get the 15 most recent activities
-        
-        // 11. Generate improvement recommendations - MOVED AFTER slaStats and categoryStats are defined
-        $improvementRecommendations = $this->generateImprovementRecommendations(
-            $stats, 
-            $slaStats,
-            $categoryStats,
-            [
-                'avg_responsiveness' => $stats['avg_responsiveness'] ?? 0,
-                'avg_reliability' => $stats['avg_reliability'] ?? 0,
-                'avg_access_facilities' => $stats['avg_access_facilities'] ?? 0,
-                'avg_communication' => $stats['avg_communication'] ?? 0,
-                'avg_costs' => $stats['avg_costs'] ?? 0,
-                'avg_integrity' => $stats['avg_integrity'] ?? 0,
-                'avg_assurance' => $stats['avg_assurance'] ?? 0,
-                'avg_outcome' => $stats['avg_outcome'] ?? 0,
-            ]
-        );
-        
-         // Add this code to encode the logo
-        $logoPath = public_path('images/tuplogo.png');
-        $logoData = null;
-        
-        if (file_exists($logoPath)) {
-            $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
-        }
-        
-        // Generate PDF using a library like DomPDF
-        $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadView('uitc_staff.reports_pdf', [
-            'stats' => $stats,
-            'timeStats' => $timeStats,
-            'startDate' => $startDate->format('M d, Y'),
-            'endDate' => $endDate->format('M d, Y'),
-            'staffName' => $staffName,
-            'categoryStats' => $categoryStats,
-            'categoryAvgResolution' => $categoryAvgResolution,
-            'period' => $period,
-            'dailyActivity' => $dailyActivity,
-            'slaStats' => $slaStats,
-            'recentActivity' => $recentActivity,
-            'improvementRecommendations' => $improvementRecommendations,
-            'logoData' => $logoData  // Pass the encoded logo
-        ]);
-    
-        
-        // Return the PDF for download
-        return $pdf->download('UITC Staff Report-' . Carbon::now()->format('Y-m-d_H-i-s') . '.pdf');
-        
-    } catch (\Exception $e) {
-        // Log the error
-        Log::error('Error exporting reports: ' . $e->getMessage(), [
-            'staff_id' => Auth::guard('admin')->id() ?? 'Unknown',
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        
-        // Redirect with error
-        return redirect()->back()->with('error', 'Unable to export reports: ' . $e->getMessage());
     }
-}
 
 
         /**

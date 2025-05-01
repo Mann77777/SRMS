@@ -13,6 +13,12 @@
     <link href="{{ asset('css/assign-request.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>Assigned Request</title>
+    <style>
+        .custom-badge-overdue {
+            background-color: #ff9800; /* Orange color */
+            color: white;
+        }
+    </style>
 </head>
 <body data-user-role="UITC Staff">
     <!-- Include Navbar -->
@@ -30,7 +36,7 @@
                 <option value="all">All Status</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
+                <option value="Overdue">Overdue</option>
             </select>
 
             <!-- Search Bar -->
@@ -156,14 +162,14 @@
                                     <span class="custom-badge custom-badge-info">{{ $request->status }}</span>
                                 @elseif($request->status == 'Completed')
                                     <span class="custom-badge custom-badge-success">{{ $request->status }}</span>
-                                @elseif($request->status == 'Cancelled' || $request->status == 'Rejected')
-                                    <span class="custom-badge custom-badge-danger">{{ $request->status }}</span>
+                                @elseif($request->status == 'Overdue')
+                                    <span class="custom-badge custom-badge-overdue">{{ $request->status }}</span>
                                 @else
                                     <span class="custom-badge custom-badge-secondary">{{ $request->status }}</span>
                                 @endif
                             </td>
                             <td class="btns">
-                                @if($request->status != 'Completed' && $request->status != 'Cancelled' && $request->status != 'Rejected')
+                                 @if($request->status != 'Completed' && $request->status != 'Cancelled' && $request->status != 'Rejected')
                                 <button class="btn-complete" data-request-id="{{ $request->id }}" data-request-type="{{ $request->request_type }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>

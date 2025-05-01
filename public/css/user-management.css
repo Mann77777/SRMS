@@ -17,34 +17,63 @@ body{
     background-color: #f8f9fa;
     height: 130vh;
 }   
-.user-content {
+.content {
     margin-top: 7%;
     margin-left: 21%;
     padding: 30px 0;
 }
 
-.user-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.user-header h1 {
+.content h1{
     font-size: 2rem;
     font-weight: 600;
     text-transform: uppercase;
 }
 
-
-/* Top section with filters and add button */
-.controls-container {
+.dropdown-container {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
+    cursor: pointer;
+}
+
+.dropdown-container,
+.search-container {
+    display: flex;
+    align-items: center;
+}
+
+select {
+    width: 180px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    background-color: #fff;
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+.search-container{
+    display: flex;
+    justify-content: center; /* Horizontally centers the button */
+    align-items: center;     /* Vertically centers the button if needed */
+}
+
+.search-container input {
+    width: 300px; /* Set width for search input */
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+.search-btn{
+    padding: 10px 20px;
+    margin-left: 2%;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: #04AA6D;
+    color: white;
 }
 
 /* Add User Button */

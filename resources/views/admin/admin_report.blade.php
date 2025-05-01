@@ -130,309 +130,313 @@
 
     <!-- Summary Stats Cards -->
     <!-- First Row of Stats Cards with Total, Completed, In Progress, Pending -->
-<div class="row">
-    <!-- Total Requests Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Requests</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_requests'] }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Completed Requests Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Completed Requests</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['completed_requests'] }} 
-                            <span class="text-sm text-muted">
-                                ({{ $stats['total_requests'] > 0 ? round(($stats['completed_requests'] / $stats['total_requests']) * 100) : 0 }}%)
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- In Progress Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            In Progress Requests</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['in_progress_requests'] }}
-                            <span class="text-sm text-muted">
-                                ({{ $stats['total_requests'] > 0 ? round(($stats['in_progress_requests'] / $stats['total_requests']) * 100) : 0 }}%)
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-spinner fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pending Requests Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Pending Requests</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_requests'] }}
-                            <span class="text-sm text-muted">
-                                ({{ $stats['total_requests'] > 0 ? round(($stats['pending_requests'] / $stats['total_requests']) * 100) : 0 }}%)
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-pause-circle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Second Row of Stats Cards with Cancelled, Rejected, Resolution Time -->
-<div class="row">
-    <!-- Cancelled Requests Card -->
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-left-danger shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                            Cancelled Requests</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['cancelled_requests'] }}
-                            <span class="text-sm text-muted">
-                                ({{ $stats['total_requests'] > 0 ? round(($stats['cancelled_requests'] / $stats['total_requests']) * 100) : 0 }}%)
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-ban fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Rejected Requests Card (if you have this data available) -->
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-left-secondary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
-                            Rejected Requests</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['rejected_requests'] ?? 0 }}
-                            <span class="text-sm text-muted">
-                                ({{ $stats['total_requests'] > 0 && isset($stats['rejected_requests']) ? round(($stats['rejected_requests'] / $stats['total_requests']) * 100) : 0 }}%)
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-times-circle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Resolution Time Card -->
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Average Resolution Time</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['avg_resolution_time'] }} days</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clock fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <!-- Charts Row -->
     <div class="row">
-        <!-- Status Distribution Chart -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold">Request Status Distribution</h6>
-                </div>
+        <!-- Total Requests Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="chart-pie pt-4">
-                        <canvas id="statusChart"></canvas>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_requests'] }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLA Performance Chart -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold">SLA Performance</h6>
-                </div>
+        <!-- Completed Requests Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="chart-pie pt-4">
-                        <canvas id="slaChart"></canvas>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Completed Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['completed_requests'] }} 
+                                <span class="text-sm text-muted">
+                                    ({{ $stats['total_requests'] > 0 ? round(($stats['completed_requests'] / $stats['total_requests']) * 100) : 0 }}%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
                     </div>
-                    <div class="mt-4 text-center small">
-                        <span class="mr-2">
-                            <i class="fas fa-circle text-success"></i> Met Deadline ({{ $slaStats['met_percentage'] }}%)
-                        </span>
-                        <span class="mr-2">
-                            <i class="fas fa-circle text-danger"></i> Missed Deadline ({{ $slaStats['missed_percentage'] }}%)
-                        </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Progress Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                In Progress Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['in_progress_requests'] }}
+                                <span class="text-sm text-muted">
+                                    ({{ $stats['total_requests'] > 0 ? round(($stats['in_progress_requests'] / $stats['total_requests']) * 100) : 0 }}%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-spinner fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Requests Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Pending Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_requests'] }}
+                                <span class="text-sm text-muted">
+                                    ({{ $stats['total_requests'] > 0 ? round(($stats['pending_requests'] / $stats['total_requests']) * 100) : 0 }}%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-pause-circle fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Service Category Breakdown -->
+    <!-- Second Row of Stats Cards with Cancelled, Rejected, Resolution Time -->
     <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold">Service Category Breakdown</h6>
-                </div>
+        <!-- Overdue Requests Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2" style="border-left-color: #fd7e14 !important;">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="categoryTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Service Category</th>
-                                    <th>Total Requests</th>
-                                    <th>Completed</th>
-                                    <th>In Progress</th>
-                                    <th>Pending</th>
-                                    <th>Cancelled</th>
-                                    <th>Rejected</th>
-                                    <th>Completion Rate</th>
-                                    <th>Avg Resolution (days)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($categoryStats as $category => $data)
-                                <tr>
-                                    <td>{{ $category }}</td>
-                                    <td>{{ $data['total'] }}</td>
-                                    <td>{{ $data['completed'] }}</td>
-                                    <td>{{ $data['in_progress'] }}</td>
-                                    <td>{{ $data['pending'] }}</td>
-                                    <td>{{ $data['cancelled'] }}</td>
-                                    <td>{{ $data['rejected'] ?? 0 }}</td>
-                                    <td>
-                                        {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) : 0 }}%
-                                    </td>
-                                    <td>{{ is_numeric($data['avg_resolution']) ? $data['avg_resolution'] : 'N/A' }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #fd7e14;">
+                                Overdue Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['overdue_requests'] ?? 0 }}
+                                <span class="text-sm text-muted">
+                                    ({{ $stats['total_requests'] > 0 ? round((($stats['overdue_requests'] ?? 0) / $stats['total_requests']) * 100) : 0 }}%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Rejected Requests Card (if you have this data available) -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1" style="color:rgb(164, 164, 164);">
+                                Rejected Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['rejected_requests'] ?? 0 }}
+                                <span class="text-sm text-muted">
+                                    ({{ $stats['total_requests'] > 0 && isset($stats['rejected_requests']) ? round(($stats['rejected_requests'] / $stats['total_requests']) * 100) : 0 }}%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resolution Time Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Average Resolution Time</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['avg_resolution_time'] }} days</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Monthly Trends Chart -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold">Monthly Request Trends</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-area">
-                        <canvas id="monthlyTrendsChart"></canvas>
+        <!-- Charts Row -->
+        <div class="row">
+            <!-- Status Distribution Chart -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold">Request Status Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-pie pt-4">
+                            <canvas id="statusChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Staff Performance Table -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold">UITC Staff Performance</h6>
+            <!-- SLA Performance Chart -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold">SLA Performance</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-pie pt-4">
+                            <canvas id="slaChart"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            <span class="mr-2">
+                                <i class="fas fa-circle text-success"></i> Met Deadline ({{ $slaStats['met_percentage'] }}%)
+                            </span>
+                            <span class="mr-2">
+                                <i class="fas fa-circle text-danger"></i> Missed Deadline ({{ $slaStats['missed_percentage'] }}%)
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="staffTable" width="100%" cellspacing="0">
-                            <thead> 
-                                <tr>
-                                    <th>Staff Name</th>
-                                    <th>Total Assigned</th>
-                                    <th>Completed</th>
-                                    <th>In Progress</th>
-                                    <th>Pending</th>
-                                    <th>Cancelled</th>
-                                    <th>Rejected</th>
-                                    <th>Completion Rate</th>
-                                    <th>Avg Resolution (days)</th>
-                                    <th>SLA Met Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($staffStats as $staffId => $data)
-                                <tr>
-                                    <td>{{ $data['name'] }}</td>
-                                    <td>{{ $data['total'] }}</td>
-                                    <td>{{ $data['completed'] }}</td>
-                                    <td>{{ $data['in_progress'] }}</td>
-                                    <td>{{ $data['pending'] }}</td>
-                                    <td>{{ $data['cancelled'] }}</td>
-                                    <td>{{ $data['rejected'] ?? 0 }}</td>
-                                    <td>
-                                        {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) : 0 }}%
-                                    </td>
-                                    <td>{{ $data['avg_resolution'] }}</td>
-                                    <td>{{ $data['sla_met_rate'] }}%</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+            </div>
+        </div>
+
+        <!-- Service Category Breakdown -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold">Service Category Breakdown</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="categoryTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Service Category</th>
+                                        <th>Total Requests</th>
+                                        <th>Completed</th>
+                                        <th>In Progress</th>
+                                        <th>Pending</th>
+                                        <th>Cancelled</th>
+                                        <th>Rejected</th>
+                                        <th>Overdue</th>
+                                        <th>Completion Rate</th>
+                                        <th>Avg Resolution (days)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($categoryStats as $category => $data)
+                                    <tr>
+                                        <td>{{ $category }}</td>
+                                        <td>{{ $data['total'] }}</td>
+                                        <td>{{ $data['completed'] }}</td>
+                                        <td>{{ $data['in_progress'] }}</td>
+                                        <td>{{ $data['pending'] }}</td>
+                                        <td>{{ $data['cancelled'] }}</td>
+                                        <td>{{ $data['rejected'] ?? 0 }}</td>
+                                        <td>{{ $data['overdue'] ?? 0 }}</td>
+                                        <td>
+                                            {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) : 0 }}%
+                                        </td>
+                                        <td>{{ is_numeric($data['avg_resolution']) ? $data['avg_resolution'] : 'N/A' }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends Chart -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold">Monthly Request Trends</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area">
+                            <canvas id="monthlyTrendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Performance Table -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold">UITC Staff Performance</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="staffTable" width="100%" cellspacing="0">
+                                <thead> 
+                                    <tr>
+                                        <th>Staff Name</th>
+                                        <th>Total Assigned</th>
+                                        <th>Completed</th>
+                                        <th>In Progress</th>
+                                        <th>Pending</th>
+                                        <th>Cancelled</th>
+                                        <th>Rejected</th>
+                                        <th>Overdue</th>
+                                        <th>Completion Rate</th>
+                                        <th>Avg Resolution (days)</th>
+                                        <th>SLA Met Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($staffStats as $staffId => $data)
+                                    <tr>
+                                        <td>{{ $data['name'] }}</td>
+                                        <td>{{ $data['total'] }}</td>
+                                        <td>{{ $data['completed'] }}</td>
+                                        <td>{{ $data['in_progress'] }}</td>
+                                        <td>{{ $data['pending'] }}</td>
+                                        <td>{{ $data['cancelled'] }}</td>
+                                        <td>{{ $data['rejected'] ?? 0 }}</td>
+                                        <td>{{ $data['overdue'] ?? 0 }}</td>
+                                        <td>
+                                            {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) : 0 }}%
+                                        </td>
+                                        <td>{{ $data['avg_resolution'] }}</td>
+                                        <td>{{ $data['sla_met_rate'] }}%</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-</div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
@@ -458,17 +462,19 @@
         var statusChart = new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Completed', 'In Progress', 'Pending', 'Cancelled', 'Rejected'],
+                labels: ['Completed', 'In Progress', 'Pending', 'Cancelled', 'Rejected', 'Overdue'],
                 datasets: [{
                     data: [
                         {{ $stats['completed_requests'] }},
                         {{ $stats['in_progress_requests'] }},
                         {{ $stats['pending_requests'] }},
                         {{ $stats['cancelled_requests'] }},
-                        {{ $stats['rejected_requests'] ?? 0 }} // Added rejected requests
+                        {{ $stats['rejected_requests'] ?? 0 }}, // Added rejected requests
+                        {{ $stats['overdue_requests'] ?? 0 }} // Added overdue requests
+
                     ],
-                    backgroundColor: ['#1cc88a', '#f6c23e', '#36b9cc', '#e74a3b', '#858796'],
-                    hoverBackgroundColor: ['#17a673', '#dda20a', '#2c9faf', '#e02d1b', '#6e707e'],
+                    backgroundColor: ['#1cc88a', '#f6c23e', '#36b9cc', '#e74a3b', '#858796', '#ff9800'],
+                    hoverBackgroundColor: ['#17a673', '#dda20a', '#2c9faf', '#e02d1b', '#6e707e', '#ffaa4a'],
                     hoverBorderColor: "rgba(234, 236, 244, 1)",
                 }],
             },

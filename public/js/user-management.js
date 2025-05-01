@@ -2,6 +2,18 @@
 $('#addUserForm').on('submit', function(e) {
     e.preventDefault();
 
+    // Show loading indicator
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Creating new user account',
+        icon: 'info',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     // Validate role and student-specific fields if needed
     var role = $('#add-role').val();
 
@@ -12,17 +24,29 @@ $('#addUserForm').on('submit', function(e) {
         var studentId = $('#addUserForm input[name="student_id"]').val(); // More specific selector
 
         if (!college) {
-            alert('Please select a college');
+            Swal.fire({
+                title: 'Validation Error',
+                text: 'Please select a college',
+                icon: 'error'
+            });
             return;
         }
 
         if (!course) {
-            alert('Please select a course');
+            Swal.fire({
+                title: 'Validation Error',
+                text: 'Please select a course',
+                icon: 'error'
+            });
             return;
         }
 
         if (!studentId) {
-            alert('Please enter a student ID');
+            Swal.fire({
+                title: 'Validation Error',
+                text: 'Please enter a student ID',
+                icon: 'error'
+            });
             return;
         }
     }
@@ -36,15 +60,39 @@ $('#addUserForm').on('submit', function(e) {
         },
         success: function(response) {
             if (response.success) {
-                // Redirect to user-management page
-                window.location.href = '/user-management';
+                // Show success message
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'User has been created successfully',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Redirect to user-management page
+                    window.location.href = '/user-management';
+                });
             } else {
-                alert(response.error || 'Error adding user');
+                Swal.fire({
+                    title: 'Error',
+                    text: response.error || 'Error adding user',
+                    icon: 'error'
+                });
             }
         },
         error: function(xhr) {
             console.error('Error adding user:', xhr);
-            alert('Error adding user: ' + (xhr.responseJSON?.error || 'Unknown error'));
+            
+            let errorMessage = 'Unknown error occurred';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message;
+            }
+            
+            Swal.fire({
+                title: 'Error',
+                text: 'Error adding user: ' + errorMessage,
+                icon: 'error'
+            });
         }
     });
 });
@@ -77,7 +125,6 @@ const coursesMap = {
         { value: 'BTAF', label: 'Bachelor of Technology in Apparel and Fashion' },
         { value: 'BTNFT', label: 'Bachelor of Technology in Nutrition and Food Technology' },
         { value: 'BTPMT', label: 'Bachelor of Technology in Print Media Technology' }
-
     ],
     'CIE': [
         { value: 'BTA-ICT', label: 'Bachelor of Technology and Livelihood Education Major in Information and Communication Technology' },
@@ -107,7 +154,6 @@ const coursesMap = {
         { value: 'BSIS', label: 'Bachelor of Science in Information System' },
         { value: 'BSIT', label: 'Bachelor of Science in Information Technology'}
     ],
-
     'CLA': [
         { value: 'BSES', label: 'Bachelor of Arts in Management Major in Industrial Management' },
         { value: 'BSES', label: 'Bachelor of Science in Entrepreneurship Management' },
@@ -276,7 +322,20 @@ $(document).ready(function() {
     function applyFiltersAndSearch() {
         var selectedRole = $('#role').val();
         var selectedStatus = $('#status').val(); // Assuming you have a status filter with id="status"
-        var searchTerm = $('#user-search').val().toLowerCase().trim();
+        var searchTerm = $('#search-input').val().toLowerCase().trim(); // Updated to match the actual ID in your HTML
+
+        // Show loading indicator
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Fetching user data',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+            timer: 500, // Auto close after 500ms to avoid flickering for fast responses
+            showConfirmButton: false
+        });
 
         $.ajax({
             url: '/user-management', // Your endpoint to fetch users
@@ -287,17 +346,44 @@ $(document).ready(function() {
                 search: searchTerm
             },
             success: function(response) {
-                console.log('Filter/Search Response:', response);
+                Swal.close(); // Close the loading indicator
+                
                 if (response && response.users) {
                     updateTable(response.users);
+                    
+                    // Show result count message if searching
+                    if (searchTerm) {
+                        const count = response.users.length;
+                        Swal.fire({
+                            title: 'Search Results',
+                            text: `Found ${count} user${count !== 1 ? 's' : ''} matching "${searchTerm}"`,
+                            icon: 'info',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
                 } else {
                     console.error('Invalid response format:', response);
-                    // Optionally display a message to the user
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to load user data. Invalid response format.',
+                        icon: 'error'
+                    });
+                    // Also update the table with an error message
                     $('#users-table-body').html('<tr><td colspan="7" class="text-center">Error loading users.</td></tr>');
                 }
             },
             error: function(xhr) {
                 console.error('Error applying filters/search:', xhr);
+                
+                // Show error message
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to load user data. Please try again.',
+                    icon: 'error'
+                });
+                
                 // Display error message in the table
                 $('#users-table-body').html('<tr><td colspan="7" class="text-center">Error loading users. Please try again.</td></tr>');
             }
@@ -309,22 +395,38 @@ $(document).ready(function() {
 
     // Search Functionality - Trigger applyFiltersAndSearch on input (with debounce)
     let searchTimeout;
-    $('#user-search').on('input', function() {
+    $('#search-input').on('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(applyFiltersAndSearch, 300); // Debounce for 300ms
     });
-
-    // --- Other event listeners and functions ---
+    
+    // Search button click handler
+    $('.search-btn').on('click', function() {
+        applyFiltersAndSearch();
+    });
 
     // Edit User
     $(document).on('click', '.btn-edit', function() { // Use event delegation
         const userId = $(this).data('id');
+        const userName = $(this).closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
+
+        // Show loading
+        Swal.fire({
+            title: 'Loading...',
+            text: `Loading ${userName}'s information`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         // Fetch user data
         $.ajax({
             url: `/admin/users/${userId}`,
             method: 'GET',
             success: function(response) {
+                Swal.close();
+                
                 $('#edit-user-id').val(userId);
                 $('#edit-name').val(response.name);
                 $('#edit-username').val(response.username);
@@ -355,7 +457,11 @@ $(document).ready(function() {
                 $('#editUserModal').modal('show');
             },
             error: function(xhr) {
-                alert('Error fetching user data');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error fetching user data',
+                    icon: 'error'
+                });
             }
         });
     });
@@ -364,6 +470,18 @@ $(document).ready(function() {
     $('#saveUserChanges').click(function() {
         // Validate role and student-specific fields if needed
         var role = $('#edit-role').val();
+        var userId = $('#edit-user-id').val();
+        var userName = $('#edit-name').val();
+
+        // Show loading
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Saving user changes',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         // Additional validation for student role
         if (role === 'Student') {
@@ -372,36 +490,76 @@ $(document).ready(function() {
             var studentId = $('#edit-student-id').val();
 
             if (!college) {
-                alert('Please select a college');
+                Swal.fire({
+                    title: 'Validation Error',
+                    text: 'Please select a college',
+                    icon: 'error'
+                });
                 return;
             }
 
             if (!course) {
-                alert('Please select a course');
+                Swal.fire({
+                    title: 'Validation Error',
+                    text: 'Please select a course',
+                    icon: 'error'
+                });
                 return;
             }
 
             if (!studentId) {
-                alert('Please enter a student ID');
+                Swal.fire({
+                    title: 'Validation Error',
+                    text: 'Please enter a student ID',
+                    icon: 'error'
+                });
                 return;
             }
         }
 
         $.ajax({
-            url: '/update-user/' + $('#edit-user-id').val(),
+            url: '/update-user/' + userId,
             method: 'POST', // Should be PUT or PATCH for update, ensure route supports it
             data: $('#editUserForm').serialize(),
             success: function(response) {
                 if (response.success) {
-                    // Redirect or reload
-                    window.location.href = '/user-management';
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success',
+                        text: `User ${userName} has been updated successfully`,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Redirect or reload
+                        window.location.href = '/user-management';
+                    });
                 } else {
-                    alert(response.error || 'Error updating user');
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.error || 'Error updating user',
+                        icon: 'error'
+                    });
                 }
             },
             error: function(xhr) {
                 console.error('Error updating user:', xhr);
-                alert('Error updating user: ' + (xhr.responseJSON?.error || 'Unknown error'));
+                
+                let errorMessage = 'Unknown error occurred';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                } else if (xhr.status === 422 && xhr.responseJSON) {
+                    // Handle validation errors
+                    const errors = xhr.responseJSON.errors;
+                    if (errors) {
+                        errorMessage = Object.values(errors).flat().join('\n');
+                    }
+                }
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error updating user: ' + errorMessage,
+                    icon: 'error'
+                });
             }
         });
     });
@@ -447,28 +605,68 @@ $(document).ready(function() {
         }
     });
 
-
     // Toggle User Status
     // Use event delegation for dynamically loaded content
     $(document).on('click', '.btn-status', function() {
         const userId = $(this).data('id');
         const button = $(this);
         const statusBadge = button.closest('tr').find('.status-badge').first(); // Target the first status badge in the row
+        const userName = button.closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
-        $.ajax({
-            url: `/admin/users/${userId}/toggle-status`,
-            method: 'PUT', // Use PUT for status toggle
-            success: function(response) {
-                if (response.success) {
-                    // Update the status badge text and class
-                    statusBadge.removeClass('active inactive').addClass(response.status);
-                    statusBadge.text(response.status.charAt(0).toUpperCase() + response.status.slice(1));
-                } else {
-                     alert(response.error || 'Error updating status');
-                }
-            },
-            error: function(xhr) {
-                alert('Error updating status');
+        Swal.fire({
+            title: 'Change User Status',
+            text: `Do you want to change ${userName}'s account status?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, change it',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Updating user status',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: `/admin/users/${userId}/toggle-status`,
+                    method: 'PUT', // Use PUT for status toggle
+                    success: function(response) {
+                        if (response.success) {
+                            // Update the status badge text and class
+                            statusBadge.removeClass('active inactive').addClass(response.status);
+                            statusBadge.text(response.status.charAt(0).toUpperCase() + response.status.slice(1));
+                            
+                            // Show success message
+                            Swal.fire({
+                                title: 'Status Updated',
+                                text: `User status has been changed to ${response.status}`,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.error || 'Error updating status',
+                                icon: 'error'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to update user status',
+                            icon: 'error'
+                        });
+                    }
+                });
             }
         });
     });
@@ -476,46 +674,119 @@ $(document).ready(function() {
     // Reset Password
     // Use event delegation
     $(document).on('click', '.btn-reset', function() {
-        if (confirm('Are you sure you want to reset this user\'s password?')) {
-            const userId = $(this).data('id');
+        const userId = $(this).data('id');
+        const userName = $(this).closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
-            $.ajax({
-                url: `/admin/users/${userId}/reset-password`,
-                method: 'POST',
-                success: function(response) {
-                    alert(`Password has been reset successfully!\nNew password: ${response.default_password}\nPlease inform the user of their new password.`);
-                },
-                error: function(xhr) {
-                    alert('Error resetting password');
-                }
-            });
-        }
+        Swal.fire({
+            title: 'Reset Password',
+            text: `Are you sure you want to reset the password for ${userName}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, reset it',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Resetting password',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: `/admin/users/${userId}/reset-password`,
+                    method: 'POST',
+                    success: function(response) {
+                        Swal.fire({
+                            title: 'Password Reset',
+                            html: `
+                                <p>Password has been reset successfully!</p>
+                                <div class="alert alert-warning">
+                                    <strong>New password:</strong> ${response.default_password}
+                                </div>
+                                <p>Please inform the user of their new password.</p>
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to reset password',
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
     });
 
     // Delete User
     // Use event delegation
     $(document).on('click', '.btn-delete', function() {
-        if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-            const userId = $(this).data('id');
-            const row = $(this).closest('tr');
+        const userId = $(this).data('id');
+        const row = $(this).closest('tr');
+        const userName = row.find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
-            $.ajax({
-                url: `/admin/users/${userId}`,
-                type: 'DELETE',
-                success: function(response) {
-                    row.remove();
-                    alert(response.message || 'User deleted successfully');
-                },
-                error: function(xhr) {
-                    const errorMsg = xhr.responseJSON && xhr.responseJSON.error
-                        ? xhr.responseJSON.error
-                        : 'Failed to delete user. Please try again.';
-                    alert('Error: ' + errorMsg);
-                }
-            });
-        }
+        Swal.fire({
+            title: 'Delete User',
+            text: `Are you sure you want to delete ${userName}? This action cannot be undone.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            heightAuto: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Deleting user',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: `/admin/users/${userId}`,
+                    type: 'DELETE',
+                    success: function(response) {
+                        row.fadeOut(400, function() {
+                            $(this).remove();
+                        });
+                        
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: response.message || 'User deleted successfully',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    },
+                    error: function(xhr) {
+                        const errorMsg = xhr.responseJSON && xhr.responseJSON.error
+                            ? xhr.responseJSON.error
+                            : 'Failed to delete user. Please try again.';
+                            
+                        Swal.fire({
+                            title: 'Error',
+                            text: errorMsg,
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
     });
-
 
     // Bulk Delete Users
     $('#bulk-delete').click(function() {
@@ -524,38 +795,88 @@ $(document).ready(function() {
         }).get();
 
         if (selectedUsers.length === 0) {
-            alert('Please select users to delete');
+            Swal.fire({
+                title: 'No Users Selected',
+                text: 'Please select users to delete',
+                icon: 'warning'
+            });
             return;
         }
 
-        if (confirm(`Are you sure you want to delete ${selectedUsers.length} users? This action cannot be undone.`)) {
-            $.ajax({
-                url: '/admin/users/bulk-delete',
-                type: 'POST',
-                data: { users: selectedUsers },
-                success: function(response) {
-                    $('.user-select:checked').closest('tr').remove();
-                    alert(response.message || 'Selected users deleted successfully');
-                },
-                error: function(xhr) {
-                    const errorMsg = xhr.responseJSON && xhr.responseJSON.error
-                        ? xhr.responseJSON.error
-                        : 'Failed to delete users. Please try again.';
-                    alert('Error: ' + errorMsg);
-                }
-            });
-        }
+        Swal.fire({
+            title: 'Confirm Bulk Delete',
+            text: `Are you sure you want to delete ${selectedUsers.length} users? This action cannot be undone.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete them',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Deleting selected users',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '/admin/users/bulk-delete',
+                    type: 'POST',
+                    data: { users: selectedUsers },
+                    success: function(response) {
+                        $('.user-select:checked').closest('tr').fadeOut(400, function() {
+                            $(this).remove();
+                        });
+                        
+                        Swal.fire({
+                            title: 'Success',
+                            text: response.message || 'Selected users deleted successfully',
+                            icon: 'success'
+                        });
+                    },
+                    error: function(xhr) {
+                        const errorMsg = xhr.responseJSON && xhr.responseJSON.error
+                            ? xhr.responseJSON.error
+                            : 'Failed to delete users. Please try again.';
+                            
+                        Swal.fire({
+                            title: 'Error',
+                            text: errorMsg,
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
     });
 
     // Show verification modal
     $(document).on('click', '.btn-verify', function() {
         const userId = $(this).data('id');
+        const userName = $(this).closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
+
+        // Show loading
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Fetching student details',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         // Fetch student details
         $.ajax({
             url: `/admin/student/${userId}/details`,
             method: 'GET',
             success: function(student) {
+                Swal.close();
+                
                 $('#student-name').text(student.name);
                 $('#student-email').text(student.email);
                 $('#student-id').text(student.student_id);
@@ -570,8 +891,104 @@ $(document).ready(function() {
                 $('#verifyStudentModal').modal('show');
             },
             error: function(xhr) {
-                alert('Error fetching student details');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to fetch student details',
+                    icon: 'error'
+                });
                 console.error(xhr);
+            }
+        });
+    });
+
+    // Handle verification submission
+    $('#submit-verification').click(function() {
+        const userId = $('#verifyStudentModal').data('user-id');
+        const decision = $('#verification-decision').val();
+        const notes = $('#admin-notes-student').val(); // Use specific ID
+        const studentName = $('#student-name').text();
+
+        // Validate rejection notes
+        if (decision === 'reject' && !notes.trim()) {
+            Swal.fire({
+                title: 'Notes Required',
+                text: 'Please provide rejection notes',
+                icon: 'warning'
+            });
+            return;
+        }
+
+        // Show confirmation before submitting
+        const confirmTitle = decision === 'approve' ? 'Approve Student' : 'Reject Student';
+        const confirmText = decision === 'approve' 
+            ? `Are you sure you want to approve ${studentName}'s account?` 
+            : `Are you sure you want to reject ${studentName}'s account?`;
+        const confirmIcon = decision === 'approve' ? 'question' : 'warning';
+        const confirmButtonColor = decision === 'approve' ? '#3085d6' : '#d33';
+        
+        Swal.fire({
+            title: confirmTitle,
+            text: confirmText,
+            icon: confirmIcon,
+            showCancelButton: true,
+            confirmButtonText: 'Yes, confirm',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: confirmButtonColor
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Submitting verification decision',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                $.ajax({
+                    url: `/admin/student/${userId}/verify`,
+                    method: 'POST',
+                    data: {
+                        decision: decision,
+                        notes: notes
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Close the modal
+                            $('#verifyStudentModal').modal('hide');
+                            
+                            // Show success message
+                            Swal.fire({
+                                title: 'Success',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload(); // Reload to reflect changes
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.error || 'Error processing verification',
+                                icon: 'error'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Verification error:', xhr);
+                        let errorMessage = 'Unknown error occurred';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        }
+                        
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error processing verification: ' + errorMessage,
+                            icon: 'error'
+                        });
+                    }
+                });
             }
         });
     });
@@ -587,88 +1004,98 @@ $(document).ready(function() {
         }
     });
 
-
-    // Handle verification submission
-    $('#submit-verification').click(function() {
-        const userId = $('#verifyStudentModal').data('user-id');
-        const decision = $('#verification-decision').val();
-        const notes = $('#admin-notes-student').val(); // Use specific ID
-
-        // Validate rejection notes
-        if (decision === 'reject' && !notes.trim()) {
-            alert('Please provide rejection notes');
-            return;
-        }
-
-        $.ajax({
-            url: `/admin/student/${userId}/verify`,
-            method: 'POST',
-            data: {
-                decision: decision,
-                notes: notes
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    $('#verifyStudentModal').modal('hide');
-                    location.reload(); // Reload to reflect changes
-                } else {
-                    alert(response.error || 'Error processing verification');
-                }
-            },
-            error: function(xhr) {
-                console.error('Verification error:', xhr);
-                alert('Error processing verification: ' + (xhr.responseJSON?.error || 'Unknown error'));
-            }
-        });
-    });
-
     // Faculty/Staff Verification Submission
     $('#submit-facultystaff-verification').click(function() {
         const userId = $('#verifyFacultyStaffModal').data('user-id');
         const decision = $('#verification-decision-faculty').val();
         const notes = $('#admin-notes-faculty').val(); // Use specific ID
-
-        console.log('Verification Data:', {
-            userId: userId,
-            decision: decision,
-            notes: notes
-        });
+        const facultyName = $('#facultystaff-name').text();
 
         // Validate rejection notes
         if (decision === 'reject' && !notes.trim()) {
-            alert('Please provide rejection notes');
+            Swal.fire({
+                title: 'Notes Required',
+                text: 'Please provide rejection notes',
+                icon: 'warning'
+            });
             return;
         }
 
-        $.ajax({
-            url: `/admin/facultystaff/${userId}/verify`,
-            method: 'POST',
-            data: {
-                decision: decision,
-                notes: notes
-            },
-            success: function(response) {
-                console.log('Verification Success:', response);
-                if (response.success) {
-                    alert(response.message);
-                    $('#verifyFacultyStaffModal').modal('hide');
-                    location.reload(); // Reload to reflect changes
-                } else {
-                    alert(response.error || 'Error processing verification');
-                }
-            },
-            error: function(xhr) {
-                console.error('Verification Error:', xhr);
-                let errorMessage = 'Unknown error';
-                if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMessage = xhr.responseJSON.error;
-                } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.statusText) {
-                    errorMessage = xhr.statusText;
-                }
-                alert('Error processing verification: ' + errorMessage);
+        // Show confirmation before submitting
+        const confirmTitle = decision === 'approve' ? 'Approve Faculty/Staff' : 'Reject Faculty/Staff';
+        const confirmText = decision === 'approve' 
+            ? `Are you sure you want to approve ${facultyName}'s account?` 
+            : `Are you sure you want to reject ${facultyName}'s account?`;
+        const confirmIcon = decision === 'approve' ? 'question' : 'warning';
+        const confirmButtonColor = decision === 'approve' ? '#3085d6' : '#d33';
+        
+        Swal.fire({
+            title: confirmTitle,
+            text: confirmText,
+            icon: confirmIcon,
+            showCancelButton: true,
+            confirmButtonText: 'Yes, confirm',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: confirmButtonColor
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Submitting verification decision',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                $.ajax({
+                    url: `/admin/facultystaff/${userId}/verify`,
+                    method: 'POST',
+                    data: {
+                        decision: decision,
+                        notes: notes
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Close the modal
+                            $('#verifyFacultyStaffModal').modal('hide');
+                            
+                            // Show success message
+                            Swal.fire({
+                                title: 'Success',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload(); // Reload to reflect changes
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.error || 'Error processing verification',
+                                icon: 'error'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Verification Error:', xhr);
+                        let errorMessage = 'Unknown error';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.statusText) {
+                            errorMessage = xhr.statusText;
+                        }
+                        
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error processing verification: ' + errorMessage,
+                            icon: 'error'
+                        });
+                    }
+                });
             }
         });
     });
@@ -677,6 +1104,16 @@ $(document).ready(function() {
     $(document).on('click', '.btn-verify-faculty', function() {
         var $row = $(this).closest('tr');
         var userId = $(this).data('id');
+
+        // Show loading
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Fetching faculty/staff details',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         // Set user ID on modal
         $('#verifyFacultyStaffModal').data('user-id', userId);
@@ -688,18 +1125,54 @@ $(document).ready(function() {
         var email = userData[2].replace('<strong>Email: </strong>', '').trim();
         var verificationStatusText = $row.find('td:nth-child(6) .status-badge').text().trim();
 
+        // Get faculty/staff details via API
+        $.ajax({
+            url: `/admin/facultystaff/${userId}/details`,
+            method: 'GET',
+            success: function(response) {
+                // Close loading indicator
+                Swal.close();
+                
+                if (response.success) {
+                    // Use API data if available, otherwise use table data
+                    $('#facultystaff-name').text(response.user.name || name);
+                    $('#facultystaff-email').text(response.user.email || email);
+                    $('#facultystaff-username').text(response.user.username || username);
+                    $('#facultystaff-verification-status').text(response.user.verification_status || verificationStatusText);
+                } else {
+                    // Fall back to table data
+                    $('#facultystaff-name').text(name);
+                    $('#facultystaff-email').text(email);
+                    $('#facultystaff-username').text(username);
+                    $('#facultystaff-verification-status').text(verificationStatusText);
+                }
 
-        $('#facultystaff-name').text(name);
-        $('#facultystaff-email').text(email);
-        $('#facultystaff-username').text(username);
-        $('#facultystaff-verification-status').text(verificationStatusText);
+                // Reset modal state
+                $('#verification-decision-faculty').val('approve');
+                $('#rejection-notes-faculty').hide(); // Hide notes container
+                $('#admin-notes-faculty').val(''); // Clear notes textarea
 
-        // Reset modal state
-        $('#verification-decision-faculty').val('approve');
-        $('#rejection-notes-faculty').hide(); // Hide notes container
-        $('#admin-notes-faculty').val(''); // Clear notes textarea
+                $('#verifyFacultyStaffModal').modal('show');
+            },
+            error: function(xhr) {
+                Swal.close();
+                
+                // Still show the modal but with table data only
+                $('#facultystaff-name').text(name);
+                $('#facultystaff-email').text(email);
+                $('#facultystaff-username').text(username);
+                $('#facultystaff-verification-status').text(verificationStatusText);
 
-        $('#verifyFacultyStaffModal').modal('show');
+                // Reset modal state
+                $('#verification-decision-faculty').val('approve');
+                $('#rejection-notes-faculty').hide(); // Hide notes container
+                $('#admin-notes-faculty').val(''); // Clear notes textarea
+
+                $('#verifyFacultyStaffModal').modal('show');
+                
+                console.error('Error fetching faculty details:', xhr);
+            }
+        });
     });
 // End of the single, main $(document).ready() block
 });

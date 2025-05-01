@@ -19,37 +19,25 @@
     <!-- Include Sidebar -->
     @include('layouts.admin-sidebar')
 
-    <div class="user-content">
-        <div class="user-header">
-            <h1>User Management</h1>
-        </div>
-        
-        <!-- Restructured controls container -->
-        <div class="controls-container">
-            <!-- Left side - filters and search -->
-            <div class="filters-container">
-                <!-- Role Filter -->
+    <div class="content">
+        <h1>User Management</h1>
+        <div class="form-container">
+            <div class="dropdown-container">
                 <select name="user_role" id="role">
                     <option value="all">All Users</option>
                     <option value="student">Student</option>
                     <option value="faculty">Faculty & Staff</option>
                 </select>
-
                 <!-- Search Bar -->
                 <div class="search-container">
-                    <div class="search-input-wrapper">
-                        <input type="text" id="user-search" name="user-search" placeholder="Search users...">
-                        <i class="fas fa-search search-icon"></i>
-                    </div>
+                    <input type="text" name="search" id="search-input" placeholder="Search...">
+                    <button class="search-btn" type="button">Search</button>
                 </div>
+               
             </div>
-            
-            <!-- Right side - action button -->
             <button class="add-user-btn" data-toggle="modal" data-target="#addUserModal">
                 <i class="fas fa-plus"></i> Add User
             </button>
-        </div>
-
 
         <div class="user-table-container">
             <h4>Users List</h4>
@@ -155,10 +143,12 @@
 
     <!-- Include the modal from the admin > modal -->
     @include('admin.modal.usermanagement-modal')
-    @include('admin.modal.verify-student')
-    @include('admin.modal.verify-facultystaff')
+    
     <!-- Add jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Add SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Add Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>

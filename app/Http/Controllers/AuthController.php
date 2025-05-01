@@ -98,16 +98,25 @@ class AuthController extends Controller
     {
         $googleUser = Socialite::driver('google')->user();
 
+        // Split the name into first and last names
+        $nameParts = explode(' ', $googleUser->getName(), 2);
+        $firstName = $nameParts[0];
+        $lastName = isset($nameParts[1]) ? $nameParts[1] : ''; // Handle cases with only a first name
+
         // Find or create the user
         $user = User::firstOrCreate([
             'email' => $googleUser->getEmail(),
         ], [
             'username' => $googleUser->getName(), // Keep username as full name for simplicity or use email part
-            'first_name' => $googleUser->getName(), // Put full Google name in first_name
-            'last_name' => '', // Leave last_name blank for Google users
+            'first_name' => $firstName, // Use the extracted first name
+            'last_name' => $lastName,   // Use the extracted last name
+            'google_id' => $googleUser->getId(), // Store Google ID
             'password' => Hash::make(uniqid()), // Generate a random password
             'role' => 'Student', // Default role for Google login
             'email_verified_at' => now(), // Google accounts are pre-verified
+            'verification_status' => 'pending_admin', // Set initial verification status
+            'admin_verified' => false, // Admin verification needed
+            'status' => 'active', // Set user status to active
         ]);
 
         // Check if user is inactive before logging in

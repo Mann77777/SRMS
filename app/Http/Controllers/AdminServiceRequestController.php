@@ -120,7 +120,9 @@ class AdminServiceRequestController extends Controller
         $output = [];
 
         if ($request->user) {
-            $output[] = '<strong>Name:</strong> ' . htmlspecialchars($request->user->name) . '<br>';
+            // Combine first_name and last_name
+            $userName = trim(htmlspecialchars($request->user->first_name ?? '') . ' ' . htmlspecialchars($request->user->last_name ?? ''));
+            $output[] = '<strong>Name:</strong> ' . ($userName ?: 'N/A') . '<br>';
         }
 
         if (isset($request->service_category)) {

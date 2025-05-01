@@ -32,7 +32,7 @@ class PasswordResetNotification extends Notification
 
         return (new MailMessage)
             ->subject('TUP SRMS - Password Reset Request')
-            ->greeting('Hello ' . $notifiable->name . '!')
+            ->greeting('Hello ' . $notifiable->first_name . '!') // Use first_name
             ->line('You are receiving this email because we received a password reset request for your account.')
             ->action('Reset Password', $resetUrl)
             ->line('This password reset link will expire in 60 minutes.')

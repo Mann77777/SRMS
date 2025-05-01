@@ -19,38 +19,72 @@ class StudentServiceRequestController extends Controller
 {
     public function store(Request $request)
     {
-        // Validate basic required fields
-        $validatedData = $request->validate([
+        // Get authenticated user
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'You must be logged in to submit a request.');
+        }
+
+        // Base validation rules
+        $rules = [
             'service_category' => 'required|string',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'student_id' => 'required|string',
             'agreeTerms' => 'accepted',
+            'additional_notes' => 'nullable|string|max:1000', // Validate optional notes
+        ];
 
-        ]);
-
-        // Create a new student service request
-        $studentRequest = new StudentServiceRequest();
-        $studentRequest->user_id = Auth::id();
-        $studentRequest->service_category = $request->input('service_category');
-        $studentRequest->first_name = $request->input('first_name');
-        $studentRequest->last_name = $request->input('last_name');
-        $studentRequest->student_id = $request->input('student_id');
-        $studentRequest->status = 'Pending'; // Make sure status is explicitly set
-
-        // Handle optional fields based on service category
-        switch($request->input('service_category')) {
+        // Add category-specific validation rules
+        $serviceCategory = $request->input('service_category');
+        switch ($serviceCategory) {
             case 'reset_email_password':
             case 'reset_tup_web_password':
-                $studentRequest->account_email = $request->input('account_email');
+            case 'reset_ers_password': // Added missing ERS password reset case
+                $rules['account_email'] = 'required|email|max:255';
                 break;
-
             case 'change_of_data_ms':
             case 'change_of_data_portal':
-                $studentRequest->data_type = $request->input('data_type');
-                $studentRequest->new_data = $request->input('new_data');
+                $rules['data_type'] = 'required|string|max:255';
+                $rules['new_data'] = 'required|string|max:1000';
+                $rules['supporting_document'] = 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048'; // Made required as per form
+                break;
+            case 'request_led_screen':
+                $rules['preferred_date'] = 'required|date|after_or_equal:today';
+                $rules['preferred_time'] = 'required|string'; // Consider time format validation if needed
+                break;
+            case 'others':
+                $rules['description'] = 'required|string|max:1000';
+                break;
+            // Add case for 'create' if it requires specific fields, otherwise it only needs base validation
+            case 'create':
+                 // No additional fields needed for 'create' based on the form structure
+                 break;
+        }
 
-                // Handle file upload for supporting document
+        // Validate the request data
+        $validatedData = $request->validate($rules);
+
+        // Create a new student service request (only after validation passes)
+        $studentRequest = new StudentServiceRequest();
+        $studentRequest->user_id = $user->id;
+        $studentRequest->service_category = $validatedData['service_category']; // Use validated data
+        // Assign user details from Auth using the new first_name and last_name attributes
+        $studentRequest->first_name = $user->first_name; // Use the first_name field from User model
+        $studentRequest->last_name = $user->last_name;   // Use the last_name field from User model
+        // Ensure student_id exists on the user model before assigning
+        $studentRequest->student_id = $user->student_id ?? 'N/A'; // Provide default if potentially missing
+        $studentRequest->status = 'Pending';
+
+        // Assign validated optional fields based on service category
+        switch ($serviceCategory) {
+            case 'reset_email_password':
+            case 'reset_tup_web_password':
+            case 'reset_ers_password':
+                $studentRequest->account_email = $validatedData['account_email'];
+                break;
+            case 'change_of_data_ms':
+            case 'change_of_data_portal':
+                $studentRequest->data_type = $validatedData['data_type'];
+                $studentRequest->new_data = $validatedData['new_data'];
+                // Handle file upload (already validated)
                 if ($request->hasFile('supporting_document')) {
                     $file = $request->file('supporting_document');
                     $filename = time() . '_' . $file->getClientOriginalName();
@@ -58,98 +92,97 @@ class StudentServiceRequestController extends Controller
                     $studentRequest->supporting_document = $path;
                 }
                 break;
-
             case 'request_led_screen':
-                $studentRequest->preferred_date = $request->input('preferred_date');
-                $studentRequest->preferred_time = $request->input('preferred_time');
+                $studentRequest->preferred_date = $validatedData['preferred_date'];
+                $studentRequest->preferred_time = $validatedData['preferred_time'];
                 break;
-
             case 'others':
-                $studentRequest->description = $request->input('description');
+                $studentRequest->description = $validatedData['description'];
                 break;
         }
 
-         // Optional additional notes
-         $studentRequest->additional_notes = $request->input('additional_notes');
- 
-         // Add logging before save
+        // Assign validated optional additional notes
+        $studentRequest->additional_notes = $validatedData['additional_notes'] ?? null;
+
+        // Add logging before save
          \Log::info('Attempting to save student request with data:', [
              'user_id' => $studentRequest->user_id,
              'service_category' => $studentRequest->service_category, // Log the value being saved
-             'first_name' => $studentRequest->first_name,
-             'last_name' => $studentRequest->last_name,
-             'student_id' => $studentRequest->student_id,
+             'first_name' => $studentRequest->first_name, // From Auth::user()->first_name
+             'last_name' => $studentRequest->last_name,   // From Auth::user()->last_name
+             'student_id' => $studentRequest->student_id, // From Auth::user()
              'status' => $studentRequest->status,
               'additional_notes' => $studentRequest->additional_notes, // Log this too
           ]);
   
-          // Save the request with explicit success/failure logging
-          $saveSuccess = false;
-          try {
-              $saveSuccess = $studentRequest->save();
-              if ($saveSuccess) {
-                  \Log::info('Student request SAVED successfully.', ['request_id' => $studentRequest->id]);
-              } else {
-                  \Log::error('Student request save() method returned false.', ['request_data' => $studentRequest->toArray()]);
-              }
-          } catch (\Exception $e) {
-              \Log::error('Exception during Student request save.', [
-                  'error_message' => $e->getMessage(),
-                  'request_data' => $studentRequest->toArray(),
-                  'trace' => $e->getTraceAsString() // Optional: include stack trace for deep debug
-              ]);
-              // Optionally rethrow or handle the exception, e.g., return error to user
-              // For now, we just log it and let the process continue to see if redirect happens
-          }
-  
-          // Log after save attempt (indicates code reached this point)
-          \Log::info('Student request save block finished.', ['save_success' => $saveSuccess, 'request_id' => $studentRequest->id ?? null]);
-  
-          // Generate a unique display ID with SSR prefix (only if save was successful)
-          $displayId = $saveSuccess ? ('SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT)) : 'SAVE_FAILED';
-        $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
-
-        // Check if today is a non-working day (weekend or holiday)
-        $nonWorkingDayInfo = DateChecker::isNonWorkingDay();
-
-        // Send email notification to the user
-        Notification::route('mail', $request->user()->email)
-            ->notify(new ServiceRequestReceived(
-                $displayId, // Formatted display ID
-                $studentRequest->service_category,
-                $studentRequest->first_name . ' ' . $studentRequest->last_name,
-                $nonWorkingDayInfo // Pass the non-working day info
-        ));
-        // Notify admin users about the new request
+        // Save the request
+        $saveSuccess = false;
         try {
-            $admins = \App\Models\Admin::where('role', 'Admin')->get();
-            \Log::info('Notifying admins about new student request', [
-                'request_id' => $studentRequest->id,
-                'admin_count' => $admins->count()
-            ]);
-            foreach ($admins as $admin) {
-                $admin->notify(new \App\Notifications\RequestSubmitted($studentRequest));
-                \Log::info('Notification sent to admin', [
-                    'admin_id' => $admin->id,
-                    'admin_name' => $admin->name
+            $saveSuccess = $studentRequest->save();
+            if ($saveSuccess) {
+                \Log::info('Student request SAVED successfully.', ['request_id' => $studentRequest->id]);
+
+                // Generate display ID only on successful save
+                $displayId = 'SSR-' . date('Ymd') . '-' . str_pad($studentRequest->id, 4, '0', STR_PAD_LEFT);
+
+                // Check if today is a non-working day (weekend or holiday)
+                $nonWorkingDayInfo = DateChecker::isNonWorkingDay();
+
+                // Send email notification to the user
+                Notification::route('mail', $user->email)
+                    ->notify(new ServiceRequestReceived(
+                        $displayId,
+                        $studentRequest->service_category,
+                        $user->first_name . ' ' . $user->last_name, // Combine first and last name
+                        $nonWorkingDayInfo
+                    ));
+
+                // Notify admin users about the new request
+                try {
+                    $admins = \App\Models\Admin::where('role', 'Admin')->get();
+                    \Log::info('Notifying admins about new student request', [
+                        'request_id' => $studentRequest->id,
+                        'admin_count' => $admins->count()
+                    ]);
+                    foreach ($admins as $admin) {
+                        $admin->notify(new \App\Notifications\RequestSubmitted($studentRequest));
+                        \Log::info('Notification sent to admin', [
+                            'admin_id' => $admin->id,
+                            'admin_name' => $admin->name
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to notify admins about new student request', [
+                        'request_id' => $studentRequest->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Continue even if admin notification fails, but log it.
+                }
+
+                // Redirect back with success modal data
+                return redirect()->back()->with([
+                    'showSuccessModal' => true,
+                    'requestId' => $displayId,
+                    'serviceCategory' => $studentRequest->service_category,
+                    'nonWorkingDayInfo' => $nonWorkingDayInfo
                 ]);
+
+            } else {
+                \Log::error('Student request save() method returned false.', ['request_data' => $studentRequest->toArray()]);
+                return redirect()->back()->with('error', 'Failed to save the service request. Please try again.')->withInput();
             }
         } catch (\Exception $e) {
-            \Log::error('Failed to notify admins about new student request', [
-                'request_id' => $studentRequest->id,
-                'error' => $e->getMessage(),
+            \Log::error('Exception during Student request save.', [
+                'error_message' => $e->getMessage(),
+                'request_data' => $studentRequest->toArray(),
                 'trace' => $e->getTraceAsString()
             ]);
+            return redirect()->back()->with('error', 'An error occurred while saving the request: ' . $e->getMessage())->withInput();
         }
+    } // This closes the store method
 
-        // Redirect back with success modal data
-        return redirect()->back()->with([
-            'showSuccessModal' => true,
-            'requestId' => $displayId, // Use the formatted display ID
-            'serviceCategory' => $studentRequest->service_category,
-            'nonWorkingDayInfo' => $nonWorkingDayInfo // Add the non-working day info to the session
-        ]);
-    }
+    // Removed duplicated notification block from here
 
     public function create()
     {
@@ -215,6 +248,10 @@ class StudentServiceRequestController extends Controller
             $requests = $query->orderBy('created_at', 'desc')->paginate(10);
             $requests->appends($request->except('page'));
             \Log::info('Paginated results count: ' . $requests->count());
+
+            // Log the actual data being passed to the view
+            \Log::info('Requests data being passed to view for user ' . Auth::id() . ':', $requests->toArray());
+
 
             return view('users.myrequests', compact('requests'));
         }
@@ -338,10 +375,8 @@ class StudentServiceRequestController extends Controller
              return redirect()->route('myrequests')->with('error', 'This request cannot be edited as it is no longer pending.');
         }
 
+        // Removed validation for first_name, last_name, student_id
         $rules = [
-             'first_name' => 'required|string|max:255',
-             'last_name' => 'required|string|max:255',
-             'student_id' => 'required|string|max:50',
              // 'additional_notes' => 'nullable|string|max:1000', // Removed validation
              'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
          ];
@@ -366,9 +401,10 @@ class StudentServiceRequestController extends Controller
         $validatedData = $requestData->validate($rules);
 
          try {
-              $serviceRequest->first_name = $validatedData['first_name'];
-              $serviceRequest->last_name = $validatedData['last_name'];
-              $serviceRequest->student_id = $validatedData['student_id'];
+              // Removed assignment for first_name, last_name, student_id
+              // $serviceRequest->first_name = $validatedData['first_name'];
+              // $serviceRequest->last_name = $validatedData['last_name'];
+              // $serviceRequest->student_id = $validatedData['student_id'];
 
               switch ($serviceRequest->service_category) {
                 case 'reset_email_password':

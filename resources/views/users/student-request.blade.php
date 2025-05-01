@@ -59,31 +59,6 @@
 
                 </div>
 
-                <!-- Personal Information Form Template -->
-                <div id="personalInfoForm" style="display: none;">
-                    <div class="form-section">
-                        <h5>Personal Information</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label>First Name</label>
-                                <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label>Last Name</label>
-                                <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
-                            </div>
-                        </div>
-                    
-
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label>Student ID</label>
-                                <input type="text" class="form-control" name="student_id" placeholder="Student ID" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Additional Forms for Each Option -->
                 <div id="resetForm" style="display: none;">
                     <div class="form-section">
@@ -314,7 +289,7 @@
             }
             
             // Hide all additional form sections first
-            const sections = ['personalInfoForm', 'resetForm', 'changeOfDataForm', 'useled', 'otherServicesForm'];
+            const sections = ['resetForm', 'changeOfDataForm', 'useled', 'otherServicesForm']; // Removed 'personalInfoForm'
             sections.forEach(function(id) {
                 const element = document.getElementById(id);
                 if (element) {
@@ -342,16 +317,13 @@
 
             // Show appropriate form sections based on selected category
             switch(serviceCategory) {
-                case 'create':
-                    var personalInfoForm = document.getElementById('personalInfoForm');
-                    if (personalInfoForm) personalInfoForm.style.display = 'block';
-                    break;
+                // Removed 'create' case as it only showed personalInfoForm
                 case 'reset_email_password':
                 case 'reset_tup_web_password':
                 case 'reset_ers_password':
-                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    // var personalInfoForm = document.getElementById('personalInfoForm'); // Removed reference
                     var resetForm = document.getElementById('resetForm');
-                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    // if (personalInfoForm) personalInfoForm.style.display = 'block'; // Removed reference
                     if (resetForm) resetForm.style.display = 'block';
                     
                     // Add required to specific fields
@@ -360,9 +332,9 @@
                     break;
                 case 'change_of_data_ms':
                 case 'change_of_data_portal':
-                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    // var personalInfoForm = document.getElementById('personalInfoForm'); // Removed reference
                     var changeOfDataForm = document.getElementById('changeOfDataForm');
-                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    // if (personalInfoForm) personalInfoForm.style.display = 'block'; // Removed reference
                     if (changeOfDataForm) changeOfDataForm.style.display = 'block';
                     
                     // Add required to specific fields
@@ -375,9 +347,9 @@
                     if (supportingDocField) supportingDocField.setAttribute('required', 'required');
                     break;
                 case 'request_led_screen':
-                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    // var personalInfoForm = document.getElementById('personalInfoForm'); // Removed reference
                     var useLedForm = document.getElementById('useled');
-                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    // if (personalInfoForm) personalInfoForm.style.display = 'block'; // Removed reference
                     if (useLedForm) useLedForm.style.display = 'block';
                     
                     // Add required to specific fields
@@ -391,9 +363,9 @@
                     setMinimumDate();
                     break;
                 case 'others':
-                    var personalInfoForm = document.getElementById('personalInfoForm');
+                    // var personalInfoForm = document.getElementById('personalInfoForm'); // Removed reference
                     var otherServicesForm = document.getElementById('otherServicesForm');
-                    if (personalInfoForm) personalInfoForm.style.display = 'block';
+                    // if (personalInfoForm) personalInfoForm.style.display = 'block'; // Removed reference
                     if (otherServicesForm) otherServicesForm.style.display = 'block';
                     
                     // Add required to specific fields

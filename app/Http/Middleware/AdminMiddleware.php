@@ -17,15 +17,16 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if user is authenticated as admin
+        // Check if user is authenticated using the 'admin' guard
         if (Auth::guard('admin')->check()) {
-            // Check if the authenticated admin has the role 'Admin'
-            if (Auth::guard('admin')->user()->role === 'Admin') {
+            $user = Auth::guard('admin')->user();
+            // Allow access if the user has either 'Admin' or 'UITC Staff' role
+            if ($user->role === 'Admin' || $user->role === 'UITC Staff') {
                 return $next($request);
             }
         }
         
-        // If not authenticated as admin or doesn't have proper role, redirect to admin login
+        // If not authenticated via 'admin' guard or doesn't have the required role, redirect to admin login
         return redirect()->route('sysadmin_login')->with('error', 'You do not have admin access.');
     }
 }

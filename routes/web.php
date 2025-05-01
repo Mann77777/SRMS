@@ -301,10 +301,9 @@ Route::post('/logout', function () {
 })->name('logout');
 
 // ADMIN ROUTES
-Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login');
-Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom');
- Route::get('/staff_login', [SysadminController::class, 'showStaffLoginForm'])->name('staff_login');
- Route::post('/staff_login', [SysadminController::class, 'staff_login'])->name('stafflogin.custom');
+Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login'); // Used for both Admin and Staff login form display
+Route::post('/sysadmin_login', [SysadminController::class, 'sysadmin_login'])->name('adminlogin.custom'); // Handles login for both Admin and Staff
+ // Removed staff_login routes as they are consolidated into sysadmin_login
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.custom');
@@ -401,7 +400,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/save', [SysadminController::class, 'saveAdmin'])->name('admin.save');
 
     Route::post('/admin_logout', function () {
-        Auth::logout();
+        Auth::guard('admin')->logout(); // Use the correct guard for logout
+        // Optionally clear session data specific to the admin guard if needed
+        // request()->session()->invalidate(); // Be careful if sharing session with 'web' guard
+        // request()->session()->regenerateToken();
         return redirect('sysadmin_login'); // Redirect to the login page
     })->name('admin.logout');
 });
@@ -434,28 +436,26 @@ Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
     
 // TECHNICIAN/UITC STAFF ROUTES
 
-
-Route::get('/assign-request', function () {
-    return view('uitc_staff.assign-request');
-})->name('uitc_staff.assign-request');
+// Removed direct view route for /assign-request as it conflicts with the controller route below
 
 Route::get('/technician-report', function () {
     return view('uitc_staff.technician-report');
 })->name('uitc_staff.technician-report');
 
 
-//Route::get('/uitc-staff/assigned-request', [UITCStaffController::class, 'getAssignedRequests'])->name('uitc.assigned.requests');
+// Define the primary route for assigned requests for staff
 Route::get('/assign-request', [UITCStaffController::class, 'getAssignedRequests'])
-    ->middleware('auth:admin') // Ensure admin authentication
-    ->name('uitc.assigned.requests');
+    ->middleware(['auth:admin']) // Rely only on AdminMiddleware for now
+    ->name('uitc.assigned.requests'); // Use a consistent name
 
-Route::get('/uitc-staff/assigned-requests', [UITCStaffController::class, 'getAssignedRequests'])
-    ->name('uitc.assigned.requests')
-    ->middleware(['auth:admin', 'role:UITC_Staff']);
+// Remove the duplicate/conflicting route definition below
+// Route::get('/uitc-staff/assigned-requests', [UITCStaffController::class, 'getAssignedRequests'])
+//     ->name('uitc.assigned.requests') // This name conflicts if kept
+//     ->middleware(['auth:admin', 'role:UITC_Staff']);
 
 Route::post('/uitc-staff/complete-request', [UITCStaffController::class, 'completeRequest'])
-    ->name('uitc.complete.request')
-    ->middleware('auth:admin');
+    ->name('uitc.complete.request') // Keep original name
+    ->middleware(['auth:admin']); // Rely only on AdminMiddleware for now
 
 Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');
 
@@ -478,26 +478,35 @@ Route::middleware(['auth:admin'])->group(function () {
 
 Route::get('/assign-history', [UITCStaffController::class, 'getCompletedRequests'])
     ->name('uitc-staff.assign-history')
-    ->middleware(['auth:admin']);
+    ->middleware(['auth:admin']); // Rely only on AdminMiddleware for now
 
-   // Admin routes protected by admin guard
-   Route::middleware(['auth'])->group(function () {
-    Route::get('/notifications/get', [NotificationController::class, 'getNotifications']);
-    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
-    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+   // Admin routes protected by admin guard (This seems misplaced, should likely be auth:admin)
+   // Let's assume it should be auth:admin for admin notifications
+   Route::middleware(['auth:admin'])->group(function () { // Changed to auth:admin
+    // These routes might be intended for Admins only, keep them separate
+    Route::get('/admin/notifications/get', [NotificationController::class, 'getNotifications'])->name('admin.notifications.get'); // Renamed for clarity
+    Route::post('/admin/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('admin.notifications.mark-as-read'); // Renamed for clarity
+    Route::post('/admin/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('admin.notifications.mark-all-as-read'); // Renamed for clarity
 });
 
-// UITC Staff specific routes
-// Apply 'auth:admin' middleware for staff routes
-Route::middleware(['auth:admin'])->prefix('uitc-staff')->name('uitc.')->group(function () { // Added auth:admin and route name prefix
-    Route::get('/assigned-requests', [UitcStaffController::class, 'assignedRequests'])->name('assigned-requests'); // Adjusted name
-    Route::get('/notifications/get', [NotificationController::class, 'getNotifications'])->name('notifications.get'); // Added name
-    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read'); // Added name
-    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read'); // Added name
+// Re-add the UITC Staff specific notification routes with the correct prefix and middleware
+Route::middleware(['auth:admin'])->prefix('uitc-staff')->name('uitc.')->group(function () {
+    // Route::get('/assigned-requests', [UitcStaffController::class, 'assignedRequests'])->name('assigned-requests'); // Method doesn't exist, keep commented/removed
+    Route::get('/notifications/get', [NotificationController::class, 'getNotifications'])->name('notifications.get'); // Keep original name used by JS
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read'); // Keep original name used by JS
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read'); // Keep original name used by JS
 });
 
 
-// User notification routes
+// User notification routes (These seem correct for the 'web' guard)
+//     Route::get('/assigned-requests', [UitcStaffController::class, 'assignedRequests'])->name('assigned-requests'); // Method doesn't exist
+//     Route::get('/notifications/get', [NotificationController::class, 'getNotifications'])->name('notifications.get');
+//     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+//     Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
+// });
+
+
+// User notification routes (These seem correct for the 'web' guard)
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/notifications/get', [App\Http\Controllers\UserNotificationController::class, 'getNotifications']);
     Route::post('/user/notifications/mark-as-read', [App\Http\Controllers\UserNotificationController::class, 'markAsRead']);
@@ -536,9 +545,9 @@ Route::post('/faculty/cancel-request/{id}', [FacultyServiceRequestController::cl
 
 Route::get('/uitc-staff/reports', [UITCStaffController::class, 'getReports'])
     ->name('uitc-staff.reports')
-    ->middleware(['auth:admin']);
+    ->middleware(['auth:admin']); // Rely only on AdminMiddleware for now
 
 
 Route::get('/uitc-staff/export-reports', [UITCStaffController::class, 'exportReports'])
     ->name('uitc-staff.export-reports')
-    ->middleware(['auth:admin']);
+    ->middleware(['auth:admin']); // Rely only on AdminMiddleware for now

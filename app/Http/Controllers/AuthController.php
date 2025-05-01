@@ -59,7 +59,8 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255', // Changed from name
+            'last_name' => 'required|string|max:255',  // Added last_name
             'username' => 'required|string|max:255|unique:users|alpha_dash',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
@@ -67,7 +68,8 @@ class AuthController extends Controller
         ]);
     
         $user = User::create([
-            'name' => $validatedData['name'],
+            'first_name' => $validatedData['first_name'], // Changed from name
+            'last_name' => $validatedData['last_name'],   // Added last_name
             'username' => $validatedData['username'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
@@ -100,8 +102,9 @@ class AuthController extends Controller
         $user = User::firstOrCreate([
             'email' => $googleUser->getEmail(),
         ], [
-            'username' => $googleUser->getName(),
-            'name' => $googleUser->getName(),
+            'username' => $googleUser->getName(), // Keep username as full name for simplicity or use email part
+            'first_name' => $googleUser->getName(), // Put full Google name in first_name
+            'last_name' => '', // Leave last_name blank for Google users
             'password' => Hash::make(uniqid()), // Generate a random password
             'role' => 'Student', // Default role for Google login
             'email_verified_at' => now(), // Google accounts are pre-verified

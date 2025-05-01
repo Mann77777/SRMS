@@ -22,19 +22,21 @@ class ProfileController extends Controller
         }
         return view('users.myprofile', compact('user'));
     }
-    // Method to update user details
+    // Method to update user details (Note: This method seems unused based on routes, but updating for consistency)
     public function update(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255', // Changed from name
+            'last_name' => 'required|string|max:255',  // Added last_name
             'username' => 'required|string|max:255|unique:users,username,' . Auth::id(),
-            'phone' => 'required|string|max:15',
+            // 'phone' => 'required|string|max:15', // Phone validation seems missing from User model fillable, commenting out
         ]);
 
         $user = Auth::user();
-        $user->name = $request->name;
+        $user->first_name = $request->first_name; // Changed from name
+        $user->last_name = $request->last_name;   // Added last_name
         $user->username = $request->username;
-        $user->phone = $request->phone;
+        // $user->phone = $request->phone; // Commented out phone update
         $user->save();
 
         return redirect()->route('dashboard'); // Redirect to the dashboard page

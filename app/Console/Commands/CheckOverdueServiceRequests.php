@@ -372,10 +372,10 @@ class CheckOverdueServiceRequests extends Command
                 
                 if (method_exists($request, 'getFullNameAttribute')) {
                     $requestorName = $request->getFullNameAttribute();
-                } elseif (isset($request->first_name) && isset($request->last_name)) {
+                } elseif (isset($request->first_name) && isset($request->last_name)) { // This checks the request model itself, might be intended? Keep for now.
                     $requestorName = $request->first_name . ' ' . $request->last_name;
-                } elseif ($user->name) {
-                    $requestorName = $user->name;
+                } elseif (isset($user->first_name)) { // Check if user has first_name
+                    $requestorName = $user->first_name . (isset($user->last_name) ? ' ' . $user->last_name : ''); // Combine first and last name from user
                 }
                 
                 // Send notification

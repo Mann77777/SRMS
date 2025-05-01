@@ -32,7 +32,9 @@ class UITCStaffController extends Controller
                 ->leftJoin('users', 'student_service_requests.user_id', '=', 'users.id')
                 ->select(
                     'student_service_requests.*',
-                    'users.name as requester_name',
+                    // Select first_name and last_name separately
+                    'users.first_name as requester_first_name', 
+                    'users.last_name as requester_last_name',
                     'users.role as user_role',
                     'users.email as requester_email',
                     DB::raw("'student' as request_type")
@@ -43,7 +45,9 @@ class UITCStaffController extends Controller
                 ->leftJoin('users', 'faculty_service_requests.user_id', '=', 'users.id')
                 ->select(
                     'faculty_service_requests.*',
-                    'users.name as requester_name',
+                     // Select first_name and last_name separately
+                    'users.first_name as requester_first_name',
+                    'users.last_name as requester_last_name',
                     'users.role as user_role',
                     'users.email as requester_email',
                     DB::raw("'faculty' as request_type")
@@ -65,18 +69,22 @@ class UITCStaffController extends Controller
                 $search = $httpRequest->input('search');
                 
                 $studentQuery->where(function($q) use ($search) {
+                    // Search first_name OR last_name in users table
                     $q->where('student_service_requests.first_name', 'like', "%{$search}%")
                     ->orWhere('student_service_requests.last_name', 'like', "%{$search}%")
                     ->orWhere('student_service_requests.service_category', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.first_name', 'like', "%{$search}%") 
+                    ->orWhere('users.last_name', 'like', "%{$search}%")
                     ->orWhere('student_service_requests.id', 'like', "%{$search}%");
                 });
                 
                 $facultyQuery->where(function($q) use ($search) {
+                    // Search first_name OR last_name in users table
                     $q->where('faculty_service_requests.first_name', 'like', "%{$search}%")
                     ->orWhere('faculty_service_requests.last_name', 'like', "%{$search}%")
                     ->orWhere('faculty_service_requests.service_category', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.first_name', 'like', "%{$search}%")
+                    ->orWhere('users.last_name', 'like', "%{$search}%")
                     ->orWhere('faculty_service_requests.id', 'like', "%{$search}%");
                 });
             }
@@ -131,18 +139,31 @@ class UITCStaffController extends Controller
                 ]);
             }
             
-            // Return view with assigned requests
+            // Restore original return view statement
             return view('uitc_staff.assign-request', [
                 'assignedRequests' => $paginatedRequests,
                 'totalRequests' => $total,
                 'currentPage' => $page
             ]);
+            // Removed temporary test code // Ensure this comment is removed if the test code was actually removed previously
             
         } catch (\Exception $e) {
-            // Log the error
-            Log::error('Error fetching assigned requests: ' . $e->getMessage(), [
+            // Log the error with more context
+            Log::error('EXCEPTION CAUGHT in getAssignedRequests: ' . $e->getMessage(), [ // Added specific marker
                 'staff_id' => Auth::guard('admin')->id() ?? 'Unknown',
-                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'currentPage' => $page
+            ]);
+            
+        } catch (\Exception $e) {
+            // Log the error with more context
+            Log::error('EXCEPTION CAUGHT in getAssignedRequests: ' . $e->getMessage(), [ // Added specific marker
+                'staff_id' => Auth::guard('admin')->id() ?? 'Unknown',
+                'error_class' => get_class($e),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
@@ -170,10 +191,14 @@ class UITCStaffController extends Controller
         // Name information
         $name = '';
         if (isset($serviceRequest->first_name) && isset($serviceRequest->last_name) && 
-            !empty($serviceRequest->first_name) && !empty($serviceRequest->last_name)) {
-            $name = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+            // Use requester_first_name and requester_last_name from the query
+            !empty($serviceRequest->requester_first_name)) {
+            $name = trim($serviceRequest->requester_first_name . ' ' . $serviceRequest->requester_last_name);
+        // Fallback to request's own name fields if user join failed (less likely now)
+        } elseif (isset($serviceRequest->first_name) && !empty($serviceRequest->first_name)) {
+             $name = trim($serviceRequest->first_name . ' ' . $serviceRequest->last_name);
         } else {
-            $name = isset($serviceRequest->requester_name) ? $serviceRequest->requester_name : 'N/A';
+             $name = 'N/A';
         }
         $html .= '<strong>Name:</strong> ' . $name . '<br>';
         
@@ -540,7 +565,9 @@ class UITCStaffController extends Controller
                 ->leftJoin('users', 'student_service_requests.user_id', '=', 'users.id')
                 ->select(
                     'student_service_requests.*',
-                    'users.name as requester_name',
+                    // Select first_name and last_name separately
+                    'users.first_name as requester_first_name', 
+                    'users.last_name as requester_last_name',
                     'users.role as user_role',
                     'users.email as requester_email',
                     DB::raw("'student' as request_type")
@@ -551,7 +578,9 @@ class UITCStaffController extends Controller
                 ->leftJoin('users', 'faculty_service_requests.user_id', '=', 'users.id')
                 ->select(
                     'faculty_service_requests.*',
-                    'users.name as requester_name',
+                    // Select first_name and last_name separately
+                    'users.first_name as requester_first_name', 
+                    'users.last_name as requester_last_name',
                     'users.role as user_role',
                     'users.email as requester_email',
                     DB::raw("'faculty' as request_type")
@@ -578,18 +607,22 @@ class UITCStaffController extends Controller
             // Apply search filter if provided
             if (!empty($search)) {
                 $studentQuery->where(function($q) use ($search) {
+                    // Search first_name OR last_name in users table
                     $q->where('student_service_requests.first_name', 'like', "%{$search}%")
                     ->orWhere('student_service_requests.last_name', 'like', "%{$search}%")
                     ->orWhere('student_service_requests.service_category', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.first_name', 'like', "%{$search}%") 
+                    ->orWhere('users.last_name', 'like', "%{$search}%")
                     ->orWhere('student_service_requests.id', 'like', "%{$search}%");
                 });
                 
                 $facultyQuery->where(function($q) use ($search) {
+                    // Search first_name OR last_name in users table
                     $q->where('faculty_service_requests.first_name', 'like', "%{$search}%")
                     ->orWhere('faculty_service_requests.last_name', 'like', "%{$search}%")
                     ->orWhere('faculty_service_requests.service_category', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.first_name', 'like', "%{$search}%") 
+                    ->orWhere('users.last_name', 'like', "%{$search}%")
                     ->orWhere('faculty_service_requests.id', 'like', "%{$search}%");
                 });
             }
@@ -655,10 +688,12 @@ class UITCStaffController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            // Log the error
-            Log::error('Error fetching completed requests: ' . $e->getMessage(), [
+            // Log the error with more context
+            Log::error('EXCEPTION CAUGHT in getCompletedRequests: ' . $e->getMessage(), [ // Added specific marker
                 'staff_id' => Auth::guard('admin')->id() ?? 'Unknown',
-                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             

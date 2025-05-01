@@ -56,7 +56,7 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
+        'auth' => \Illuminate\Auth\Middleware\Authenticate::class, // Point to default Laravel Authenticate middleware
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -70,7 +70,7 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'staff' => \App\Http\Middleware\AuthenticateStaff::class,  //Add the staff middleware
         'check.student' => \App\Http\Middleware\CheckStudentAccess::class,
-        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        // 'admin' => \App\Http\Middleware\AdminMiddleware::class, // Removed duplicate alias
         'role' => \App\Http\Middleware\CheckRole::class,
         'no-cache' => \App\Http\Middleware\NoCacheHeaders::class, // Alias for NoCacheHeaders middleware
     ];

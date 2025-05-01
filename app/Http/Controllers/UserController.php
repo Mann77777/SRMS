@@ -33,7 +33,9 @@ class UserController extends Controller
         if ($searchTerm) {
             $searchTermLower = strtolower($searchTerm); // Convert search term to lowercase
             $usersQuery->where(function ($q) use ($searchTermLower) {
-                $q->whereRaw('LOWER(name) LIKE ?', ["%{$searchTermLower}%"])
+                // Search first_name OR last_name
+                $q->whereRaw('LOWER(first_name) LIKE ?', ["%{$searchTermLower}%"])
+                  ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$searchTermLower}%"])
                   ->orWhereRaw('LOWER(username) LIKE ?', ["%{$searchTermLower}%"])
                   ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchTermLower}%"]);
                   // Add other fields to search if needed, e.g., student_id
@@ -61,7 +63,8 @@ class UserController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string|max:255',
+                'first_name' => 'required|string|max:255', // Changed
+                'last_name' => 'required|string|max:255',  // Added
                 'username' => 'required|string|max:255|unique:users',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
@@ -72,7 +75,8 @@ class UserController extends Controller
             ]);
 
             $user = User::create([
-                'name' => $request->name,
+                'first_name' => $request->first_name, // Changed
+                'last_name' => $request->last_name,   // Added
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
@@ -179,7 +183,8 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255', // Changed
+            'last_name' => 'required|string|max:255',  // Added
             'username' => 'required|string|max:255|unique:users,username,'.$user->id,
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'role' => 'required|string|in:Student,Faculty & Staff',
@@ -189,7 +194,8 @@ class UserController extends Controller
         ]);
     
         $user->update([
-            'name' => $request->name,
+            'first_name' => $request->first_name, // Changed
+            'last_name' => $request->last_name,   // Added
             'username' => $request->username,
             'email' => $request->email,
             'role' => $request->role,
@@ -439,7 +445,7 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'user' => [
-                    'name' => $user->name,
+                    'name' => $user->first_name . ' ' . $user->last_name, // Combine names
                     'email' => $user->email,
                     'username' => $user->username,
                     'verification_status' => $user->verification_status ?? 'Pending'

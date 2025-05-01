@@ -33,13 +33,13 @@
                     <img src="{{ asset('images/default-avatar.png') }}" alt="Default Profile Image" class="profile-img">
                 @endif
             </div>
-            <h3 class="username">{{ Auth::user()->name }}</h3>
+            <h3 class="username">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</h3>
         </div>
         
         <div class="user-info">
             <p>
                 <span class="label">Name:</span>
-                <span class="user-data">{{ Auth::user()->name }}</span>
+                <span class="user-data">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</span>
             </p>
             <p>  
                 <span class="label">Username:</span>

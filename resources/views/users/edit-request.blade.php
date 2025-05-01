@@ -105,26 +105,6 @@
                 </div>
             </div>
 
-            {{-- Common Fields --}}
-            <div class="form-section">
-                <h5>User Details</h5>
-                 <div class="form-group">
-                    <label for="first_name">First Name</label>
-                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ old('first_name', $request->first_name) }}" required>
-                </div>
-                <div class="form-group">
-                    <label for="last_name">Last Name</label>
-                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ old('last_name', $request->last_name) }}" required>
-                 </div>
-                 @if($isStudent)
-                 <div class="form-group">
-                     <label for="student_id">Student ID</label>
-                     <input type="text" class="form-control" id="student_id" name="student_id" value="{{ old('student_id', $request->student_id) }}" required>
-                 </div>
-                 @endif
-             </div>
-
-
              {{-- Service Specific Fields --}}
             <div class="form-section">
                 <h5>Service Specific Details</h5>

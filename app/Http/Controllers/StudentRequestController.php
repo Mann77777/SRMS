@@ -50,7 +50,7 @@ class StudentRequestController extends Controller
                 'student_forms' => $studentForms,
                 'student_info' => [
                     'id' => $user->id,
-                    'name' => $user->name,
+                    'name' => $user->first_name . ' ' . $user->last_name, // Combine first and last name
                     'email' => $user->email
                 ]
             ]);

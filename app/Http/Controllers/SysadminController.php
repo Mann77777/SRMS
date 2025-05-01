@@ -20,16 +20,28 @@ class SysadminController extends Controller
     {
         $credentials = $request->only('username', 'password');
 
-        // Log credentials for debugging (do NOT do this in production)
-        \Log::info('Attempting login with credentials: ', $credentials);
+        // Log credentials for debugging
+        \Log::info('Attempting admin/staff login with credentials: ', $credentials);
 
+        // Attempt login using the 'admin' guard
         if (Auth::guard('admin')->attempt($credentials)) {
-            \Log::info('Login successful for admin'. $credentials['username']);
-            
-            return redirect()->route('admin.dashboard');
+            $user = Auth::guard('admin')->user();
+            \Log::info('Login attempt successful for user: ' . $user->username . ' with role: ' . $user->role);
+
+            // Check if the logged-in user has the 'Admin' or 'UITC Staff' role
+            if ($user->role === 'Admin' || $user->role === 'UITC Staff') {
+                \Log::info('Redirecting user ' . $user->username . ' to admin dashboard.');
+                // Redirect to the intended staff/admin dashboard
+                return redirect()->intended(route('admin.dashboard')); 
+            } else {
+                // If role is not allowed, log them out and show error
+                Auth::guard('admin')->logout();
+                \Log::warning('Login successful but role is not Admin or UITC Staff for user: ' . $user->username);
+                return redirect()->back()->with('error', 'Access denied. You do not have the required role.');
+            }
         }
 
-        \Log::warning('Login failed for admin');
+        \Log::warning('Admin/Staff login failed for username: ' . $credentials['username']);
         return redirect()->back()->with('error', 'Invalid credentials');
     }
 
@@ -60,6 +72,9 @@ class SysadminController extends Controller
         // Redirect to login with a success message
         return redirect()->route('sysadmin_login')->with('success', 'Admin registered successfully!');
     }
+
+    // Removed showStaffLoginForm and staff_login methods as they are consolidated into sysadmin_login
+
     // Show the admin dashboard
     public function showAdminDashboard()
     {

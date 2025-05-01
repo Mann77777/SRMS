@@ -24,7 +24,8 @@ class CheckRole
         }
 
         // Check if role is allowed
-        if ($role === 'UITC_Staff' && Auth::guard('admin')->user()->role === 'UITC Staff') {
+        // Ensure the role string matches exactly what's expected from the route definition and the database
+        if ($role === 'UITC Staff' && Auth::guard('admin')->user()->role === 'UITC Staff') { // Changed 'UITC_Staff' to 'UITC Staff'
             return $next($request);
         }
         

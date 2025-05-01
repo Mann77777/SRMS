@@ -152,6 +152,7 @@ class AdminReportController extends Controller
                 'in_progress_requests' => 0,
                 'pending_requests' => 0,
                 'cancelled_requests' => 0,
+                'overdue_requests' => 0,
                 'avg_resolution_time' => 0
             ];
             
@@ -341,6 +342,12 @@ class AdminReportController extends Controller
             $worksheet->setCellValue('D11', 'Rejected');
             $worksheet->setCellValue('E11', $stats['rejected_requests']);
             $worksheet->setCellValue('F11', $stats['total_requests'] > 0 ? round(($stats['rejected_requests'] / $stats['total_requests']) * 100, 1) . '%' : '0%');
+            
+            $worksheet->setCellValue('D12', 'Overdue'); // Add this 
+            $worksheet->setCellValue('E12', $stats['overdue_requests'] ?? 0); // Add this
+            $worksheet->setCellValue('F12', $stats['total_requests'] > 0 ? round((($stats['overdue_requests'] ?? 0) / $stats['total_requests']) * 100, 1) . '%' : '0%'); // Add this
+            
+            
             // Service Category Breakdown
             $worksheet->setCellValue('A13', 'SERVICE CATEGORY BREAKDOWN');
             $worksheet->getStyle('A13')->getFont()->setBold(true);
@@ -352,8 +359,9 @@ class AdminReportController extends Controller
             $worksheet->setCellValue('E14', 'Pending');
             $worksheet->setCellValue('F14', 'Cancelled');
             $worksheet->setCellValue('G14', 'Rejected'); // Add this
-            $worksheet->setCellValue('H14', 'Completion Rate'); // Shift these columns
-            $worksheet->setCellValue('I14', 'Avg Resolution (days)');            
+            $worksheet->setCellValue('H14', 'Overdue'); // Add this
+            $worksheet->setCellValue('I14', 'Completion Rate'); // Shift these columns
+            $worksheet->setCellValue('J14', 'Avg Resolution (days)');            
             
             $row = 15;
             foreach ($categoryStats as $category => $data) {
@@ -364,8 +372,9 @@ class AdminReportController extends Controller
                 $worksheet->setCellValue('E' . $row, $data['pending']);
                 $worksheet->setCellValue('F' . $row, $data['cancelled']);
                 $worksheet->setCellValue('G' . $row, $data['rejected'] ?? 0); // Add rejected
-                $worksheet->setCellValue('H' . $row, $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) . '%' : '0%');
-                $worksheet->setCellValue('I' . $row, is_numeric($data['avg_resolution']) ? $data['avg_resolution'] : 'N/A');
+                $worksheet->setCellValue('H' . $row, $data['overdue'] ?? 0); // Add rejected
+                $worksheet->setCellValue('I' . $row, $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) . '%' : '0%');
+                $worksheet->setCellValue('J' . $row, is_numeric($data['avg_resolution']) ? $data['avg_resolution'] : 'N/A');
                 $row++;
             }
             
@@ -418,9 +427,10 @@ class AdminReportController extends Controller
             $staffSheet->setCellValue('E3', 'Pending');
             $staffSheet->setCellValue('F3', 'Cancelled');
             $staffSheet->setCellValue('G3', 'Rejected'); // Add this
-            $staffSheet->setCellValue('H3', 'Completion Rate'); // Shift these columns
-            $staffSheet->setCellValue('I3', 'Avg Resolution (days)');
-            $staffSheet->setCellValue('J3', 'SLA Met Rate');
+            $staffSheet->setCellValue('H3', 'Overdue'); 
+            $staffSheet->setCellValue('I3', 'Completion Rate'); // Shift these columns
+            $staffSheet->setCellValue('J3', 'Avg Resolution (days)');
+            $staffSheet->setCellValue('K3', 'SLA Met Rate');
             
             
             $staffRow = 4;
@@ -432,9 +442,10 @@ class AdminReportController extends Controller
                 $staffSheet->setCellValue('E' . $staffRow, $data['pending']);
                 $staffSheet->setCellValue('F' . $staffRow, $data['cancelled']);
                 $staffSheet->setCellValue('G' . $staffRow, $data['rejected'] ?? 0); // Add rejected
-                $staffSheet->setCellValue('H' . $staffRow, $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) . '%' : '0%');
-                $staffSheet->setCellValue('I' . $staffRow, $data['avg_resolution']);
-                $staffSheet->setCellValue('J' . $staffRow, $data['sla_met_rate'] . '%');
+                $staffSheet->setCellValue('H' . $staffRow, $data['overdue'] ?? 0); // Add rejected
+                $staffSheet->setCellValue('I' . $staffRow, $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100, 1) . '%' : '0%');
+                $staffSheet->setCellValue('J' . $staffRow, $data['avg_resolution']);
+                $staffSheet->setCellValue('K' . $staffRow, $data['sla_met_rate'] . '%');
                 $staffRow++;
             }
             
@@ -523,6 +534,7 @@ class AdminReportController extends Controller
             'pending_requests' => $requests->where('status', 'Pending')->count(),
             'cancelled_requests' => $requests->where('status', 'Cancelled')->count(),
             'rejected_requests' => $requests->where('status', 'Rejected')->count(), 
+            'overdue_requests' => $requests->where('status', 'Overdue')->count(), // This is already there, but make sure it exists
         ];
         
         // Calculate average resolution time for completed requests
@@ -563,6 +575,7 @@ class AdminReportController extends Controller
                     'pending' => 0,
                     'cancelled' => 0,
                     'rejected' => 0, 
+                    'overdue' => 0, // Initialize overdue key
                     'resolution_times' => [],
                 ];
             }
@@ -586,8 +599,11 @@ class AdminReportController extends Controller
                 case 'Cancelled':
                     $categoryStats[$formattedCategory]['cancelled']++;
                     break;
-                case 'Rejected': // Add this case
+                case 'Rejected': 
                     $categoryStats[$formattedCategory]['rejected']++;
+                    break;
+                case 'Overdue': // Make sure this case exists
+                    $categoryStats[$formattedCategory]['overdue']++;
                     break;
             }
         }
@@ -608,6 +624,7 @@ class AdminReportController extends Controller
         
         return $categoryStats;
     }
+
     
     /**
      * Calculate SLA performance statistics
@@ -690,6 +707,7 @@ class AdminReportController extends Controller
                 'completed' => 0,
                 'in_progress' => 0,
                 'pending' => 0,
+                'overdue' => 0, // Initialize overdue key
                 'cancelled' => 0,
                 'rejected' => 0,
                 'sla_met' => 0,
@@ -752,6 +770,9 @@ class AdminReportController extends Controller
                     case 'Pending':
                         $staffStats[$request->assigned_uitc_staff_id]['pending']++;
                         break;
+                    case 'Overdue': // Make sure this case exists
+                        $staffStats[$request->assigned_uitc_staff_id]['overdue']++;
+                        break;
                     case 'Cancelled':
                         $staffStats[$request->assigned_uitc_staff_id]['cancelled']++;
                         break;
@@ -787,17 +808,7 @@ class AdminReportController extends Controller
         });
         
         return $staffStats;
-        $stats = [
-            'total_requests' => 0,
-            'completed_requests' => 0,
-            'in_progress_requests' => 0,
-            'pending_requests' => 0,
-            'cancelled_requests' => 0,
-            'rejected_requests' => 0, // Add this line
-            'avg_resolution_time' => 0
-        ];
     }
-    
     /**
      * Calculate monthly trends
      */

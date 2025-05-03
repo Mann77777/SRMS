@@ -97,27 +97,6 @@
                     </select>
                 </div>
 
-                <!-- Personal Information Form -->
-                <div id="personalInfoForm" style="display: none;">
-                    <div class="form-section">
-                        <h5>Personal Information</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label>First Name</label>
-                                <input type="text" class="form-control" name="first_name" placeholder="First Name">
-                            </div>
-                            <div class="col-md-4">
-                                <label>Last Name</label>
-                                <input type="text" class="form-control" name="last_name" placeholder="Last Name">
-                            </div>
-                            <!-- <div class="col-md-4">
-                                <label>Email</label>
-                                <input type="email" class="form-control" name="email" placeholder="Email">
-                            </div> -->
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Reset Form -->
                 <div id="resetForm" style="display: none;">
                     <div class="form-section">

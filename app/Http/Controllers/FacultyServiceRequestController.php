@@ -24,11 +24,10 @@ class FacultyServiceRequestController extends Controller
             // Define base validation rules
             $rules = [
                 'service_category' => 'required',
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
+                // 'first_name' and 'last_name' removed - will be fetched from Auth user
                 // Add other common fields if needed
             ];
-    
+
             // Add specific validation rules based on the selected service category
             $serviceCategory = $request->input('service_category');
             switch ($serviceCategory) {
@@ -123,11 +122,19 @@ class FacultyServiceRequestController extends Controller
                 $filteredData['problem_encountered'] = $inputData['problems_encountered'];
             }
             
-            // Add user_id if authenticated
+            // Add user_id and fetch names if authenticated
             if (Auth::check()) {
-                $filteredData['user_id'] = Auth::id();
+                $user = Auth::user();
+                $filteredData['user_id'] = $user->id;
+                // Fetch first_name and last_name from the authenticated user
+                if (in_array('first_name', $tableColumns)) {
+                    $filteredData['first_name'] = $user->first_name;
+                }
+                if (in_array('last_name', $tableColumns)) {
+                    $filteredData['last_name'] = $user->last_name;
+                }
             }
-    
+
             // Add default status
             $filteredData['status'] = 'Pending';
     
@@ -382,8 +389,7 @@ class FacultyServiceRequestController extends Controller
         // --- Validation ---
         // Define validation rules based on FacultyServiceRequest fields and service category
          $rules = [
-             'first_name' => 'required|string|max:255',
-             'last_name' => 'required|string|max:255',
+             // 'first_name' and 'last_name' removed - should not be updated from form
              'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
              'remove_supporting_document' => 'nullable|in:1', // For checkbox to remove file
             // Add other common faculty fields if necessary
@@ -463,8 +469,8 @@ class FacultyServiceRequestController extends Controller
              $updateData = [];
              foreach ($validatedData as $key => $value) {
                  // Skip file input and removal flag
-                 if ($key === 'supporting_document' || $key === 'remove_supporting_document') {
-                     continue;
+                 if ($key === 'supporting_document' || $key === 'remove_supporting_document' || $key === 'first_name' || $key === 'last_name') {
+                     continue; // Skip file input, removal flag, and names
                  }
 
                 // Handle special mapping for problem_encountered

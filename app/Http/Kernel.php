@@ -38,7 +38,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckUserStatus::class,  // Add this line here
-            \App\Http\Middleware\NoCacheHeaders::class, // Prevent browser caching after logout
+            // \App\Http\Middleware\NoCacheHeaders::class, // Temporarily removed for testing Google login redirect issue
         ],
 
         'api' => [

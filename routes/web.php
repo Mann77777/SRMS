@@ -41,8 +41,18 @@ Route::get('/', function () {
 });
 
 // USERS ROUTE
-Route::get('auth/google', [GoogleController::class, 'loginWithGoogle']) ->name('login.google');
-Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle']) ->name('callback');
+// Apply guest middleware AND explicitly exclude Authenticate middleware
+Route::get('auth/google', [GoogleController::class, 'loginWithGoogle'])
+    ->middleware('guest')
+    ->withoutMiddleware([\App\Http\Middleware\Authenticate::class]) // Explicitly exclude auth
+    ->name('login.google');
+Route::any('auth/google/callback', [GoogleController::class, 'callbackFromGoogle'])->name('callback'); // Callback doesn't need guest
+
+// Role Selection Routes (After Google Login if role is null)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/select-role', [AuthController::class, 'showSelectRoleForm'])->name('auth.select-role');
+    Route::post('/select-role', [AuthController::class, 'storeSelectedRole'])->name('auth.store-role');
+});
 
 //Route::get('/home', [ProfileController::class, 'show'])->name('home'); // Use ProfileController to show the profile
 //Route::post('/home/update', [ProfileController::class, 'update'])->name('profile.update'); // Use ProfileController to update the profile
@@ -295,10 +305,8 @@ Route::get('/faculty-service', function () {
     return view('users.faculty-service');
 })->name('faculty-service');
 
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('login'); // Redirect to welcome page or wherever you want
-})->name('logout');
+// Use AuthController@logout for proper session invalidation
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ADMIN ROUTES
 Route::get('/sysadmin_login', [SysadminController::class, 'showAdminLoginForm'])->name('sysadmin_login'); // Used for both Admin and Staff login form display

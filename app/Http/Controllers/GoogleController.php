@@ -11,6 +11,8 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
 {
+    // Removed constructor applying guest middleware, rely on route definition
+
     public function loginWithGoogle()
     {
         return Socialite::driver('google')->redirect();
@@ -19,7 +21,8 @@ class GoogleController extends Controller
     public function callbackFromGoogle()
     {
         try {
-            $user = Socialite::driver('google')->stateless()->user();
+            // Remove stateless() to use default session-based handling
+            $user = Socialite::driver('google')->user(); 
             
             // Check if the email domain is @tup.edu.ph
             if (!str_ends_with($user->getEmail(), '@tup.edu.ph')) {
@@ -123,4 +126,4 @@ class GoogleController extends Controller
                 ->with('error', 'Authentication failed: ' . $th->getMessage());
         }
     }
-}    
+}

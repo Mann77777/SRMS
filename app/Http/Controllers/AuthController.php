@@ -87,54 +87,9 @@ class AuthController extends Controller
             ->with('message', 'Registration successful! Please verify your email.');
     }
 
-    // Redirect to Google for authentication
-    public function redirectToGoogle()
-    {
-        return Socialite::driver('google')->redirect();
-    }
-
-    // Handle the callback from Google
-    public function handleGoogleCallback()
-    {
-        $googleUser = Socialite::driver('google')->user();
-
-        // Split the name into first and last names
-        $nameParts = explode(' ', $googleUser->getName(), 2);
-        $firstName = $nameParts[0];
-        $lastName = isset($nameParts[1]) ? $nameParts[1] : ''; // Handle cases with only a first name
-
-        // Find or create the user
-        $user = User::firstOrCreate([
-            'email' => $googleUser->getEmail(),
-        ], [
-            'username' => $googleUser->getName(), // Keep username as full name for simplicity or use email part
-            'first_name' => $firstName, // Use the extracted first name
-            'last_name' => $lastName,   // Use the extracted last name
-            'google_id' => $googleUser->getId(), // Store Google ID
-            'password' => Hash::make(uniqid()), // Generate a random password
-            'role' => 'Student', // Default role for Google login
-            'email_verified_at' => now(), // Google accounts are pre-verified
-            'verification_status' => 'pending_admin', // Set initial verification status
-            'admin_verified' => false, // Admin verification needed
-            'status' => 'active', // Set user status to active
-        ]);
-
-        // Check if user is inactive before logging in
-        if ($user->status === 'inactive' || $user->status === 0) {
-            return redirect()->route('login')
-                ->with('error', 'Your account is inactive. Please contact the administrator.');
-        }
-
-        // Log the user in
-        Auth::login($user);
-
-        // If student details are not filled, redirect to details form
-        if ($user->role === 'Student' && (!$user->student_id || !$user->course)) {
-            return redirect()->route('student.details.form');
-        }
-
-        return redirect()->route('users.dashboard');
-    }
+    // Removed redundant Google auth methods (handled by GoogleController)
+    // public function redirectToGoogle() { ... }
+    // public function handleGoogleCallback() { ... }
 
     // Handle the logout process
     public function logout(Request $request)
@@ -143,6 +98,60 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login'); // Redirect to your login or home page
+        // Explicitly forget the session cookie in the response
+        $response = redirect('/login'); // Redirect to your login or home page
+        return $response->withCookie(cookie()->forget(session()->getName()));
+    }
+
+    /**
+     * Show the form for the user to select their role.
+     */
+    public function showSelectRoleForm()
+    {
+        // Ensure the user is authenticated and their role is not already set
+        if (!Auth::check() || !is_null(Auth::user()->role)) {
+            // If role is already set or user not logged in, redirect away
+            return redirect()->route('users.dashboard');
+        }
+
+        return view('auth.select-role'); // Assuming the view is in resources/views/auth/select-role.blade.php
+    }
+
+    /**
+     * Store the selected role for the user.
+     */
+    public function storeSelectedRole(Request $request)
+    {
+        // Ensure the user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $user = Auth::user();
+
+        // Double-check if the role is already set
+        if (!is_null($user->role)) {
+            return redirect()->route('users.dashboard')->with('info', 'Your role is already set.');
+        }
+
+        // Validate the selected role
+        $validatedData = $request->validate([
+            'role' => 'required|in:Student,Faculty & Staff',
+        ]);
+
+        // Update the user's role
+        $user->role = $validatedData['role'];
+        $user->save();
+
+        // Redirect based on the newly set role
+        if ($user->role === 'Student') {
+            // Redirect to student details form if needed, otherwise dashboard
+            if (!$user->student_id || !$user->course) {
+                 return redirect()->route('student.details.form')->with('success', 'Role selected successfully! Please complete your details.');
+            }
+        }
+        
+        // For Faculty & Staff or Students with details already filled
+        return redirect()->route('users.dashboard')->with('success', 'Role selected successfully!');
     }
 }

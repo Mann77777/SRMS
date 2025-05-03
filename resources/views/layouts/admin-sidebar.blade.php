@@ -74,14 +74,14 @@
                     </a>
                 </li>
 
-                <!-- <li class="item">
+                <li class="item">
                     <a href="{{ url('/settings') }}" class="nav_link {{ request()->is('settings') ? 'active' : '' }}">
                         <span class="navlink_icon">
                             <i class="bx bxs-help-circle"></i>
                         </span>
                         <span class="navlink">Settings</span>
                     </a>
-                </li> -->
+                </li>
             @elseif(Auth::guard('admin')->user()->role === 'UITC Staff')
                 <!-- Technician Status Overview -->
                 <li class="item">

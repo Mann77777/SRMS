@@ -86,7 +86,7 @@ class AdminServiceRequestController extends Controller
         }
 
         // Sort requests by date (latest first)
-        $allRequests = collect($requests)->sortByDesc('date');
+        $allRequests = collect($requests)->sortBy('date');
 
         // Get current page from request query string
         $page = request()->get('page', 1);

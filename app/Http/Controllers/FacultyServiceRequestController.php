@@ -279,7 +279,7 @@ class FacultyServiceRequestController extends Controller
             \Log::info('Total filtered records: ' . $totalRecords);
             
             // Get the requests with pagination after filtering
-            $requests = $query->orderBy('created_at', 'desc')->paginate(10);
+            $requests = $query->orderBy('created_at', 'asc')->paginate(10);
             
             // Append query parameters to pagination links
             $requests->appends($request->except('page'));

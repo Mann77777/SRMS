@@ -245,7 +245,7 @@ class StudentServiceRequestController extends Controller
 
             $totalRecords = $query->count();
             \Log::info('Total filtered records: ' . $totalRecords);
-            $requests = $query->orderBy('created_at', 'desc')->paginate(10);
+            $requests = $query->orderBy('created_at', 'asc')->paginate(10);
             $requests->appends($request->except('page'));
             \Log::info('Paginated results count: ' . $requests->count());
 

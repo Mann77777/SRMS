@@ -855,28 +855,15 @@ $(document).ready(function() {
         });
     });
 
-    // Show verification modal
+    // Show verification modal - IMPORTANT: Keep this without SweetAlert2
     $(document).on('click', '.btn-verify', function() {
         const userId = $(this).data('id');
-        const userName = $(this).closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
-        // Show loading
-        Swal.fire({
-            title: 'Loading...',
-            text: 'Fetching student details',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Fetch student details
+        // Fetch student details without SweetAlert2 loading
         $.ajax({
             url: `/admin/student/${userId}/details`,
             method: 'GET',
             success: function(student) {
-                Swal.close();
-                
                 $('#student-name').text(student.name);
                 $('#student-email').text(student.email);
                 $('#student-id').text(student.student_id);
@@ -891,104 +878,43 @@ $(document).ready(function() {
                 $('#verifyStudentModal').modal('show');
             },
             error: function(xhr) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Failed to fetch student details',
-                    icon: 'error'
-                });
+                alert('Error fetching student details');
                 console.error(xhr);
             }
         });
     });
 
-    // Handle verification submission
+    // Handle verification submission - IMPORTANT: Keep this without SweetAlert2
     $('#submit-verification').click(function() {
         const userId = $('#verifyStudentModal').data('user-id');
         const decision = $('#verification-decision').val();
         const notes = $('#admin-notes-student').val(); // Use specific ID
-        const studentName = $('#student-name').text();
 
         // Validate rejection notes
         if (decision === 'reject' && !notes.trim()) {
-            Swal.fire({
-                title: 'Notes Required',
-                text: 'Please provide rejection notes',
-                icon: 'warning'
-            });
+            alert('Please provide rejection notes');
             return;
         }
 
-        // Show confirmation before submitting
-        const confirmTitle = decision === 'approve' ? 'Approve Student' : 'Reject Student';
-        const confirmText = decision === 'approve' 
-            ? `Are you sure you want to approve ${studentName}'s account?` 
-            : `Are you sure you want to reject ${studentName}'s account?`;
-        const confirmIcon = decision === 'approve' ? 'question' : 'warning';
-        const confirmButtonColor = decision === 'approve' ? '#3085d6' : '#d33';
-        
-        Swal.fire({
-            title: confirmTitle,
-            text: confirmText,
-            icon: confirmIcon,
-            showCancelButton: true,
-            confirmButtonText: 'Yes, confirm',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: confirmButtonColor
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading
-                Swal.fire({
-                    title: 'Processing...',
-                    text: 'Submitting verification decision',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-                
-                $.ajax({
-                    url: `/admin/student/${userId}/verify`,
-                    method: 'POST',
-                    data: {
-                        decision: decision,
-                        notes: notes
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Close the modal
-                            $('#verifyStudentModal').modal('hide');
-                            
-                            // Show success message
-                            Swal.fire({
-                                title: 'Success',
-                                text: response.message,
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                location.reload(); // Reload to reflect changes
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error',
-                                text: response.error || 'Error processing verification',
-                                icon: 'error'
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Verification error:', xhr);
-                        let errorMessage = 'Unknown error occurred';
-                        if (xhr.responseJSON && xhr.responseJSON.error) {
-                            errorMessage = xhr.responseJSON.error;
-                        }
-                        
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Error processing verification: ' + errorMessage,
-                            icon: 'error'
-                        });
-                    }
-                });
+        $.ajax({
+            url: `/admin/student/${userId}/verify`,
+            method: 'POST',
+            data: {
+                decision: decision,
+                notes: notes
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#verifyStudentModal').modal('hide');
+                    location.reload(); // Reload to reflect changes
+                } else {
+                    alert(response.error || 'Error processing verification');
+                }
+            },
+            error: function(xhr) {
+                console.error('Verification error:', xhr);
+                alert('Error processing verification: ' + (xhr.responseJSON?.error || 'Unknown error'));
             }
         });
     });
@@ -1004,116 +930,60 @@ $(document).ready(function() {
         }
     });
 
-    // Faculty/Staff Verification Submission
+    // Faculty/Staff Verification Submission - IMPORTANT: Keep this without SweetAlert2
     $('#submit-facultystaff-verification').click(function() {
         const userId = $('#verifyFacultyStaffModal').data('user-id');
         const decision = $('#verification-decision-faculty').val();
         const notes = $('#admin-notes-faculty').val(); // Use specific ID
-        const facultyName = $('#facultystaff-name').text();
+
+        console.log('Verification Data:', {
+            userId: userId,
+            decision: decision,
+            notes: notes
+        });
 
         // Validate rejection notes
         if (decision === 'reject' && !notes.trim()) {
-            Swal.fire({
-                title: 'Notes Required',
-                text: 'Please provide rejection notes',
-                icon: 'warning'
-            });
+            alert('Please provide rejection notes');
             return;
         }
 
-        // Show confirmation before submitting
-        const confirmTitle = decision === 'approve' ? 'Approve Faculty/Staff' : 'Reject Faculty/Staff';
-        const confirmText = decision === 'approve' 
-            ? `Are you sure you want to approve ${facultyName}'s account?` 
-            : `Are you sure you want to reject ${facultyName}'s account?`;
-        const confirmIcon = decision === 'approve' ? 'question' : 'warning';
-        const confirmButtonColor = decision === 'approve' ? '#3085d6' : '#d33';
-        
-        Swal.fire({
-            title: confirmTitle,
-            text: confirmText,
-            icon: confirmIcon,
-            showCancelButton: true,
-            confirmButtonText: 'Yes, confirm',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: confirmButtonColor
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading
-                Swal.fire({
-                    title: 'Processing...',
-                    text: 'Submitting verification decision',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-                
-                $.ajax({
-                    url: `/admin/facultystaff/${userId}/verify`,
-                    method: 'POST',
-                    data: {
-                        decision: decision,
-                        notes: notes
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Close the modal
-                            $('#verifyFacultyStaffModal').modal('hide');
-                            
-                            // Show success message
-                            Swal.fire({
-                                title: 'Success',
-                                text: response.message,
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                location.reload(); // Reload to reflect changes
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error',
-                                text: response.error || 'Error processing verification',
-                                icon: 'error'
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Verification Error:', xhr);
-                        let errorMessage = 'Unknown error';
-                        if (xhr.responseJSON && xhr.responseJSON.error) {
-                            errorMessage = xhr.responseJSON.error;
-                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        } else if (xhr.statusText) {
-                            errorMessage = xhr.statusText;
-                        }
-                        
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Error processing verification: ' + errorMessage,
-                            icon: 'error'
-                        });
-                    }
-                });
+        $.ajax({
+            url: `/admin/facultystaff/${userId}/verify`,
+            method: 'POST',
+            data: {
+                decision: decision,
+                notes: notes
+            },
+            success: function(response) {
+                console.log('Verification Success:', response);
+                if (response.success) {
+                    alert(response.message);
+                    $('#verifyFacultyStaffModal').modal('hide');
+                    location.reload(); // Reload to reflect changes
+                } else {
+                    alert(response.error || 'Error processing verification');
+                }
+            },
+            error: function(xhr) {
+                console.error('Verification Error:', xhr);
+                let errorMessage = 'Unknown error';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.statusText) {
+                    errorMessage = xhr.statusText;
+                }
+                alert('Error processing verification: ' + errorMessage);
             }
         });
     });
 
-    // Show Faculty/Staff verification modal
+    // Show Faculty/Staff verification modal - IMPORTANT: Keep this without SweetAlert2
     $(document).on('click', '.btn-verify-faculty', function() {
         var $row = $(this).closest('tr');
         var userId = $(this).data('id');
-
-        // Show loading
-        Swal.fire({
-            title: 'Loading...',
-            text: 'Fetching faculty/staff details',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
 
         // Set user ID on modal
         $('#verifyFacultyStaffModal').data('user-id', userId);
@@ -1130,9 +1000,6 @@ $(document).ready(function() {
             url: `/admin/facultystaff/${userId}/details`,
             method: 'GET',
             success: function(response) {
-                // Close loading indicator
-                Swal.close();
-                
                 if (response.success) {
                     // Use API data if available, otherwise use table data
                     $('#facultystaff-name').text(response.user.name || name);
@@ -1155,8 +1022,6 @@ $(document).ready(function() {
                 $('#verifyFacultyStaffModal').modal('show');
             },
             error: function(xhr) {
-                Swal.close();
-                
                 // Still show the modal but with table data only
                 $('#facultystaff-name').text(name);
                 $('#facultystaff-email').text(email);

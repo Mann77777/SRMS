@@ -157,3 +157,49 @@
         </div>
     </div>
 </div>
+
+
+
+<!-- Student Verification Modal -->
+<div class="modal fade" id="verifyStudentModal" tabindex="-1" role="dialog" aria-labelledby="verifyStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="verifyStudentModalLabel">Verify Student</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Student details -->
+                <div class="student-details">
+                    <p><strong>Name:</strong> <span id="student-name"></span></p>
+                    <p><strong>Email:</strong> <span id="student-email"></span></p>
+                    <p><strong>Student ID:</strong> <span id="student-id"></span></p>
+                    <p><strong>College:</strong> <span id="student-college"></span></p>
+                    <p><strong>Course:</strong> <span id="student-course"></span></p>
+                    <p><strong>Verification Status:</strong> <span id="student-verification-status"></span></p>
+                </div>
+                
+                <!-- Verification decision -->
+                <div class="form-group">
+                    <label for="verification-decision">Verification Decision:</label>
+                    <select class="form-control" id="verification-decision">
+                        <option value="approve">Approve</option>
+                        <option value="reject">Reject</option>
+                    </select>
+                </div>
+                
+                <!-- Rejection notes (initially hidden) -->
+                <div class="form-group rejection-notes-container" style="display: none;">
+                    <label for="admin-notes-student">Rejection Notes (required):</label>
+                    <textarea class="form-control" id="admin-notes-student" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submit-verification">Submit Decision</button>
+            </div>
+        </div>
+    </div>
+</div>

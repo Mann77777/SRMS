@@ -129,3 +129,35 @@
 .mr-2 {
     margin-right: 0.5rem;
 }
+
+/* Media Queries for Notification Responsiveness */
+
+@media (max-width: 768px) {
+    .notification-dropdown-content {
+        width: 320px; /* Slightly reduce width */
+    }
+}
+
+@media (max-width: 576px) {
+    .notification-dropdown-content {
+        width: 90vw; /* Use viewport width */
+        max-width: 300px; /* But cap it */
+        right: -10px; /* Adjust position slightly if needed */
+    }
+
+    .notification-header h5 {
+        font-size: 0.95rem;
+    }
+    .mark-all-button {
+        font-size: 0.8rem;
+    }
+    .notification-item {
+        padding: 0.6rem 0.8rem;
+    }
+    .notification-content {
+        font-size: 0.9rem; /* Adjust content font size */
+    }
+    .notification-time {
+        font-size: 0.7rem;
+    }
+}

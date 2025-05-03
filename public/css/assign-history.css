@@ -279,3 +279,84 @@ button {
     color: #aaa;
     cursor: not-allowed;
 }
+
+/* Media Queries for Responsiveness */
+
+/* Tablets and smaller devices */
+@media (max-width: 992px) {
+    .content {
+        margin-left: 22%; /* Adjust margin if sidebar width changes */
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        margin-left: 0; /* Remove margin when sidebar is likely hidden/collapsed */
+        margin-top: 80px; /* Add margin-top to account for fixed navbar */
+        padding: 15px;
+    }
+
+    .content h1 {
+        font-size: 1.8rem; /* Slightly smaller heading */
+    }
+
+    /* Adjust table padding and font size */
+    .assignhistory-table th,
+    .assignhistory-table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+
+    /* Adjust button size in table */
+    .assignhistory-table .view-satisfaction-btn {
+        padding: 5px 8px;
+        font-size: 12px;
+        width: auto; /* Allow button width to adjust */
+        display: inline-block;
+        margin: 2px;
+    }
+
+    /* Adjust modal width */
+    .modal-dialog {
+        max-width: 95%;
+        margin: 1.75rem auto;
+    }
+     /* Adjust modal content padding if needed */
+    .modal-body {
+        padding: 15px;
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 576px) {
+    .content h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Further reduce table padding and font size */
+    .assignhistory-table th,
+    .assignhistory-table td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+
+    /* Ensure button takes reasonable space */
+    .assignhistory-table .view-satisfaction-btn {
+        width: 100%; /* Make button take full width in its cell */
+        display: block;
+        margin: 4px 0;
+        text-align: center;
+    }
+
+    /* Adjust pagination for very small screens */
+    .pagination li a,
+    .pagination li span {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+     /* Adjust modal title size */
+    .modal-title {
+        font-size: 1.1rem;
+    }
+}

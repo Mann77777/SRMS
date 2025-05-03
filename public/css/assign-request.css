@@ -219,3 +219,98 @@ button {
     color: #aaa;
     cursor: not-allowed;
 }
+
+/* Media Queries for Responsiveness */
+
+/* Tablets and smaller devices */
+@media (max-width: 992px) {
+    .content {
+        margin-left: 22%; /* Adjust margin if sidebar width changes */
+    }
+}
+
+
+@media (max-width: 768px) {
+    .content {
+        margin-left: 0; /* Remove margin when sidebar is likely hidden/collapsed */
+        margin-top: 80px; /* Add margin-top to account for fixed navbar */
+        padding: 15px;
+    }
+
+    .content h1 {
+        font-size: 1.8rem; /* Slightly smaller heading */
+    }
+
+    .dropdown-container {
+        flex-direction: column; /* Stack filters vertically */
+        align-items: stretch; /* Make items take full width */
+    }
+
+    .dropdown-container select,
+    .dropdown-container .search-container input {
+        width: 100%; /* Make selects and search input full width */
+        margin-bottom: 10px; /* Add space between stacked items */
+    }
+     .search-container{
+        flex-direction: column;
+        align-items: stretch;
+     }
+    .search-btn {
+        width: 100%; /* Make search button full width */
+        margin-left: 0; /* Reset margin */
+        margin-top: 5px;
+    }
+
+    .assignreq-table th,
+    .assignreq-table td {
+        padding: 10px 8px; /* Reduce padding in table cells */
+        font-size: 14px; /* Adjust font size slightly */
+    }
+
+     /* Ensure buttons in table are reasonably sized */
+    .assignreq-table .btns button {
+        padding: 6px 10px;
+        font-size: 13px;
+        width: auto; /* Allow button width to adjust to content */
+        display: inline-block; /* Allow buttons side-by-side if space permits */
+        margin: 2px;
+    }
+     .btn-complete {
+        width: auto; /* Override fixed width */
+        padding: 6px 10px;
+    }
+
+    .modal-dialog {
+        max-width: 95%; /* Allow modals to use more width on smaller screens */
+        margin: 1.75rem auto;
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 576px) {
+    .content h1 {
+        font-size: 1.5rem;
+    }
+
+    .assignreq-table th,
+    .assignreq-table td {
+        padding: 8px 5px; /* Further reduce padding */
+        font-size: 12px; /* Smaller font for very small screens */
+    }
+
+    /* Force buttons to stack vertically again if needed */
+     .assignreq-table .btns button {
+        display: block;
+        width: 100%;
+        margin: 4px 0; /* Adjust vertical spacing */
+    }
+     .btn-complete {
+        width: 100%;
+    }
+
+    .pagination li a,
+    .pagination li span {
+        padding: 6px 10px; /* Smaller pagination buttons */
+        font-size: 13px;
+    }
+}

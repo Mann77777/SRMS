@@ -115,3 +115,120 @@ body{
     background-color: #6c757d;
     color: white;
 }
+
+/* Media Queries for Responsiveness */
+
+/* Tablets and smaller devices */
+@media (max-width: 992px) {
+    .staff-content {
+        margin-left: 22%; /* Adjust margin if sidebar width changes */
+        padding: 20px 15px; /* Adjust padding */
+    }
+    .staff-image {
+        height: 220px; /* Slightly smaller image container */
+    }
+    .staff-image img {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .staff-content {
+        margin-left: 0; /* Remove margin when sidebar is likely hidden/collapsed */
+        margin-top: 80px; /* Add margin-top to account for fixed navbar */
+        padding: 15px;
+    }
+
+    .staff-header {
+        flex-direction: column; /* Stack header items */
+        align-items: flex-start; /* Align items to the start */
+        gap: 10px; /* Add gap between stacked items */
+    }
+
+    .staff-header h1 {
+        font-size: 1.8rem; /* Slightly smaller heading */
+    }
+
+    .staff-btn {
+        margin-bottom: 20px; /* Adjust margin */
+        align-self: flex-start; /* Align button to start */
+    }
+
+    .staff-image {
+        height: 200px;
+    }
+    .staff-image img {
+        width: 150px;
+        height: 150px;
+    }
+
+    .staff-details p {
+        font-size: 0.9rem;
+    }
+
+    .staff-actions .btn {
+        font-size: 0.8rem; /* Smaller buttons */
+        padding: 0.3rem 0.6rem;
+    }
+
+    .modal-dialog {
+        max-width: 95%;
+        margin: 1.75rem auto;
+    }
+     .modal-body {
+        padding: 15px;
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 576px) {
+    .staff-header h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Ensure cards take full width - Bootstrap col-..- should handle this */
+    .staff-list .col-md-4, .staff-list .col-sm-6 { /* Target bootstrap columns if used */
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .staff-card {
+        margin-bottom: 15px;
+    }
+
+    .staff-image {
+        height: 180px;
+    }
+    .staff-image img {
+        width: 130px;
+        height: 130px;
+    }
+
+    .staff-details {
+        padding: 10px; /* Reduce padding */
+        text-align: center; /* Center details on small screens */
+    }
+     .staff-details p {
+        justify-content: center; /* Center icons/text within the paragraph */
+        font-size: 0.85rem;
+    }
+
+    .staff-actions {
+        flex-direction: column; /* Stack action buttons */
+        align-items: stretch; /* Make buttons full width */
+    }
+    .staff-actions .btn {
+        width: 100%;
+        justify-content: center; /* Center text/icon in button */
+        margin-bottom: 5px;
+    }
+    .staff-actions .btn:last-child {
+        margin-bottom: 0;
+    }
+
+     .modal-title {
+        font-size: 1.1rem;
+    }
+}

@@ -160,3 +160,107 @@ body {
     border-color: #C4203C;
     box-shadow: 0 0 0 0.2rem rgba(196, 32, 60, 0.25);
 }
+
+/* Media Queries for Responsiveness */
+
+/* Tablets and smaller devices */
+@media (max-width: 992px) {
+    .service-content {
+        margin-left: 22%; /* Adjust margin if sidebar width changes */
+        padding: 20px 15px; /* Adjust padding */
+    }
+    /* Adjust card image height */
+    .service-image {
+        height: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .service-content {
+        margin-left: 0; /* Remove margin when sidebar is likely hidden/collapsed */
+        margin-top: 80px; /* Add margin-top to account for fixed navbar */
+        padding: 15px;
+    }
+
+    .service-header {
+        flex-direction: column; /* Stack header items */
+        align-items: flex-start; /* Align items to the start */
+        gap: 10px; /* Add gap between stacked items */
+    }
+
+    .service-header h1 {
+        font-size: 1.8rem; /* Slightly smaller heading */
+    }
+
+    .service-btn {
+        margin-bottom: 20px; /* Adjust margin */
+        align-self: flex-start; /* Align button to start */
+    }
+
+    /* Adjust card image height */
+    .service-image {
+        height: 160px;
+    }
+
+    .status-details h3 {
+        font-size: 1.1rem;
+    }
+    .status-details p {
+        font-size: 0.85rem;
+    }
+    .service-actions .btn {
+        font-size: 0.8rem; /* Smaller buttons */
+        padding: 0.3rem 0.6rem;
+    }
+
+    .modal-dialog {
+        max-width: 95%;
+        margin: 1.75rem auto;
+    }
+     .modal-body {
+        padding: 15px;
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 576px) {
+    .service-header h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Ensure cards take full width - Bootstrap col-..- should handle this, but add just in case */
+    .service-list .col-md-4, .service-list .col-sm-6 { /* Target bootstrap columns if used */
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .status-card {
+        margin-bottom: 15px;
+    }
+
+    .service-image {
+        height: 150px; /* Further adjust image height */
+    }
+
+    .status-details {
+        padding: 15px; /* Reduce padding */
+    }
+
+    .service-actions {
+        flex-direction: column; /* Stack action buttons */
+        align-items: stretch; /* Make buttons full width */
+    }
+    .service-actions .btn {
+        width: 100%;
+        justify-content: center; /* Center text/icon in button */
+        margin-bottom: 5px;
+    }
+    .service-actions .btn:last-child {
+        margin-bottom: 0;
+    }
+
+     .modal-title {
+        font-size: 1.1rem;
+    }
+}

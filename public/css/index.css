@@ -173,3 +173,61 @@ select {
     background-color: #007bff;
     color: white;
 }
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 768px) {
+    .filter-container {
+        flex-direction: column; /* Stack filter and actions */
+        align-items: stretch; /* Stretch items to full width */
+        gap: 15px; /* Add space between stacked items */
+    }
+
+    .dropdown-container {
+        justify-content: center; /* Center the year dropdown */
+        margin-bottom: 10px; /* Add space below dropdown */
+    }
+
+    .actions-container {
+        flex-direction: column; /* Stack action buttons */
+        align-items: stretch; /* Make buttons full width */
+        gap: 10px;
+    }
+
+    .action-btn {
+        width: 100%; /* Make action buttons full width */
+        min-width: unset; /* Remove min-width */
+        justify-content: center; /* Center button content */
+    }
+
+    /* Adjust table buttons if needed (though admin_servicerequest.css might cover this) */
+    .request-table .actions .btn-edit,
+    .request-table .actions .btn-cancel {
+        padding: 5px 8px;
+        font-size: 12px;
+        width: auto;
+        display: inline-block;
+        margin: 2px;
+    }
+     /* Override the form display if it causes issues */
+    .request-table .actions form {
+        display: inline-block; /* Keep form inline */
+        margin: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Force table buttons to stack */
+    .request-table .actions .btn-edit,
+    .request-table .actions .btn-cancel {
+        display: block;
+        width: 100%;
+        margin: 4px 0;
+        text-align: center;
+    }
+     .request-table .actions form {
+        display: block; /* Stack form */
+        width: 100%;
+        margin: 4px 0;
+    }
+}

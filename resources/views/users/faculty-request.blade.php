@@ -97,19 +97,6 @@
                     </select>
                 </div>
 
-                <!-- Reset Form -->
-                <div id="resetForm" style="display: none;">
-                    <div class="form-section">
-                        <!-- <h5>Reset Information</h5> -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Account Email</label>
-                                <input type="email" class="form-control" name="account_email" placeholder="Account Email">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- DTR Options Form -->
                 <div id="dtr_options_form" style="display: none;">
                     <div class="form-section">

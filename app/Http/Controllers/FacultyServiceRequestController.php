@@ -32,10 +32,11 @@ class FacultyServiceRequestController extends Controller
             $serviceCategory = $request->input('service_category');
             switch ($serviceCategory) {
                 // (Add cases for other categories as needed for robustness, mirroring the update method)
+                // 'account_email' validation removed - will be fetched from Auth user for relevant categories
                 case 'reset_email_password':
                 case 'reset_tup_web_password':
                 case 'reset_ers_password':
-                     $rules['account_email'] = 'required|email|max:255';
+                     // No specific validation needed here anymore for account_email
                      break;
                 case 'change_of_data_ms':
                 case 'change_of_data_portal':
@@ -132,6 +133,10 @@ class FacultyServiceRequestController extends Controller
                 }
                 if (in_array('last_name', $tableColumns)) {
                     $filteredData['last_name'] = $user->last_name;
+                }
+                // Fetch email for password reset categories
+                if (in_array($serviceCategory, ['reset_email_password', 'reset_tup_web_password', 'reset_ers_password']) && in_array('account_email', $tableColumns)) {
+                    $filteredData['account_email'] = $user->email;
                 }
             }
 
@@ -398,10 +403,11 @@ class FacultyServiceRequestController extends Controller
         // Add specific validation based on the *original* service category
         // (Similar logic as Student controller, adjust fields for Faculty model)
         switch ($serviceRequest->service_category) {
+            // 'account_email' validation removed - should not be updated from form
             case 'reset_email_password':
             case 'reset_tup_web_password':
             case 'reset_ers_password':
-                 $rules['account_email'] = 'required|email|max:255';
+                 // No specific validation needed here anymore for account_email
                  break;
             case 'change_of_data_ms':
             case 'change_of_data_portal':
@@ -468,9 +474,9 @@ class FacultyServiceRequestController extends Controller
             // Prepare data for update, only including validated fields that exist in the table
              $updateData = [];
              foreach ($validatedData as $key => $value) {
-                 // Skip file input and removal flag
-                 if ($key === 'supporting_document' || $key === 'remove_supporting_document' || $key === 'first_name' || $key === 'last_name') {
-                     continue; // Skip file input, removal flag, and names
+                 // Skip file input, removal flag, names, and account email
+                 if (in_array($key, ['supporting_document', 'remove_supporting_document', 'first_name', 'last_name', 'account_email'])) {
+                     continue;
                  }
 
                 // Handle special mapping for problem_encountered

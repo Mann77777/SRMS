@@ -42,12 +42,18 @@ class GoogleController extends Controller
             }
 
             // Generate username based on first initial and last name
-            $nameParts = explode(' ', $user->getName());
+            // Split name from Google into first and last name
+            $nameParts = explode(' ', $user->getName(), 2); // Limit to 2 parts
             $firstName = $nameParts[0] ?? '';
-            $lastName = end($nameParts) ?? '';
-                        
+            $lastName = $nameParts[1] ?? ''; // Use the second part as last name, or empty if not present
+
             // Generate username: first initial of first name + last name (lowercase)
-            $generatedUsername = strtolower(substr($firstName, 0, 1) . $lastName);
+            // Ensure lastName is not empty before generating username to avoid errors
+            $generatedUsername = !empty($lastName) ? strtolower(substr($firstName, 0, 1) . $lastName) : strtolower($firstName);
+            // Handle cases where username might still be empty if firstName was also empty (unlikely with Google)
+            if (empty($generatedUsername)) {
+                 $generatedUsername = strtolower(Str::random(8)); // Fallback username
+            }
                         
             // Ensure username is unique
             $baseUsername = $generatedUsername;
@@ -62,18 +68,21 @@ class GoogleController extends Controller
             $existingUser = User::where('email', $email)->first();
             
             if ($existingUser) {
-                // Update only Google-related fields for existing users
+                // Update existing user: include first_name and last_name
                 $existingUser->update([
                     'google_id' => $user->getId(),
-                    'name' => $user->getName(),
-                    'username' => $generatedUsername,
+                    'first_name' => $firstName, // Update first_name
+                    'last_name' => $lastName,   // Update last_name
+                    'username' => $generatedUsername, // Update username as well
+                    // Do NOT update 'name' field anymore if it's deprecated/removed
                 ]);
-                $user = $existingUser;
+                $user = $existingUser; // Use the updated existing user
             } else {
-                // Create new user with pending verification
+                // Create new user with pending verification, using first_name and last_name
                 $user = User::create([
                     'email' => $email,
-                    'name' => $user->getName(),
+                    'first_name' => $firstName, // Use first_name
+                    'last_name' => $lastName,   // Use last_name
                     'username' => $generatedUsername,
                     'google_id' => $user->getId(),
                     'role' => $role,

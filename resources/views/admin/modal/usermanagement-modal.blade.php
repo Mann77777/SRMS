@@ -12,8 +12,12 @@
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="name">Full Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <label for="first_name">First Name</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
                     </div>
                     <div class="form-group">
                         <label for="username">Username</label>
@@ -98,9 +102,14 @@
                     <input type="hidden" id="edit-user-id">
                         <div class="form-group">
                             <div class="form-group">
-                            <label for="edit-name">Full Name</label>
-                            <input type="text" class="form-control" id="edit-name" name="name" required>
+                            <label for="edit-first_name">First Name</label>
+                            <input type="text" class="form-control" id="edit-first_name" name="first_name" required>
                         </div>
+                        <div class="form-group">
+                            <label for="edit-last_name">Last Name</label>
+                            <input type="text" class="form-control" id="edit-last_name" name="last_name" required>
+                        </div>
+                        <div class="form-group">
                             <label for="edit-username">Username</label>
                             <input type="text" class="form-control" id="edit-username" name="username">
                         </div>

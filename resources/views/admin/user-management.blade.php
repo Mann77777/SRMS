@@ -61,9 +61,9 @@
                             <!-- <td><input type="checkbox" class="user-select" value="{{ $user->id }}"></td> -->
                             <td>{{ $user->id }}</td>
                             <td>
-                            <strong>Name: </strong>{{ $user->first_name }} {{ $user->last_name }}<br>
-                            <strong>Username: </strong>{{ $user->username }}<br>
-                            <strong>Email: </strong>{{ isset($user->email) ? $user->email : $user->username }} <br>
+                            <strong>Name: </strong>{{ $user->first_name ?? '' }} {{ $user->last_name ?? '' }}<br>
+                            <strong>Username: </strong>{{ $user->username ?? 'N/A' }}<br>
+                            <strong>Email: </strong>{{ $user->email ?? ($user->username ?? 'N/A') }} <br>
                             @if($user->role === 'Student')
                                 <strong>Student ID: </strong>{{ $user->student_id ?? 'Not Assigned' }}
                             @endif

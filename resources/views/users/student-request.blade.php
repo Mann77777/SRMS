@@ -30,6 +30,8 @@
          <div class="container">
             <form action="{{ route('student.service.request.submit') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                <!-- Add hidden input for the logged-in user's email -->
+                <input type="hidden" name="account_email" value="{{ Auth::user()->email }}">
                 <!-- Add hidden input for service category -->
                 <input type="hidden" id="selectedServiceCategory" name="service_category" value="">
 
@@ -63,12 +65,7 @@
                 <div id="resetForm" style="display: none;">
                     <div class="form-section">
                         <!-- <h5>Reset Information</h5> -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Account Email</label>
-                                <input type="email" class="form-control" name="account_email" placeholder="Account Email" required>
-                            </div>
-                        </div>
+                        <!-- Account Email field removed -->
                     </div>
                 </div>
 
@@ -299,7 +296,6 @@
 
             // Remove required attribute from all optional fields
             var optionalFields = [
-                'account_email', 
                 'data_type', 
                 'new_data', 
                 'supporting_document', 
@@ -327,8 +323,7 @@
                     if (resetForm) resetForm.style.display = 'block';
                     
                     // Add required to specific fields
-                    var accountEmail = document.querySelector('[name="account_email"]');
-                    if (accountEmail) accountEmail.setAttribute('required', 'required');
+                    // Removed logic for account_email
                     break;
                 case 'change_of_data_ms':
                 case 'change_of_data_portal':

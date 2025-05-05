@@ -1,3 +1,4 @@
+
 // Handle Add User Form Submission (Outside document.ready as it targets a static form)
 $('#addUserForm').on('submit', function(e) {
     e.preventDefault();
@@ -280,7 +281,7 @@ $(document).ready(function() {
                 <tr>
                     <td>${user.id}</td>
                     <td>
-                        <strong>Name: </strong>${(user.first_name || '') + ' ' + (user.last_name || '')}<br>
+                        <strong>Name: </strong>${user.name || 'N/A'}<br>
                         <strong>Username: </strong>${user.username || 'N/A'}<br>
                         <strong>Email: </strong>${user.email || user.username || 'N/A'}<br>
                         ${studentIdField}
@@ -408,10 +409,7 @@ $(document).ready(function() {
     // Edit User
     $(document).on('click', '.btn-edit', function() { // Use event delegation
         const userId = $(this).data('id');
-        const userRow = $(this).closest('tr');
-        const firstName = userRow.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[1] || '';
-        const lastName = userRow.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[2] || '';
-        const userName = `${firstName} ${lastName}`.trim(); // Reconstruct name for display
+        const userName = $(this).closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
         // Show loading
         Swal.fire({
@@ -431,8 +429,7 @@ $(document).ready(function() {
                 Swal.close();
                 
                 $('#edit-user-id').val(userId);
-                $('#edit-first_name').val(response.first_name); // Use first_name
-                $('#edit-last_name').val(response.last_name);   // Use last_name
+                $('#edit-name').val(response.name);
                 $('#edit-username').val(response.username);
                 $('#edit-email').val(response.email || response.username);
                 $('#edit-role').val(response.role);
@@ -475,9 +472,7 @@ $(document).ready(function() {
         // Validate role and student-specific fields if needed
         var role = $('#edit-role').val();
         var userId = $('#edit-user-id').val();
-        var firstName = $('#edit-first_name').val(); // Get first name
-        var lastName = $('#edit-last_name').val();   // Get last name
-        var userName = `${firstName} ${lastName}`.trim(); // Reconstruct name for display
+        var userName = $('#edit-name').val();
 
         // Show loading
         Swal.fire({
@@ -616,11 +611,8 @@ $(document).ready(function() {
     $(document).on('click', '.btn-status', function() {
         const userId = $(this).data('id');
         const button = $(this);
-        const userRow = button.closest('tr');
-        const statusBadge = userRow.find('.status-badge').first(); // Target the first status badge in the row
-        const firstName = userRow.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[1] || '';
-        const lastName = userRow.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[2] || '';
-        const userName = `${firstName} ${lastName}`.trim(); // Reconstruct name for display
+        const statusBadge = button.closest('tr').find('.status-badge').first(); // Target the first status badge in the row
+        const userName = button.closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
         Swal.fire({
             title: 'Change User Status',
@@ -684,10 +676,7 @@ $(document).ready(function() {
     // Use event delegation
     $(document).on('click', '.btn-reset', function() {
         const userId = $(this).data('id');
-        const userRow = $(this).closest('tr');
-        const firstName = userRow.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[1] || '';
-        const lastName = userRow.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[2] || '';
-        const userName = `${firstName} ${lastName}`.trim(); // Reconstruct name for display
+        const userName = $(this).closest('tr').find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
         Swal.fire({
             title: 'Reset Password',
@@ -744,9 +733,7 @@ $(document).ready(function() {
     $(document).on('click', '.btn-delete', function() {
         const userId = $(this).data('id');
         const row = $(this).closest('tr');
-        const firstName = row.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[1] || '';
-        const lastName = row.find('td:nth-child(2)').html().match(/<strong>Name: <\/strong>(.*?) (.*?)<br>/)?.[2] || '';
-        const userName = `${firstName} ${lastName}`.trim(); // Reconstruct name for display
+        const userName = row.find('td:nth-child(2)').find('strong:contains("Name:")').next().text().trim();
 
         Swal.fire({
             title: 'Delete User',

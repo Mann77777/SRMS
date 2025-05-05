@@ -20,6 +20,18 @@ class FacultyServiceRequestController extends Controller
     {
         try {
             Log::info('Incoming request data:', $request->all());
+
+            // Get authenticated user
+            $user = Auth::user();
+            if (!$user) {
+                // This case might be less likely if middleware protects the route, but good practice
+                return redirect()->route('login')->with('error', 'You must be logged in to submit a request.');
+            }
+
+            // Check if the user is verified by admin
+            if (!$user->admin_verified || $user->verification_status !== 'verified') {
+                return redirect()->back()->with('error', 'Your account is not yet verified by the administrator. You cannot submit service requests until your account is verified.')->withInput();
+            }
     
             // Define base validation rules
             $rules = [

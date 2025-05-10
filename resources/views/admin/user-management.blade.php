@@ -97,7 +97,7 @@
                                         <span class="status-badge pending">Email Unverified</span>
                                     @elseif(!$user->admin_verified)
                                         <span class="status-badge pending">Pending Verification</span>
-                                        <button class="btn-verify-faculty" title="Verify Faculty/Staff" data-id="{{ $user->id }}">Verify</button>
+                                        <button class="btn-verify" title="Verify Faculty/Staff" data-id="{{ $user->id }}">Verify</button>
                                     @else
                                         <span class="status-badge verified">Verified</span>
                                     @endif

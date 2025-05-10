@@ -31,6 +31,7 @@
                     <option value="Overdue">Overdue</option>
                     <option value="Rejected">Rejected</option>
                     <option value="Cancelled">Cancelled</option>
+                    <option value="Unresolvable">Unresolvable</option>
                 </select>
                 <!-- Search Bar -->
                 <div class="search-container">
@@ -133,12 +134,14 @@
                                         <span class="custom-badge custom-badge-overdue">{{ $request->status }}</span>
                                     @elseif($request->status == 'Cancelled')
                                         <span class="custom-badge custom-badge-danger">{{ $request->status }}</span>
+                                    @elseif($request->status == 'Unresolvable')
+                                        <span class="custom-badge custom-badge-danger">{{ $request->status }}</span>
                                     @else
                                         <span class="custom-badge custom-badge-secondary">{{ $request->status }}</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if($request->status != 'Completed' && $request->status != 'Rejected' && $request->status != 'Cancelled' && $request->status != 'In Progress')
+                                    @if($request->status != 'Completed' && $request->status != 'Rejected' && $request->status != 'Cancelled' && $request->status != 'In Progress' && $request->status != 'Unresolvable')
                                     <button type="button" class="btn-edit" data-id="{{ $request->id }}">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>

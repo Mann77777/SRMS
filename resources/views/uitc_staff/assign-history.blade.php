@@ -22,15 +22,21 @@
     <div class="content">
         <h1>Assigned History</h1>
 
-        <!-- <div class="dropdown-container">
-            Search Bar 
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <input type="text" id="history-search" name="history-search" placeholder="Search history..." value="{{ request('search') }}">
-                    <i class="fas fa-search search-icon"></i>
-                </div>            
+        <div class="dropdown-container mb-3">
+            <!-- Status Filter -->
+            <select name="status" id="status-history-filter" class="form-control" style="width: auto; display: inline-block;">
+                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
+                <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
+                <option value="Cancelled" {{ request('status') == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                <option value="Unresolvable" {{ request('status') == 'Unresolvable' ? 'selected' : '' }}>Unresolvable</option>
+            </select>
+
+            <!-- Search Bar -->
+            <div class="search-container" style="display: inline-block; margin-left: 10px;">
+                <input type="text" name="search" id="search-input-history" class="form-control" placeholder="Search..." value="{{ request('search') }}" style="width: 250px; display: inline-block;">
+                <button class="btn btn-primary search-btn-history" type="button" style="display: inline-block;">Search</button>
             </div>
-        </div> -->
+        </div>
 
         <div class="assignhistory-table-container">
             <h4>Assigned Request History</h4>
@@ -41,8 +47,9 @@
                             <th>Request ID</th>
                             <th>Request Data</th>
                             <th>Role</th>
-                            <th>Date Assigned</th>
-                            <th>Date Completed</th>
+                            <th>Date Submitted</th>
+                            <th>Date Closed</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -55,9 +62,25 @@
                                     </td>
                                     <td>{!! $request->request_data !!}</td>
                                     <td>{{ $request->user_role ?? ($request->request_type == 'faculty' ? 'Faculty & Staff' : 'Student') }}</td>
-                                    <td>{{ date('M d, Y h:i A', strtotime($request->created_at)) }}</td>
-                                    <td>{{ date('M d, Y h:i A', strtotime($request->updated_at)) }}</td>
-                                    
+                                    <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y h:i A') }}</td>
+                                    <td>
+                                        @if($request->completed_at)
+                                            {{ \Carbon\Carbon::parse($request->completed_at)->format('M d, Y h:i A') }}
+                                        @else
+                                            {{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y h:i A') }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($request->status == 'Completed')
+                                            <span class="custom-badge custom-badge-success">{{ $request->status }}</span>
+                                        @elseif($request->status == 'Cancelled')
+                                            <span class="custom-badge custom-badge-secondary">{{ $request->status }}</span>
+                                        @elseif($request->status == 'Unresolvable')
+                                            <span class="custom-badge custom-badge-danger">{{ $request->status }}</span>
+                                        @else
+                                            <span class="custom-badge">{{ $request->status }}</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @php
                                             $satisfaction = App\Models\CustomerSatisfaction::where('request_id', $request->id)
@@ -205,6 +228,40 @@
                 
                 return categories[category] || category;
             }
+
+            // Function to apply filters for history page
+            function applyHistoryFilters() {
+                const status = $('#status-history-filter').val();
+                const searchTerm = $('#search-input-history').val();
+                
+                let queryParams = [];
+                
+                if (status && status !== 'all') {
+                    queryParams.push(`status=${encodeURIComponent(status)}`);
+                }
+                
+                if (searchTerm) {
+                    queryParams.push(`search=${encodeURIComponent(searchTerm)}`);
+                }
+                
+                let url = window.location.pathname;
+                if (queryParams.length > 0) {
+                    url += '?' + queryParams.join('&');
+                }
+                
+                window.location.href = url;
+            }
+
+            // Add event listeners to filters
+            $('#status-history-filter').on('change', applyHistoryFilters);
+            $('.search-btn-history').on('click', applyHistoryFilters);
+            $('#search-input-history').on('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyHistoryFilters();
+                }
+            });
+
         });
     </script>
 </body>

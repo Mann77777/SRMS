@@ -545,4 +545,75 @@ $(document).ready(function() {
     
     // Initialize filters from URL parameters
     setFiltersFromUrl();
+
+    // UNRESOLVABLE REQUEST FUNCTIONALITY
+
+    // Handle Unresolvable button click
+    $(document).on('click', '.btn-unresolvable', function() {
+        const requestId = $(this).data('request-id');
+        const requestType = $(this).data('request-type') || 'student'; // Default to student if not specified
+
+        $('#unresolvableRequestId').val(requestId);
+        $('#unresolvableRequestType').val(requestType);
+        
+        // Reset form validation and clear fields
+        $('#unresolvableRequestForm').removeClass('was-validated');
+        $('#unresolvableReason').val('');
+        $('#unresolvableActionsTaken').val('');
+        
+        // Show modal
+        $('#unresolvableRequestModal').modal('show');
+    });
+
+    // Handle form submission for marking requests as unresolvable
+    $('#unresolvableRequestForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate form
+        if (this.checkValidity() === false) {
+            e.stopPropagation();
+            $(this).addClass('was-validated');
+            return;
+        }
+        
+        // Disable submit button
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+
+        // Get form data
+        const formData = $(this).serialize();
+
+        // AJAX call to mark the request as unresolvable
+        $.ajax({
+            url: '/uitc-staff/requests/mark-unresolvable', // New endpoint
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                // Close the modal
+                $('#unresolvableRequestModal').modal('hide');
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message || 'Request marked as unresolvable successfully.',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Refresh the page to show updated data
+                    window.location.reload();
+                });
+            },
+            error: function(xhr) {
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to mark the request as unresolvable.'
+                });
+                
+                // Re-enable submit button
+                submitBtn.prop('disabled', false).text('Mark as Unresolvable');
+            }
+        });
+    });
 });

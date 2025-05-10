@@ -465,6 +465,10 @@ Route::post('/uitc-staff/complete-request', [UITCStaffController::class, 'comple
     ->name('uitc.complete.request') // Keep original name
     ->middleware(['auth:admin']); // Rely only on AdminMiddleware for now
 
+Route::post('/uitc-staff/requests/mark-unresolvable', [UITCStaffController::class, 'markAsUnresolvable'])
+    ->name('uitc.requests.mark-unresolvable')
+    ->middleware(['auth:admin']);
+
 Route::post('/register/student', [UserController::class, 'registerStudent'])->name('register.student');
 
 

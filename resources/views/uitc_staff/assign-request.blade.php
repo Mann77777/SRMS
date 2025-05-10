@@ -37,6 +37,7 @@
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
                 <option value="Overdue">Overdue</option>
+                <option value="Unresolvable">Unresolvable</option>
             </select>
 
             <!-- Search Bar -->
@@ -164,16 +165,24 @@
                                     <span class="custom-badge custom-badge-success">{{ $request->status }}</span>
                                 @elseif($request->status == 'Overdue')
                                     <span class="custom-badge custom-badge-overdue">{{ $request->status }}</span>
+                                @elseif($request->status == 'Unresolvable')
+                                    <span class="custom-badge custom-badge-danger">{{ $request->status }}</span> 
                                 @else
                                     <span class="custom-badge custom-badge-secondary">{{ $request->status }}</span>
                                 @endif
                             </td>
                             <td class="btns">
-                                 @if($request->status != 'Completed' && $request->status != 'Cancelled' && $request->status != 'Rejected')
+                                 @if($request->status != 'Completed' && $request->status != 'Cancelled' && $request->status != 'Rejected' && $request->status != 'Unresolvable')
                                 <button class="btn-complete" data-request-id="{{ $request->id }}" data-request-type="{{ $request->request_type }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
                                     </svg> Complete
+                                </button>
+                                <button class="btn-complete btn-unresolvable btn-danger" data-request-id="{{ $request->id }}" data-request-type="{{ $request->request_type }}" style="margin-left: 5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                    </svg> Unresolvable
                                 </button>
                                 @endif
                             </td>
@@ -239,6 +248,55 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-success">Submit Completion</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unresolvable Request Modal -->
+    <div class="modal fade" id="unresolvableRequestModal" tabindex="-1" role="dialog" aria-labelledby="unresolvableRequestModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="unresolvableRequestModalLabel">Mark Request as Unresolvable</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="unresolvableRequestForm">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" id="unresolvableRequestId" name="request_id">
+                        <input type="hidden" id="unresolvableRequestType" name="request_type" value="">
+                        
+                        <div class="form-group">
+                            <label for="unresolvableReason">Reason for Unresolvable <span class="text-danger">*</span></label>
+                            <textarea 
+                                class="form-control" 
+                                id="unresolvableReason" 
+                                name="unresolvable_reason" 
+                                rows="5" 
+                                placeholder="Enter detailed reason why the request is unresolvable" 
+                                required
+                            ></textarea>
+                            <small class="form-text text-muted">Please provide a comprehensive reason.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unresolvableActionsTaken">Actions Taken (Optional)</label>
+                            <textarea 
+                                class="form-control" 
+                                id="unresolvableActionsTaken" 
+                                name="unresolvable_actions_taken" 
+                                rows="3" 
+                                placeholder="Describe any actions taken before marking as unresolvable"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Mark as Unresolvable</button>
                     </div>
                 </form>
             </div>

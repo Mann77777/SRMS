@@ -586,10 +586,10 @@ class UITCStaffController extends Controller
                     DB::raw("'faculty' as request_type")
                 );
             
-            // Filter by status (Completed or Cancelled)
+            // Filter by status (Completed, Cancelled or Unresolvable)
             if ($status === 'all') {
-                $studentQuery->whereIn('student_service_requests.status', ['Completed', 'Cancelled']);
-                $facultyQuery->whereIn('faculty_service_requests.status', ['Completed', 'Cancelled']);
+                $studentQuery->whereIn('student_service_requests.status', ['Completed', 'Cancelled', 'Unresolvable']);
+                $facultyQuery->whereIn('faculty_service_requests.status', ['Completed', 'Cancelled', 'Unresolvable']);
             } else {
                 $studentQuery->where('student_service_requests.status', $status);
                 $facultyQuery->where('faculty_service_requests.status', $status);
@@ -1785,5 +1785,94 @@ class UITCStaffController extends Controller
         });
         
         return $recommendations;
+    }
+
+    public function markAsUnresolvable(Request $request)
+    {
+        // Validate the request
+        $validatedData = $request->validate([
+            'request_id' => 'required',
+            'request_type' => 'required|in:student,faculty',
+            'unresolvable_reason' => 'required|string|max:2000',
+            'unresolvable_actions_taken' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            // Begin database transaction
+            DB::beginTransaction();
+
+            // Get the currently logged in UITC staff ID
+            $currentStaffId = Auth::guard('admin')->user()->id;
+            $staffName = Auth::guard('admin')->user()->name;
+            
+            $serviceRequest = null;
+            $user = null;
+
+            // Based on request type, find the appropriate request
+            if ($validatedData['request_type'] === 'student') {
+                $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
+            } else { // faculty
+                $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
+            }
+            
+            // Ensure the request is assigned to the current UITC staff
+            if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Unauthorized to mark this request as unresolvable.',
+                    'error' => 'Request not assigned to current staff'
+                ], 403);
+            }
+
+            // Update the request status and add unresolvable details
+            $serviceRequest->status = 'Unresolvable'; // New status
+            $serviceRequest->completion_report = $validatedData['unresolvable_reason']; // Re-using this field
+            $serviceRequest->actions_taken = $validatedData['unresolvable_actions_taken'] ?? null; // Re-using this field
+            $serviceRequest->completed_at = now(); // Marking the time it was closed
+            $serviceRequest->save();
+            
+            $user = $serviceRequest->user; // Get the user associated with the request for notifications
+
+            // TODO: Implement notifications for 'Unresolvable' status
+            // Similar to completeRequest, notify the user and admins.
+            // This might involve creating new Notification classes:
+            // - UserRequestUnresolvableNotification
+            // - AdminRequestUnresolvableNotification
+            // For now, skipping notifications to keep this change focused.
+
+            // Commit the transaction
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Request marked as unresolvable successfully.',
+                'request' => $serviceRequest
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            Log::error('Error marking request as unresolvable: Request not found.', [
+                'request_id' => $validatedData['request_id'],
+                'request_type' => $validatedData['request_type'],
+                'staff_id' => $currentStaffId ?? 'Unknown',
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Request not found.'], 404);
+        } catch (\Exception $e) {
+            // Rollback the transaction
+            DB::rollBack();
+
+            // Log the error
+            Log::error('Error marking request as unresolvable: ' . $e->getMessage(), [
+                'request_id' => $validatedData['request_id'],
+                'request_type' => $validatedData['request_type'],
+                'staff_id' => $currentStaffId ?? 'Unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to mark request as unresolvable: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

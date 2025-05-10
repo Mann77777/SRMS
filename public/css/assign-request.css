@@ -314,3 +314,17 @@ button {
         font-size: 13px;
     }
 }
+
+/* Ensure Unresolvable button is red */
+.btn-unresolvable.btn-danger,
+.btn-complete.btn-danger { /* If btn-complete is also used with btn-danger */
+    background-color: #dc3545 !important; /* Bootstrap danger red */
+    border-color: #dc3545 !important;
+    color: white !important;
+}
+
+.btn-unresolvable.btn-danger:hover,
+.btn-complete.btn-danger:hover {
+    background-color: #c82333 !important; /* Darker red on hover */
+    border-color: #bd2130 !important;
+}

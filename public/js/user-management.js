@@ -429,7 +429,26 @@ $(document).ready(function() {
                 Swal.close();
                 
                 $('#edit-user-id').val(userId);
-                $('#edit-name').val(response.name);
+                
+                // Handle first name and last name fields
+                if (response.first_name && response.last_name) {
+                    // If both fields exist in the response, use them directly
+                    $('#edit-first-name').val(response.first_name);
+                    $('#edit-last-name').val(response.last_name);
+                } else if (response.name) {
+                    // If only full name exists, split it
+                    const nameParts = response.name.split(' ');
+                    const firstName = nameParts[0];
+                    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+                    
+                    $('#edit-first-name').val(firstName);
+                    $('#edit-last-name').val(lastName);
+                } else {
+                    // Fallback to empty fields
+                    $('#edit-first-name').val('');
+                    $('#edit-last-name').val('');
+                }
+                
                 $('#edit-username').val(response.username);
                 $('#edit-email').val(response.email || response.username);
                 $('#edit-role').val(response.role);
@@ -472,7 +491,9 @@ $(document).ready(function() {
         // Validate role and student-specific fields if needed
         var role = $('#edit-role').val();
         var userId = $('#edit-user-id').val();
-        var userName = $('#edit-name').val();
+        var firstName = $('#edit-first-name').val();
+        var lastName = $('#edit-last-name').val();
+        var userName = firstName + ' ' + lastName;
 
         // Show loading
         Swal.fire({

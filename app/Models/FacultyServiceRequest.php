@@ -55,6 +55,8 @@ class FacultyServiceRequest extends Model
         'publication_start_date',
         'publication_end_date',
         'publication_details',
+        'publication_image_path',
+        'publication_file_path',
         
         // Data documents
         'data_documents_details',
@@ -98,6 +100,8 @@ class FacultyServiceRequest extends Model
         'publication_editor' => 'string',
         'publication_start_date' => 'date',
         'publication_end_date' => 'date',
+        'publication_image_path' => 'string',
+        'publication_file_path' => 'string',
         'data_documents_details' => 'string',
         'date_of_birth' => 'date',
     ];

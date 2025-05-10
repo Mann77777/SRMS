@@ -385,6 +385,21 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="publication_image_path">Publication Image (Optional, Max 25MB: PNG, JPG, JPEG)</label>
+                                    <input type="file" class="form-control-file" id="publication_image_path" name="publication_image_path" accept=".png,.jpg,.jpeg">
+                                    <small class="form-text text-muted">Please ensure you have the right to use any uploaded image and it is not copyrighted material that you do not own.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="publication_file_path">Publication File (Optional, Max 25MB: PDF, DOC, DOCX, ZIP)</label>
+                                    <input type="file" class="form-control-file" id="publication_file_path" name="publication_file_path" accept=".pdf,.doc,.docx,.zip">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

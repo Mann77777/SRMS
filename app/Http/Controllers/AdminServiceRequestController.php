@@ -415,6 +415,18 @@ class AdminServiceRequestController extends Controller
                 if (isset($request->publication_end_date)) {
                     $data['End of Publication'] = $this->formatDate($request->publication_end_date);
                 }
+                if ($request->publication_image_path) {
+                    $data['Publication Image'] = sprintf(
+                        '<a href="%s" target="_blank" class="document-link btn btn-sm btn-outline-primary">View Image</a>',
+                        Storage::url($request->publication_image_path)
+                    );
+                }
+                if ($request->publication_file_path) {
+                    $data['Publication File'] = sprintf(
+                        '<a href="%s" target="_blank" class="document-link btn btn-sm btn-outline-primary">View File</a>',
+                        Storage::url($request->publication_file_path)
+                    );
+                }
                 break;
 
             case 'data_docs_reports':
@@ -458,8 +470,8 @@ class AdminServiceRequestController extends Controller
         // Convert data to HTML format
         $output = [];
         foreach ($data as $key => $value) {
-            // Handle the HTML link for the document directly
-            if ($key === 'Supporting Document') {
+            // Handle the HTML link for the document, image, and file directly
+            if ($key === 'Supporting Document' || $key === 'Publication Image' || $key === 'Publication File') {
                  $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . $value . '<br>';
             } else {
                 $output[] = '<strong>' . htmlspecialchars($key) . ':</strong> ' . htmlspecialchars($value) . '<br>';

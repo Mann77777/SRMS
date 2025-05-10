@@ -103,6 +103,10 @@ class FacultyServiceRequestController extends Controller
                       $rules['publication_editor'] = 'required|string|max:255';
                       $rules['publication_start_date'] = 'required|date';
                       $rules['publication_end_date'] = 'required|date|after_or_equal:publication_start_date';
+                      // Add validation for publication image and file
+                      $rules['publication_image_path'] = 'nullable|image|mimes:png,jpg,jpeg|max:25600'; // Max 25MB
+                      $rules['publication_file_path'] = 'nullable|file|mimes:pdf,doc,docx,zip|max:25600'; // Max 25MB
+                      // TODO: Implement copyright check for publication_image_path
                       break;
                  case 'data_docs_reports':
                       $rules['data_documents_details'] = 'required|string|max:1000';
@@ -159,6 +163,18 @@ class FacultyServiceRequestController extends Controller
             if ($request->hasFile('supporting_document') && in_array('supporting_document', $tableColumns)) {
                 $path = $request->file('supporting_document')->store('documents', 'public');
                 $filteredData['supporting_document'] = $path;
+            }
+
+            // Handle publication image upload
+            if ($request->hasFile('publication_image_path') && in_array('publication_image_path', $tableColumns)) {
+                $imagePath = $request->file('publication_image_path')->store('publications/images', 'public');
+                $filteredData['publication_image_path'] = $imagePath;
+            }
+
+            // Handle publication file upload
+            if ($request->hasFile('publication_file_path') && in_array('publication_file_path', $tableColumns)) {
+                $filePath = $request->file('publication_file_path')->store('publications/files', 'public');
+                $filteredData['publication_file_path'] = $filePath;
             }
     
             // Handle DTR specific fields
@@ -409,6 +425,10 @@ class FacultyServiceRequestController extends Controller
              // 'first_name' and 'last_name' removed - should not be updated from form
              'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
              'remove_supporting_document' => 'nullable|in:1', // For checkbox to remove file
+             'publication_image_path' => 'nullable|image|mimes:png,jpg,jpeg|max:25600',
+             'remove_publication_image' => 'nullable|in:1',
+             'publication_file_path' => 'nullable|file|mimes:pdf,doc,docx,zip|max:25600',
+             'remove_publication_file' => 'nullable|in:1',
             // Add other common faculty fields if necessary
         ];
 
@@ -467,6 +487,7 @@ class FacultyServiceRequestController extends Controller
                  $rules['publication_editor'] = 'required|string|max:255';
                  $rules['publication_start_date'] = 'required|date';
                  $rules['publication_end_date'] = 'required|date|after_or_equal:publication_start_date';
+                 // TODO: Implement copyright check for publication_image_path update
                  break;
             case 'data_docs_reports':
                  $rules['data_documents_details'] = 'required|string|max:1000';
@@ -524,6 +545,33 @@ class FacultyServiceRequestController extends Controller
                  }
             }
 
+            // Handle publication image update/removal
+            if ($requestData->hasFile('publication_image_path') && in_array('publication_image_path', $tableColumns)) {
+                if ($serviceRequest->publication_image_path) {
+                    Storage::disk('public')->delete($serviceRequest->publication_image_path);
+                }
+                $imagePath = $requestData->file('publication_image_path')->store('publications/images', 'public');
+                $updateData['publication_image_path'] = $imagePath;
+            } elseif ($requestData->has('remove_publication_image') && $requestData->input('remove_publication_image') == '1' && in_array('publication_image_path', $tableColumns)) {
+                if ($serviceRequest->publication_image_path) {
+                    Storage::disk('public')->delete($serviceRequest->publication_image_path);
+                    $updateData['publication_image_path'] = null;
+                }
+            }
+
+            // Handle publication file update/removal
+            if ($requestData->hasFile('publication_file_path') && in_array('publication_file_path', $tableColumns)) {
+                if ($serviceRequest->publication_file_path) {
+                    Storage::disk('public')->delete($serviceRequest->publication_file_path);
+                }
+                $filePath = $requestData->file('publication_file_path')->store('publications/files', 'public');
+                $updateData['publication_file_path'] = $filePath;
+            } elseif ($requestData->has('remove_publication_file') && $requestData->input('remove_publication_file') == '1' && in_array('publication_file_path', $tableColumns)) {
+                if ($serviceRequest->publication_file_path) {
+                    Storage::disk('public')->delete($serviceRequest->publication_file_path);
+                    $updateData['publication_file_path'] = null;
+                }
+            }
 
             // Update the request
             $serviceRequest->update($updateData);

@@ -381,41 +381,152 @@ $(document).ready(function() {
         }
     }
     
+    // Helper to create HTML for a field
+    function createFieldHtml(label, value) {
+        if (value === null || typeof value === 'undefined' || value === '') {
+            return ''; // Don't display empty fields
+        }
+        // Sanitize value to prevent XSS if it's not already handled (basic example)
+        const sanitizedValue = String(value).replace(/</g, "<").replace(/>/g, ">");
+        return `<strong>${label}:</strong> ${sanitizedValue}<br>`;
+    }
+
     // Format request data for display
     function formatRequestData(request) {
         let html = '';
-        
-        // Name information
-        let name = '';
-        if (request.first_name && request.last_name) {
-            name = request.first_name + ' ' + request.last_name;
-        } else {
-            name = request.requester_name || 'N/A';
+
+        // Basic Info (already handled by other parts of updateRequestDetailsModal, but good for completeness if used standalone)
+        let name = request.requester_first_name && request.requester_last_name 
+                    ? `${request.requester_first_name} ${request.requester_last_name}`
+                    : (request.first_name && request.last_name ? `${request.first_name} ${request.last_name}` : (request.user?.name || 'N/A'));
+        html += createFieldHtml('Requester Name', name);
+        if (request.user?.email) {
+             html += createFieldHtml('Requester Email', request.user.email);
+        } else if (request.email) { // Fallback if email is directly on request object
+            html += createFieldHtml('Requester Email', request.email);
         }
-        html += '<strong>Name:</strong> ' + name + '<br>';
-        
-        // ID information
+
+
         if (request.request_type === 'student' && request.student_id) {
-            html += '<strong>Student ID:</strong> ' + request.student_id + '<br>';
-        } else if (request.request_type === 'faculty' && request.faculty_id) {
-            html += '<strong>Faculty ID:</strong> ' + request.faculty_id + '<br>';
+            html += createFieldHtml('Student ID', request.student_id);
+        } else if (request.request_type === 'faculty' && (request.faculty_id || request.user?.faculty_id)) {
+            html += createFieldHtml('Faculty ID', request.faculty_id || request.user?.faculty_id);
         }
         
-        // Service information
-        if (request.service_category) {
-            html += '<strong>Service:</strong> ' + formatServiceCategory(request.service_category) + '<br>';
-            
-            // Description
-            if (request.description) {
-                if (request.service_category !== 'others') {
-                    html += '<strong>Description:</strong> ' + request.description;
-                } else {
-                    html += '<strong>Service Details:</strong> ' + request.description;
+        html += createFieldHtml('Service Category', formatServiceCategory(request.service_category));
+
+        // Common fields
+        html += createFieldHtml('Description', request.description);
+        html += createFieldHtml('Additional Notes', request.additional_notes);
+        html += createFieldHtml('Preferred Date', request.preferred_date ? formatDateTime(request.preferred_date, false) : 'N/A');
+        html += createFieldHtml('Preferred Time', request.preferred_time ? formatDateTime('1970-01-01T' + request.preferred_time, true, true) : 'N/A'); // Assuming time is just HH:MM:SS
+
+        if (request.supporting_document) {
+            // Assuming supporting_document is a URL or path that can be linked
+            // For security, ensure this URL is safe or handle downloads appropriately server-side
+            const docName = request.supporting_document.split('/').pop();
+            html += `<strong>Supporting Document:</strong> <a href="/admin/view-supporting-document/${request.id}?type=${request.request_type}" target="_blank">${docName || 'View Document'}</a><br>`;
+        }
+        
+        // Service-specific fields based on service_category
+        switch (request.service_category) {
+            case 'create':
+            case 'reset_email_password':
+            case 'change_of_data_ms':
+            case 'reset_tup_web_password':
+            case 'reset_ers_password':
+            case 'change_of_data_portal':
+                html += createFieldHtml('Account Email', request.account_email);
+                if (request.service_category === 'change_of_data_ms' || request.service_category === 'change_of_data_portal') {
+                    html += createFieldHtml('Data Type to Change', request.data_type);
+                    html += createFieldHtml('New Data', request.new_data);
                 }
-            }
+                break;
+            case 'dtr':
+            case 'biometric_record':
+                html += createFieldHtml('DTR/Biometric Months', Array.isArray(request.dtr_months) ? request.dtr_months.join(', ') : request.dtr_months);
+                html += createFieldHtml('DTR with Details', request.dtr_with_details);
+                html += createFieldHtml('Specific Months', Array.isArray(request.months) ? request.months.join(', ') : request.months);
+                html += createFieldHtml('Year', request.year);
+                break;
+            case 'biometrics_enrollement': // Corrected spelling if it's 'enrollment' in DB
+                 html += createFieldHtml('Middle Name', request.middle_name);
+                 html += createFieldHtml('College', request.college);
+                 html += createFieldHtml('Department', request.department);
+                 html += createFieldHtml('Plantilla Position', request.plantilla_position);
+                 html += createFieldHtml('Date of Birth', request.date_of_birth ? formatDateTime(request.date_of_birth, false) : 'N/A');
+                 html += createFieldHtml('Phone Number', request.phone_number);
+                 html += createFieldHtml('Address', request.address);
+                 html += createFieldHtml('Blood Type', request.blood_type);
+                 html += createFieldHtml('Emergency Contact Person', request.emergency_contact_person);
+                 html += createFieldHtml('Emergency Contact Number', request.emergency_contact_number);
+                break;
+            case 'new_internet':
+            case 'new_telephone':
+            case 'repair_and_maintenance': // Internet/Telephone Repair
+            case 'computer_repair_maintenance':
+            case 'printer_repair_maintenance':
+                html += createFieldHtml('Location/Office', request.location);
+                if (request.service_category === 'repair_and_maintenance' || 
+                    request.service_category === 'computer_repair_maintenance' ||
+                    request.service_category === 'printer_repair_maintenance') {
+                    html += createFieldHtml('Problem Encountered', request.problem_encountered);
+                    // repair_maintenance might be a sub-category or type of repair
+                    html += createFieldHtml('Repair/Maintenance Details', request.repair_maintenance); 
+                }
+                break;
+            case 'request_led_screen':
+                html += createFieldHtml('LED Screen Details/Purpose', request.led_screen_details);
+                break;
+            case 'install_application':
+                html += createFieldHtml('Application Name', request.application_name);
+                html += createFieldHtml('Purpose of Installation', request.installation_purpose);
+                html += createFieldHtml('Installation Notes', request.installation_notes);
+                break;
+            case 'post_publication':
+                html += createFieldHtml('Author/Department', request.publication_author);
+                html += createFieldHtml('Editor/Contact Person', request.publication_editor);
+                html += createFieldHtml('Publication Start Date', request.publication_start_date ? formatDateTime(request.publication_start_date, false) : 'N/A');
+                html += createFieldHtml('Publication End Date', request.publication_end_date ? formatDateTime(request.publication_end_date, false) : 'N/A');
+                html += createFieldHtml('Publication Details', request.publication_details);
+                if (request.publication_image_path) {
+                     html += `<strong>Publication Image:</strong> <a href="/storage/${request.publication_image_path}" target="_blank">View Image</a><br>`;
+                }
+                if (request.publication_file_path) {
+                     html += `<strong>Publication File:</strong> <a href="/storage/${request.publication_file_path}" target="_blank">View File</a><br>`;
+                }
+                break;
+            case 'data_docs_reports':
+                html += createFieldHtml('Details of Data/Documents/Reports', request.data_documents_details);
+                break;
+            case 'others':
+                // For 'others', the main description is the service detail.
+                // html += createFieldHtml('Service Details', request.description); // Already covered by common 'Description'
+                break;
         }
         
-        return html;
+        // Fallback for any other fields not explicitly handled (optional)
+        // You might want to list other non-empty fields that are not part of a standard exclusion list.
+        // const excludedFields = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'status', 
+        //                         'assigned_uitc_staff_id', 'admin_notes', 'transaction_type', 
+        //                         'actions_taken', 'completion_report', 'user', 'assignedUITCStaff', 
+        //                         'requester_first_name', 'requester_last_name', 'user_role', 'requester_email',
+        //                         'request_type', 'service_category', 'first_name', 'last_name', 'student_id', 'faculty_id',
+        //                         'description', 'additional_notes', 'preferred_date', 'preferred_time', 'supporting_document',
+        //                         // Add all handled fields from the switch case above
+        //                         'account_email', 'data_type', 'new_data', 'dtr_months', 'dtr_with_details', 'months', 'year',
+        //                         'middle_name', 'college', 'department', 'plantilla_position', 'date_of_birth', 'phone_number', 'address', 'blood_type', 'emergency_contact_person', 'emergency_contact_number',
+        //                         'location', 'problem_encountered', 'repair_maintenance', 'led_screen_details', 'application_name', 'installation_purpose', 'installation_notes',
+        //                         'publication_author', 'publication_editor', 'publication_start_date', 'publication_end_date', 'publication_details', 'publication_image_path', 'publication_file_path',
+        //                         'data_documents_details'
+        //                         ];
+        // for (const key in request) {
+        //     if (request.hasOwnProperty(key) && !excludedFields.includes(key) && request[key] !== null && request[key] !== '') {
+        //         html += createFieldHtml(key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), request[key]);
+        //     }
+        // }
+
+        return html || 'No specific details provided for this service category.';
     }
     
     // Format service category

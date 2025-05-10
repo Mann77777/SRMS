@@ -266,6 +266,33 @@
                              <label for="publication_end_date">End of Publication</label>
                              <input type="date" class="form-control" id="publication_end_date" name="publication_end_date" value="{{ old('publication_end_date', $request->publication_end_date) }}" required>
                          </div>
+                         <div class="form-group">
+                            <label for="publication_image_path">Publication Image (Optional: Replace existing, Max 25MB: PNG, JPG, JPEG)</label>
+                            @if($request->publication_image_path)
+                            <div class="mb-2">
+                                Current Image: <a href="{{ Storage::url($request->publication_image_path) }}" target="_blank" class="current-file-link">{{ basename($request->publication_image_path) }}</a>
+                                <div class="form-check form-check-inline">
+                                     <input class="form-check-input" type="checkbox" id="remove_publication_image" name="remove_publication_image" value="1">
+                                     <label class="form-check-label" for="remove_publication_image">Remove current image</label>
+                                </div>
+                            </div>
+                            @endif
+                            <input type="file" class="form-control-file" id="publication_image_path" name="publication_image_path" accept=".png,.jpg,.jpeg">
+                            <small class="form-text text-muted">Please ensure you have the right to use any uploaded image and it is not copyrighted material that you do not own.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="publication_file_path">Publication File (Optional: Replace existing, Max 25MB: PDF, DOC, DOCX, ZIP)</label>
+                            @if($request->publication_file_path)
+                            <div class="mb-2">
+                                Current File: <a href="{{ Storage::url($request->publication_file_path) }}" target="_blank" class="current-file-link">{{ basename($request->publication_file_path) }}</a>
+                                <div class="form-check form-check-inline">
+                                     <input class="form-check-input" type="checkbox" id="remove_publication_file" name="remove_publication_file" value="1">
+                                     <label class="form-check-label" for="remove_publication_file">Remove current file</label>
+                                </div>
+                            </div>
+                            @endif
+                            <input type="file" class="form-control-file" id="publication_file_path" name="publication_file_path" accept=".pdf,.doc,.docx,.zip">
+                        </div>
                         @break
 
                     @case('data_docs_reports') {{-- Faculty Only --}}

@@ -507,6 +507,7 @@ Route::middleware(['auth:admin'])->prefix('uitc-staff')->name('uitc.')->group(fu
     Route::get('/notifications/get', [NotificationController::class, 'getNotifications'])->name('notifications.get'); // Keep original name used by JS
     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read'); // Keep original name used by JS
     Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read'); // Keep original name used by JS
+    Route::get('/request-details/{id}', [UITCStaffController::class, 'getRequestDetailsById'])->name('request.details');
 });
 
 

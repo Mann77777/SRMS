@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\RequestCompletedNotification;
 use App\Notifications\AdminRequestCompletedNotification;
+use App\Notifications\RequestUnresolvableNotification;
+
 use Carbon\Carbon; 
 
 class UITCStaffController extends Controller
@@ -1833,12 +1835,10 @@ class UITCStaffController extends Controller
             
             $user = $serviceRequest->user; // Get the user associated with the request for notifications
 
-            // TODO: Implement notifications for 'Unresolvable' status
-            // Similar to completeRequest, notify the user and admins.
-            // This might involve creating new Notification classes:
-            // - UserRequestUnresolvableNotification
-            // - AdminRequestUnresolvableNotification
-            // For now, skipping notifications to keep this change focused.
+            if ($user) {
+                // Notify the user
+                $user->notify(new \App\Notifications\RequestUnresolvableNotification($serviceRequest, $staffName));
+            }
 
             // Commit the transaction
             DB::commit();

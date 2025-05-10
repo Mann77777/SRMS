@@ -24,7 +24,26 @@ class RequestCompletedNotification extends Notification
      */
     public function __construct($requestId, $serviceCategory, $requesterName, $completionReport, $actionsTaken, $staffName, $transactionType)
     {
-        $this->requestId = $requestId;
+        // Handle ID formatting here
+        // If $requestId is already formatted (contains '-'), use it as is
+        if (is_string($requestId) && strpos($requestId, '-') !== false) {
+            $this->requestId = $requestId;
+        } else {
+            // Determine the prefix based on service category
+            $prefix = 'SR'; // Default prefix
+            
+            // Determine if it's a student or faculty request based on context clues
+            if (stripos($serviceCategory, 'student') !== false || 
+                in_array($serviceCategory, ['change_of_data_portal', 'reset_tup_web_password'])) {
+                $prefix = 'SSR'; // Student Service Request
+            } elseif (in_array($serviceCategory, ['dtr', 'biometric_record']) || 
+                     stripos($serviceCategory, 'faculty') !== false) {
+                $prefix = 'FSR'; // Faculty Service Request
+            }
+            
+            // Format: PREFIX-YYYYMMDD-0000
+            $this->requestId = $prefix . '-' . date('Ymd') . '-' . str_pad($requestId, 4, '0', STR_PAD_LEFT);
+        }
         $this->serviceCategory = $serviceCategory;
         $this->requesterName = $requesterName;
         $this->completionReport = $completionReport;
@@ -51,6 +70,7 @@ class RequestCompletedNotification extends Notification
         return (new MailMessage)
                     ->subject('Your Service Request Has Been Completed')
                     ->line('Your service request has been completed by UITC staff.')
+                    ->line('Request ID: ' . $this->requestId)
                     ->line('Service: ' . $formattedService)
                     ->line('Completed by: ' . $this->staffName)
                     ->line('Transaction Type: ' . $this->transactionType)

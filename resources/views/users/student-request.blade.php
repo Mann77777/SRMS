@@ -53,7 +53,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('student.service.request.submit') }}" method="POST" enctype="multipart/form-data">
+            <form id="studentServiceForm" action="{{ route('student.service.request.submit') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <!-- Add hidden input for the logged-in user's email -->
                 <input type="hidden" name="account_email" value="{{ Auth::user()->email }}">
@@ -175,9 +175,12 @@
                 <!-- Submit Button -->
                 <div class="form-section">
                     <div class="row justify-content-center">
-                        <div class="col-md-6 text-center">
-                            <button type="submit" class="submitbtn">Submit</button>
-                        </div>
+                        <button type="submit" class="submitbtn" id="submitButton">
+                            <span class="button-text">Submit Request</span>
+                            <span class="spinner" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Submitting...
+                            </span>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -302,6 +305,23 @@
 
     <!-- JavaScript -->
     <script>
+        // Add this at the beginning of your script section
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('studentServiceForm');
+            const submitButton = document.getElementById('submitButton');
+            const buttonText = submitButton.querySelector('.button-text');
+            const spinner = submitButton.querySelector('.spinner');
+
+            form.addEventListener('submit', function() {
+                // Disable the submit button
+                submitButton.disabled = true;
+                // Hide the button text
+                buttonText.style.display = 'none';
+                // Show the spinner
+                spinner.style.display = 'inline-block';
+            });
+        });
+
         // Make showFormFields a global function
         function showFormFields() {
             var serviceCategory = document.getElementById('serviceCategory')?.value || '';
@@ -467,6 +487,7 @@
                 });
             }
         });
+
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

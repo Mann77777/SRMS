@@ -27,7 +27,7 @@
         {
             "id": 5,
             "name": "TUP Web Portal and ERS",
-            "description": "Reset passwords and update data.",
+            "description": "Reset passwords and update data. Reset Password for Intranet Portal.",
             "image": "\/images\/services\/1733671073.png",
             "status": "active",
             "created_at": "2024-12-08"

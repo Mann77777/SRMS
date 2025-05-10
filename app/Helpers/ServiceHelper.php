@@ -21,6 +21,7 @@ class ServiceHelper
             'change_of_data_ms' => 'Change of Data (MS Office)',
             'reset_tup_web_password' => 'Reset TUP Web Password',
             'reset_ers_password' => 'Reset ERS Password',
+            'reset_intranet_password' => 'Reset Intranet Portal Password',
             'change_of_data_portal' => 'Change of Data (Portal)',
             'request_led_screen' => 'LED Screen Request',
 

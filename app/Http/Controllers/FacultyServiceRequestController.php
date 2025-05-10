@@ -48,6 +48,7 @@ class FacultyServiceRequestController extends Controller
                 case 'reset_email_password':
                 case 'reset_tup_web_password':
                 case 'reset_ers_password':
+                case 'reset_intranet_password':
                      // No specific validation needed here anymore for account_email
                      break;
                 case 'change_of_data_ms':
@@ -151,7 +152,7 @@ class FacultyServiceRequestController extends Controller
                     $filteredData['last_name'] = $user->last_name;
                 }
                 // Fetch email for password reset categories
-                if (in_array($serviceCategory, ['reset_email_password', 'reset_tup_web_password', 'reset_ers_password']) && in_array('account_email', $tableColumns)) {
+                if (in_array($serviceCategory, ['reset_email_password', 'reset_tup_web_password', 'reset_ers_password', 'reset_intranet_password']) && in_array('account_email', $tableColumns)) {
                     $filteredData['account_email'] = $user->email;
                 }
             }
@@ -439,6 +440,7 @@ class FacultyServiceRequestController extends Controller
             case 'reset_email_password':
             case 'reset_tup_web_password':
             case 'reset_ers_password':
+            case 'reset_intranet_password':
                  // No specific validation needed here anymore for account_email
                  break;
             case 'change_of_data_ms':

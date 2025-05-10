@@ -71,6 +71,7 @@
                         <optgroup label="TUP Web Services">
                             <option value="reset_tup_web_password">Reset TUP Web Password</option>
                             <option value="reset_ers_password">Reset ERS Password</option>
+                            <option value="reset_intranet_password">Reset Intranet Portal Password</option>
                             <option value="change_of_data_portal">Change of Data</option>
                         </optgroup>
                         <optgroup label="Internet Services">
@@ -530,6 +531,8 @@
                     return 'Reset TUP Web Password';
                 case 'reset_ers_password':
                     return 'Reset ERS Password';
+                case 'reset_intranet_password':
+                    return 'Reset Intranet Portal Password';
                 case 'change_of_data_portal':
                     return 'Change of Data (Portal)';
                 case 'dtr':

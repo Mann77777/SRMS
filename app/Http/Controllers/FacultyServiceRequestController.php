@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Notifications\ServiceRequestReceived;
+use App\Notifications\RequestCancelledNotification;
 use Illuminate\Support\Facades\Notification;
 use App\Models\Admin;
 use App\Notifications\RequestSubmitted;
@@ -636,23 +637,30 @@ class FacultyServiceRequestController extends Controller
     {
         try {
             $request = FacultyServiceRequest::findOrFail($id);
-            
             // Check if the request belongs to the current user
             if ($request->user_id !== Auth::id()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            
             // Check if the request can be cancelled (not completed or already cancelled)
             if ($request->status === 'Completed' || $request->status === 'Rejected' || $request->status === 'Cancelled') {
                 return response()->json([
                     'error' => 'This request cannot be cancelled because it is already ' . $request->status
                 ], 400);
             }
-            
             // Update the request status to Cancelled
             $request->status = 'Cancelled';
             $request->save();
-            
+
+            // Send cancellation notification to the user
+            $user = Auth::user();
+            $user->notify(new \App\Notifications\RequestCancelledNotification(
+                $request->id,
+                $request->service_category,
+                $user->first_name . ' ' . $user->last_name,
+                null, // Pass cancellation reason if available
+                $request->created_at
+            ));
+
             return response()->json(['message' => 'Request cancelled successfully']);
         } catch (\Exception $e) {
             \Log::error('Error cancelling request: ' . $e->getMessage());

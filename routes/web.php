@@ -302,7 +302,7 @@ Route::get('/myprofile', function () {
 })->name('users.profile');
 
 Route::get('/faculty-service', function () {
-    return view('users.faculty-service');
+    return view('users.faculty-request');
 })->name('faculty-service');
 
 // Use AuthController@logout for proper session invalidation

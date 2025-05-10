@@ -92,4 +92,20 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new PasswordResetNotification($token));
     }
 
+    /**
+     * Get the user's full name.
+     *
+     * @return string
+     */
+    public function getFullNameAttribute()
+    {
+        $firstName = trim($this->first_name ?? '');
+        $lastName = trim($this->last_name ?? '');
+
+        if (empty($firstName) && empty($lastName)) {
+            return 'N/A';
+        }
+
+        return trim("{$firstName} {$lastName}");
+    }
 }

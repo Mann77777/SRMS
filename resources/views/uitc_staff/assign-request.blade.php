@@ -138,8 +138,13 @@
                             </td>
                             <td>
                                 @if($request->status == 'Completed')
-                                    <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
-                                    <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
+                                    @if($request->completed_at)
+                                        <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('M d, Y') }}</span><br>
+                                        <span>{{ \Carbon\Carbon::parse($request->completed_at)->format('h:i A') }}</span>
+                                    @else
+                                        <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('M d, Y') }}</span><br>
+                                        <span>{{ \Carbon\Carbon::parse($request->updated_at)->format('h:i A') }}</span>
+                                    @endif
                                 @else
                                     –
                                 @endif
@@ -173,7 +178,7 @@
                                 @elseif($request->status == 'Overdue')
                                     <span class="custom-badge custom-badge-overdue">{{ $request->status }}</span>
                                 @elseif($request->status == 'Unresolvable')
-                                    <span class="custom-badge custom-badge-danger">{{ $request->status }}</span> 
+                                    <span class="custom-badge custom-badge-gray">{{ $request->status }}</span> 
                                 @else
                                     <span class="custom-badge custom-badge-secondary">{{ $request->status }}</span>
                                 @endif

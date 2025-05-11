@@ -259,6 +259,11 @@ button {
     color: white;
 }
 
+.custom-badge-gray {
+    background-color: #343a40;
+    color: white;
+}
+
 .custom-badge-secondary {
     background-color: #6c757d;
     color: white;

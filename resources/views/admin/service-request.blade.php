@@ -25,10 +25,64 @@
             background-color: #ffebee;
             color: #c62828;
         }
+
+        /* Loading Spinner Styles */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner.active {
+            display: flex;
+        }
+
+        /* Button Spinner Styles */
+        .btn-spinner {
+            display: none;
+        }
+
+        .btn-spinner.active {
+            display: inline-block;
+        }
+
+        .button-text {
+            display: inline-block;
+        }
+
+        .button-text.hidden {
+            display: none;
+        }
     </style>
     <title>Admin - Service Request</title>
 </head>
 <body data-user-role="Admin">
+    <!-- Add Loading Spinner HTML -->
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
     @include('layouts.admin-navbar')
     @include('layouts.admin-sidebar')
 
@@ -114,8 +168,10 @@
                                         <span class="custom-badge custom-badge-success">{{ $request['status'] }}</span>
                                     @elseif($request['status'] == 'Overdue')
                                         <span class="custom-badge custom-badge-overdue">{{ $request['status'] }}</span>
-                                    @elseif($request['status'] == 'Cancelled')
+                                    @elseif($request['status'] == 'Rejected')
                                         <span class="custom-badge custom-badge-danger">{{ $request['status'] }}</span>
+                                    @elseif($request['status'] == 'Unresolvable')
+                                        <span class="custom-badge custom-badge-gray">{{ $request['status'] }}</span>
                                     @else
                                         <span class="custom-badge custom-badge-secondary">{{ $request['status'] }}</span>
                                     @endif
@@ -378,6 +434,15 @@
                     return;
                 }
 
+                // Show loading spinner in button
+                const $button = $(this);
+                const $buttonText = $button.find('.button-text');
+                const $spinner = $button.find('.btn-spinner');
+                
+                $button.prop('disabled', true);
+                $buttonText.addClass('hidden');
+                $spinner.addClass('active');
+
                 // Prepare form data manually to ensure all fields are included
                 const formData = {
                     request_id: requestId,
@@ -416,6 +481,12 @@
                             text: xhr.responseJSON?.message || 'Failed to assign UITC Staff',
                             confirmButtonText: 'OK'
                         }); 
+                    },
+                    complete: function() {
+                        // Reset button state
+                        $button.prop('disabled', false);
+                        $buttonText.removeClass('hidden');
+                        $spinner.removeClass('active');
                     }
                 });
             });
@@ -457,6 +528,15 @@
                     return;
                 }
 
+                // Show loading spinner in button
+                const $button = $(this);
+                const $buttonText = $button.find('.button-text');
+                const $spinner = $button.find('.btn-spinner');
+                
+                $button.prop('disabled', true);
+                $buttonText.addClass('hidden');
+                $spinner.addClass('active');
+
                 $.ajax({
                     url: '{{ route("admin.reject.service.request") }}',
                     method: 'POST',
@@ -489,6 +569,12 @@
                             text: 'An error occurred while rejecting the request',
                             confirmButtonText: 'OK'
                         });
+                    },
+                    complete: function() {
+                        // Reset button state
+                        $button.prop('disabled', false);
+                        $buttonText.removeClass('hidden');
+                        $spinner.removeClass('active');
                     }
                 });
             });

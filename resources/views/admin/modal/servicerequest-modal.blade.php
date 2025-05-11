@@ -48,7 +48,12 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="saveAssignStaffBtn">Assign UITC Staff</button>
+                    <button type="button" class="btn btn-primary" id="saveAssignStaffBtn">
+                        <span class="button-text">Save</span>
+                        <span class="btn-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> Processing...
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -97,7 +102,12 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmRejectBtn">Confirm Rejection</button>
+                    <button type="button" class="btn btn-danger" id="confirmRejectBtn">
+                        <span class="button-text">Confirm Rejection</span>
+                        <span class="btn-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> Processing...
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>

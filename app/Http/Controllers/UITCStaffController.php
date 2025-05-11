@@ -1840,6 +1840,19 @@ class UITCStaffController extends Controller
                 $user->notify(new \App\Notifications\RequestUnresolvableNotification($serviceRequest, $staffName));
             }
 
+            // Notify all admins
+            $admins = \App\Models\Admin::where('role', 'Admin')->get();
+            $requestingUserName = $user ? ($user->first_name . ' ' . $user->last_name) : 'Unknown User';
+            $serviceName = $this->getServiceName($serviceRequest->service_category); // Get formatted service name
+
+            foreach ($admins as $admin) {
+                // Optionally, skip notifying the staff member if they are also an admin
+                // if ($admin->id === $currentStaffId) {
+                // continue;
+                // }
+                $admin->notify(new \App\Notifications\AdminRequestUnresolvableNotification($serviceRequest, $staffName, $requestingUserName, $serviceName));
+            }
+
             // Commit the transaction
             DB::commit();
 

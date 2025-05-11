@@ -179,41 +179,72 @@ function createNotificationElement(notification, isUnread) {
     // Enhanced display for notifications
     let content = data.message;
     let detailsHtml = '';
-    let notificationIcon = '';
+    let notificationIconHtml = ''; // Changed variable name for clarity
     
-    // Determine notification type and create appropriate display
-    if (data.staff_name && data.actions_taken) {
-        // This is a completion notification
-        notificationIcon = '<i class="fas fa-check-circle text-success mr-2"></i>';
-        
-        // Create a more detailed view for completion notifications
+    // Default icon
+    let iconClass = 'fas fa-bell'; // Default bell icon
+    let iconColor = 'inherit'; // Default color
+
+    if (data.icon) {
+        iconClass = data.icon;
+    }
+    if (data.color) {
+        iconColor = data.color;
+    }
+
+    // Specific handling for unresolvable notifications
+    if (data.notification_type === 'unresolvable') {
+        iconClass = data.icon || 'fas fa-times-circle'; // Default to X if not provided
+        iconColor = data.color || 'red'; // Default to red if not provided
+        notificationEl.style.setProperty('--notification-icon-color', iconColor); // For potential CSS targeting
+
+        detailsHtml = `
+            <div class="notification-details unresolvable">
+                <div class="detail-item"><strong>Service:</strong> ${data.service_name || data.service_category || 'N/A'}</div>
+                <div class="detail-item"><strong>Marked by:</strong> ${data.staff_name || 'N/A'}</div>
+                <div class="detail-item"><strong>Reason:</strong> ${data.reason || 'N/A'}</div>
+                ${data.actions_taken ? `<div class="detail-item"><strong>Actions Taken:</strong> ${data.actions_taken}</div>` : ''}
+            </div>
+        `;
+    } else if (data.staff_name && data.actions_taken) { // Completion
+        iconClass = data.icon || 'fas fa-check-circle';
+        iconColor = data.color || 'green'; // Or 'text-success' if using Bootstrap classes directly
+        notificationEl.style.setProperty('--notification-icon-color', iconColor);
+
         detailsHtml = `
             <div class="notification-details completion">
-                <div class="detail-item"><strong>Service:</strong> ${data.service_category || 'N/A'}</div>
+                <div class="detail-item"><strong>Service:</strong> ${data.service_name || data.service_category || 'N/A'}</div>
                 <div class="detail-item"><strong>Completed by:</strong> ${data.staff_name || 'N/A'}</div>
                 ${data.transaction_type ? `<div class="detail-item"><strong>Transaction Type:</strong> ${data.transaction_type}</div>` : ''}
                 ${data.actions_taken ? `<div class="detail-item"><strong>Actions Taken:</strong> ${data.actions_taken}</div>` : ''}
             </div>
         `;
-    } else if (data.staff_name && data.service_category) {
-        // This is an assignment notification
-        notificationIcon = '<i class="fas fa-user-check text-primary mr-2"></i>';
-        
-        // Create a detailed view for assignment notifications
+    } else if (data.staff_name && (data.service_name || data.service_category)) { // Assignment
+        iconClass = data.icon || 'fas fa-user-check';
+        iconColor = data.color || 'blue'; // Or 'text-primary'
+        notificationEl.style.setProperty('--notification-icon-color', iconColor);
+
         detailsHtml = `
             <div class="notification-details assignment">
-                <div class="detail-item"><strong>Service:</strong> ${data.service_category || 'N/A'}</div>
+                <div class="detail-item"><strong>Service:</strong> ${data.service_name || data.service_category || 'N/A'}</div>
                 <div class="detail-item"><strong>Assigned to:</strong> ${data.staff_name || 'N/A'}</div>
                 ${data.transaction_type ? `<div class="detail-item"><strong>Transaction Type:</strong> ${data.transaction_type}</div>` : ''}
                 ${data.notes ? `<div class="detail-item"><strong>Notes:</strong> ${data.notes}</div>` : ''}
             </div>
         `;
     }
+    // Fallback for other/generic notifications if necessary
+    // else {
+        // detailsHtml = `<div class="notification-details generic">${data.message}</div>`;
+        // content = ''; // Clear content if message is in detailsHtml
+    // }
+
+    notificationIconHtml = `<i class="${iconClass}" style="color: ${iconColor}; margin-right: 8px;"></i>`;
     
     notificationEl.innerHTML = `
         <div class="notification-content">
-            ${notificationIcon}
-            ${content}
+            ${notificationIconHtml}
+            <span class="notification-message-text">${content}</span>
             ${detailsHtml}
         </div>
         <div class="notification-time">
@@ -230,17 +261,28 @@ function createNotificationElement(notification, isUnread) {
         // Determine redirect URL based on notification type
         let redirectUrl = '/myrequests';
         
-        // If it contains a specific request ID, redirect to that request's details
-        if (data.request_id) {
-            const userRole = document.body.dataset.userRole; // Add data-user-role to your body tag
+        // If it contains a specific URL, redirect to that URL
+        if (data.url) {
+            redirectUrl = data.url;
+        } else if (data.request_id) { // Fallback to old logic if no specific URL
+            const userRole = document.body.dataset.userRole; 
             if (userRole === 'Student') {
-                redirectUrl = `/student-requests/${data.request_id}`;
+                redirectUrl = `/student-requests/${data.request_table_id || data.request_id}`;
             } else if (userRole === 'Faculty & Staff') {
-                redirectUrl = `/faculty-requests/${data.request_id}`;
+                redirectUrl = `/faculty-requests/${data.request_table_id || data.request_id}`;
             } else if (userRole === 'Admin') {
-                redirectUrl = '/admin_dashboard/service-request';
+                // For admin, use request_table_id and request_type if available for a more specific URL
+                if (data.request_table_id && data.request_type) {
+                     redirectUrl = `/admin/service-requests/${data.request_table_id}?type=${data.request_type}`;
+                } else {
+                    redirectUrl = '/admin_dashboard/service-request'; // General fallback
+                }
             } else if (userRole === 'UITC Staff') {
-                redirectUrl = '/uitc-staff/assigned-requests';
+                 if (data.request_table_id && data.request_type) {
+                    redirectUrl = `/uitc-staff/assigned-requests/details/${data.request_table_id}?type=${data.request_type}`; // Example specific URL
+                 } else {
+                    redirectUrl = '/uitc-staff/assigned-requests';
+                 }
             }
         }
         

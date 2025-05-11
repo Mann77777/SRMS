@@ -7,9 +7,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class RequestUnresolvableNotification extends Notification
+class RequestUnresolvableNotification extends Notification // Temporarily remove ShouldQueue for testing
 {
-    use Queueable;
+    use Queueable; // Queueable can still be used even if not ShouldQueue, for mail
 
     protected $serviceRequest;
     protected $staffName;
@@ -22,7 +22,22 @@ class RequestUnresolvableNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail', 'database'];
+    }
+
+    public function toDatabase($notifiable)
+    {
+        $requestId = $this->serviceRequest->request_type === 'student'
+            ? 'SSR-' . date('Ymd', strtotime($this->serviceRequest->created_at)) . '-' . str_pad($this->serviceRequest->id, 4, '0', STR_PAD_LEFT)
+            : 'FSR-' . date('Ymd', strtotime($this->serviceRequest->created_at)) . '-' . str_pad($this->serviceRequest->id, 4, '0', STR_PAD_LEFT);
+
+        return [
+            'request_id' => $requestId,
+            'message' => 'Your request (' . $requestId . ') has been marked as unresolvable by ' . $this->staffName . '.',
+            'reason' => $this->serviceRequest->completion_report,
+            'actions_taken' => $this->serviceRequest->actions_taken ?? 'Not specified',
+            'url' => url('/myrequests'), // General URL, might need adjustment based on user type
+        ];
     }
 
     public function toMail($notifiable)

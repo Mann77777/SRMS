@@ -58,6 +58,7 @@ class AdminServiceRequestController extends Controller
                     'updated_at' => $request->updated_at,
                     'rejection_reason' => $request->rejection_reason ?? null,
                     'notes' => $request->admin_notes ?? null,
+                    'transaction_type' => $request->transaction_type ?? null,
                 ];
             }
 
@@ -77,6 +78,7 @@ class AdminServiceRequestController extends Controller
                     'notes' => $request->admin_notes ?? null,
                     'type' => 'faculty', // Specific type
                     'updated_at' => $request->updated_at,
+                    'transaction_type' => $request->transaction_type ?? null,
                 ];
             }
 
@@ -86,7 +88,7 @@ class AdminServiceRequestController extends Controller
         }
 
         // Sort requests by date (latest first)
-        $allRequests = collect($requests)->sortBy('date');
+        $allRequests = collect($requests)->sortByDesc('date');
 
         // Get current page from request query string
         $page = request()->get('page', 1);
@@ -1056,7 +1058,7 @@ public function viewSupportingDocument(Request $request, $requestId)
             }
 
             $newStudentRequests = $studentQuery->get();
-            foreach($newStudentRequests as $req) { // Use different variable name to avoid conflict
+            foreach($newStudentRequests as $req) {
                 $user = $req->user;
                 $requests[] = [
                     'id' => $req->id,
@@ -1070,6 +1072,7 @@ public function viewSupportingDocument(Request $request, $requestId)
                     'updated_at' => $req->updated_at,
                     'rejection_reason' => $req->rejection_reason ?? null,
                     'notes' => $req->admin_notes ?? null,
+                    'transaction_type' => $req->transaction_type ?? null,
                 ];
             }
 
@@ -1085,8 +1088,6 @@ public function viewSupportingDocument(Request $request, $requestId)
                     $q->where('id', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('first_name', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('last_name', 'LIKE', "%{$searchTerm}%")
-                      // Add faculty_id search if that field exists on the model
-                      // ->orWhere('faculty_id', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('service_category', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('description', 'LIKE', "%{$searchTerm}%")
                       ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
@@ -1097,7 +1098,7 @@ public function viewSupportingDocument(Request $request, $requestId)
             }
 
             $facultyRequests = $facultyQuery->get();
-            foreach($facultyRequests as $req) { // Use different variable name
+            foreach($facultyRequests as $req) {
                 $user = $req->user;
                 $requests[] = [
                     'id' => $req->id,
@@ -1107,10 +1108,11 @@ public function viewSupportingDocument(Request $request, $requestId)
                     'request_data' => $this->formatFacultyServiceRequestData($req),
                     'date' => $req->created_at,
                     'status' => $req->status ?? 'Pending',
-                    'rejection_reason' => $req->rejection_reason ?? null,
-                    'notes' => $req->admin_notes ?? null,
                     'type' => 'faculty',
                     'updated_at' => $req->updated_at,
+                    'rejection_reason' => $req->rejection_reason ?? null,
+                    'notes' => $req->admin_notes ?? null,
+                    'transaction_type' => $req->transaction_type ?? null,
                 ];
             }
 
@@ -1120,18 +1122,17 @@ public function viewSupportingDocument(Request $request, $requestId)
         }
 
         // Sort combined requests by date (latest first)
-        $allRequests = collect($requests)->sortByDesc('date');
+        $allRequests = collect($requests)->sortByDesc('date')->values();
 
         // Paginate the collection manually
         $items = $allRequests->forPage($page, $perPage);
 
         // Create a new paginator instance
         $paginatedRequests = new \Illuminate\Pagination\LengthAwarePaginator(
-            $items->values(), // Ensure it's a non-associative array
+            $items,
             $allRequests->count(),
             $perPage,
             $page,
-            // Important: Set the path for pagination links to the filter route itself
             ['path' => route('admin.service.requests.filter'), 'query' => $request->query()]
         );
 

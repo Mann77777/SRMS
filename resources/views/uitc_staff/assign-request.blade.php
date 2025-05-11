@@ -18,6 +18,11 @@
             background-color: #ff9800; /* Orange color */
             color: white;
         }
+        .info-tooltip {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
     </style>
 </head>
 <body data-user-role="UITC Staff">
@@ -68,6 +73,7 @@
                             <th>Date & Time Completed</th>
                             <!-- <th>Transaction Type</th> -->
                             <th>Status</th>
+                            <th>Remaining Days</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -101,6 +107,7 @@
                                                 case 'change_of_data_ms': return 'Change of Data (MS Office)';
                                                 case 'reset_tup_web_password': return 'Reset TUP Web Password';
                                                 case 'reset_ers_password': return 'Reset ERS Password';
+                                                case 'reset_intranet_password': return 'Reset Intranet Password';
                                                 case 'change_of_data_portal': return 'Change of Data (Portal)';
                                                 case 'dtr': return 'Daily Time Record';
                                                 case 'biometric_record': return 'Biometric Record';
@@ -169,6 +176,103 @@
                                     <span class="custom-badge custom-badge-danger">{{ $request->status }}</span> 
                                 @else
                                     <span class="custom-badge custom-badge-secondary">{{ $request->status }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($request->status == 'In Progress' && isset($request->transaction_type))
+                                    @php
+                                        $transactionLimits = [
+                                            'Simple Transaction' => 3,
+                                            'Complex Transaction' => 7,
+                                            'Highly Technical Transaction' => 20,
+                                        ];
+                                        $assignedDate = \Carbon\Carbon::parse($request->updated_at)->startOfDay();
+                                        $today = \Carbon\Carbon::today();
+
+                                        // 1. Find the first business day after assignment
+                                        $firstBusinessDay = $assignedDate->copy();
+                                        while (true) {
+                                            $dayOfWeek = $firstBusinessDay->dayOfWeek;
+                                            $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                            $isHoliday = \App\Models\Holiday::isHoliday($firstBusinessDay);
+                                            $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($firstBusinessDay, 'semestral_break');
+                                            if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                                break;
+                                            }
+                                            $firstBusinessDay->addDay();
+                                        }
+
+                                        // 2. Calculate last allowed business day
+                                        $limit = $transactionLimits[$request->transaction_type] ?? 0;
+                                        $lastAllowedDay = $firstBusinessDay->copy();
+                                        $businessDaysCounted = 0;
+                                        while ($businessDaysCounted < $limit) {
+                                            $dayOfWeek = $lastAllowedDay->dayOfWeek;
+                                            $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                            $isHoliday = \App\Models\Holiday::isHoliday($lastAllowedDay);
+                                            $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($lastAllowedDay, 'semestral_break');
+                                            if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                                $businessDaysCounted++;
+                                            }
+                                            if ($businessDaysCounted < $limit) {
+                                                $lastAllowedDay->addDay();
+                                            }
+                                        }
+
+                                        // 3. Find the next business day after the last allowed day (for overdue)
+                                        $overdueDate = $lastAllowedDay->copy()->addDay();
+                                        while (true) {
+                                            $dayOfWeek = $overdueDate->dayOfWeek;
+                                            $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                            $isHoliday = \App\Models\Holiday::isHoliday($overdueDate);
+                                            $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($overdueDate, 'semestral_break');
+                                            if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                                break;
+                                            }
+                                            $overdueDate->addDay();
+                                        }
+
+                                        // 4. Calculate business days elapsed (from first business day)
+                                        $businessDaysElapsed = 0;
+                                        $currentDate = $firstBusinessDay->copy();
+                                        while ($currentDate->lte($today)) {
+                                            $dayOfWeek = $currentDate->dayOfWeek;
+                                            $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                            $isHoliday = \App\Models\Holiday::isHoliday($currentDate);
+                                            $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($currentDate, 'semestral_break');
+                                            if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                                $businessDaysElapsed++;
+                                            }
+                                            $currentDate->addDay();
+                                        }
+
+                                        $remainingDays = $limit - $businessDaysElapsed;
+                                    @endphp
+                                    @if($remainingDays > 0)
+                                        <span class="remaining-days positive">
+                                            <span style="display: inline-flex; align-items: center;">
+                                                {{ $remainingDays }} days left
+                                                <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px; vertical-align: middle;">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </span>
+                                            </span>
+                                            <br>
+                                            <small style="color:#888;">Overdue on: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
+                                        </span>
+                                    @else
+                                        <span class="remaining-days negative">
+                                            <span style="display: inline-flex; align-items: center;">
+                                                Overdue by {{ abs($remainingDays) }} days
+                                                <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px; vertical-align: middle;">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </span>
+                                            </span>
+                                            <br>
+                                            <small style="color:#888;">Was due: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
+                                        </span>
+                                    @endif
+                                @else
+                                    -
                                 @endif
                             </td>
                             <td class="btns">
@@ -372,7 +476,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
     <script src="{{ asset('js/assign-request.js') }}"></script>
-
+    <script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    </script>
 
 </body>
 </html>

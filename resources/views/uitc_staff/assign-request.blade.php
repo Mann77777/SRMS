@@ -26,6 +26,8 @@
     </style>
 </head>
 <body data-user-role="UITC Staff">
+    @inject('serviceHelper', 'App\Helpers\ServiceHelper') {{-- Inject ServiceHelper --}}
+
     <!-- Include Navbar -->
     @include('layouts.admin-navbar')
     
@@ -68,6 +70,7 @@
                         <tr>
                             <th>Request ID</th>
                             <th>Request Details</th>
+                            <th>Validity Period</th> {{-- Added Validity Period Header --}}
                             <th>Role</th>
                             <th>Date & Time Submitted</th>
                             <th>Date & Time Completed</th>
@@ -89,47 +92,44 @@
                                 @if(isset($request->request_data))
                                     {!! $request->request_data !!}
                                 @else
+                                    {{-- Use ServiceHelper for consistent formatting --}}
+                                    @php
+                                        $requesterName = ($request->requester_first_name && $request->requester_last_name) 
+                                            ? $request->requester_first_name . ' ' . $request->requester_last_name 
+                                            : ($request->first_name && $request->last_name ? $request->first_name . ' ' . $request->last_name : 'N/A');
+                                        
+                                        $idField = '';
+                                        if ($request->request_type == 'student' && isset($request->student_id)) {
+                                            $idField = '<strong>Student ID:</strong> ' . $request->student_id . '<br>';
+                                        } elseif ($request->request_type == 'faculty' && isset($request->faculty_id)) {
+                                            $idField = '<strong>Faculty ID:</strong> ' . $request->faculty_id . '<br>';
+                                        }
+                                        
+                                        $serviceName = $serviceHelper::formatServiceCategory($request->service_category, $request->description);
+                                        $descriptionField = (isset($request->description) && $request->service_category != 'others') 
+                                            ? '<br><strong>Description:</strong> ' . $request->description 
+                                            : '';
+                                    @endphp
                                     {!! 
-                                        '<strong>Name:</strong> ' . ($request->first_name && $request->last_name ? 
-                                            $request->first_name . ' ' . $request->last_name : 
-                                            ($request->requester_name ?? 'N/A')) . '<br>' .
-                                        
-                                        ($request->request_type == 'student' && isset($request->student_id) ? 
-                                            '<strong>Student ID:</strong> ' . $request->student_id . '<br>' : 
-                                            ($request->request_type == 'faculty' && isset($request->faculty_id) ? 
-                                                '<strong>Faculty ID:</strong> ' . $request->faculty_id . '<br>' : '')) .
-                                        
-                                        '<strong>Service:</strong> ' . 
-                                        (function($category) {
-                                            switch($category) {
-                                                case 'create': return 'Create MS Office/TUP Email Account';
-                                                case 'reset_email_password': return 'Reset MS Office/TUP Email Password';
-                                                case 'change_of_data_ms': return 'Change of Data (MS Office)';
-                                                case 'reset_tup_web_password': return 'Reset TUP Web Password';
-                                                case 'reset_ers_password': return 'Reset ERS Password';
-                                                case 'reset_intranet_password': return 'Reset Intranet Password';
-                                                case 'change_of_data_portal': return 'Change of Data (Portal)';
-                                                case 'dtr': return 'Daily Time Record';
-                                                case 'biometric_record': return 'Biometric Record';
-                                                case 'biometrics_enrollement': return 'Biometrics Enrollment';
-                                                case 'new_internet': return 'New Internet Connection';
-                                                case 'new_telephone': return 'New Telephone Connection';
-                                                case 'repair_and_maintenance': return 'Internet/Telephone Repair and Maintenance';
-                                                case 'computer_repair_maintenance': return 'Computer Repair and Maintenance';
-                                                case 'printer_repair_maintenance': return 'Printer Repair and Maintenance';
-                                                case 'request_led_screen': return 'LED Screen Request';
-                                                case 'install_application': return 'Install Application/Information System/Software';
-                                                case 'post_publication': return 'Post Publication/Update of Information Website';
-                                                case 'data_docs_reports': return 'Data, Documents and Reports';
-                                                case 'others': return isset($request->description) && $request->description ? $request->description : 'Other Service';
-                                                default: return $category;
-                                            }
-                                        })($request->service_category) . 
-                                        
-                                        (isset($request->description) && $request->service_category != 'others' ? 
-                                            '<br><strong>Description:</strong> ' . $request->description : '')
+                                        '<strong>Name:</strong> ' . $requesterName . '<br>' .
+                                        $idField .
+                                        '<strong>Service:</strong> ' . $serviceName .
+                                        $descriptionField
                                     !!}
                                 @endif
+                            </td>
+                            <td>
+                                {{-- Use ServiceHelper to get validity days --}}
+                                @php
+                                    $validityDays = $serviceHelper::getServiceValidityDays($request->service_category);
+                                    $validityText = match($validityDays) {
+                                        3 => 'Simple (3 days)',
+                                        7 => 'Complex (7 days)',
+                                        20 => 'Highly Technical (20 days)',
+                                        default => $validityDays . ' days',
+                                    };
+                                @endphp
+                                {{ $validityText }}
                             </td>
                             <td>{{ $request->user_role ?? ($request->request_type == 'faculty' ? 'Faculty & Staff' : 'Student') }}</td>
                             <td>

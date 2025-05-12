@@ -3,8 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\FacultyServiceRequest;
+use App\Models\Holiday;
+use App\Models\StudentServiceRequest;
+use Carbon\Carbon;
+// Removed duplicate: use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+
 
 class NotificationController extends Controller
 {
@@ -43,7 +49,14 @@ class NotificationController extends Controller
                                       ->get();
             
             $notificationCount = $admin->unreadNotifications->count();
-            
+
+            // --- Add Due Soon Logic for UITC Staff ---
+            if ($admin->role === 'UITC Staff') {
+                $this->addDueSoonFlag($unreadNotifications);
+                $this->addDueSoonFlag($readNotifications);
+            }
+            // --- End Due Soon Logic ---
+
             return response()->json([
                 'unread' => $unreadNotifications,
                 'read' => $readNotifications,
@@ -154,6 +167,106 @@ class NotificationController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json(['success' => false, 'message' => 'Failed to mark all notifications as read'], 500);
+        }
+    }
+
+    /**
+     * Adds an 'is_due_soon' flag to assignment notifications if the request is due within 1 business day.
+     *
+     * @param \Illuminate\Support\Collection $notifications
+     */
+    private function addDueSoonFlag($notifications)
+    {
+        $transactionLimits = [ // Consider moving this to a config or helper
+            'Simple Transaction' => 3,
+            'Complex Transaction' => 7,
+            'Highly Technical Transaction' => 20,
+        ];
+
+        foreach ($notifications as $notification) {
+            // Check if it's an assignment notification (adjust type string if needed)
+            if ($notification->type === 'App\\Notifications\\StaffAssignedToRequest') {
+                $requestId = $notification->data['request_id'] ?? null;
+                $requestType = $notification->data['request_type'] ?? null; // Assuming request_type is stored
+
+                if ($requestId && $requestType) {
+                    $request = null;
+                    if ($requestType === 'student' || $requestType === 'new_student_service') {
+                        $request = StudentServiceRequest::find($requestId);
+                    } elseif ($requestType === 'faculty') {
+                        $request = FacultyServiceRequest::find($requestId);
+                    }
+
+                    if ($request && $request->status === 'In Progress' && isset($request->transaction_type)) {
+                        try {
+                            $assignedDate = Carbon::parse($request->updated_at)->startOfDay(); // Assuming updated_at is assignment time
+                            $today = Carbon::today();
+
+                            // Calculate remaining business days (logic adapted from views)
+                            $firstBusinessDay = $assignedDate->copy();
+                            while (true) {
+                                $dayOfWeek = $firstBusinessDay->dayOfWeek;
+                                $isWeekend = ($dayOfWeek === Carbon::SUNDAY || $dayOfWeek === Carbon::SATURDAY);
+                                $isHoliday = Holiday::isHoliday($firstBusinessDay);
+                                $isAcademicPeriod = Holiday::isAcademicPeriod($firstBusinessDay, 'semestral_break'); // Adjust period if needed
+                                if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                    break;
+                                }
+                                $firstBusinessDay->addDay();
+                            }
+
+                            $limit = $transactionLimits[$request->transaction_type] ?? 0;
+                            if ($limit > 0) {
+                                $lastAllowedDay = $firstBusinessDay->copy();
+                                $businessDaysCounted = 0;
+                                while ($businessDaysCounted < $limit) {
+                                    $dayOfWeek = $lastAllowedDay->dayOfWeek;
+                                    $isWeekend = ($dayOfWeek === Carbon::SUNDAY || $dayOfWeek === Carbon::SATURDAY);
+                                    $isHoliday = Holiday::isHoliday($lastAllowedDay);
+                                    $isAcademicPeriod = Holiday::isAcademicPeriod($lastAllowedDay, 'semestral_break');
+                                    if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                        $businessDaysCounted++;
+                                    }
+                                    if ($businessDaysCounted < $limit) {
+                                        $lastAllowedDay->addDay();
+                                    }
+                                }
+
+                                // Calculate business days elapsed
+                                $businessDaysElapsed = 0;
+                                $currentDate = $firstBusinessDay->copy();
+                                while ($currentDate->lte($today)) {
+                                    $dayOfWeek = $currentDate->dayOfWeek;
+                                    $isWeekend = ($dayOfWeek === Carbon::SUNDAY || $dayOfWeek === Carbon::SATURDAY);
+                                    $isHoliday = Holiday::isHoliday($currentDate);
+                                    $isAcademicPeriod = Holiday::isAcademicPeriod($currentDate, 'semestral_break');
+                                    if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                        $businessDaysElapsed++;
+                                    }
+                                    $currentDate->addDay();
+                                }
+
+                                $remainingDays = $limit - $businessDaysElapsed;
+
+                                // Add the flag if due soon (1 day or less remaining)
+                                if ($remainingDays <= 1) {
+                                    // Modify the 'data' attribute directly
+                                    $notificationData = $notification->data;
+                                    $notificationData['is_due_soon'] = true;
+                                    $notification->data = $notificationData; // Re-assign the modified array
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            Log::error("Error calculating remaining days for notification", [
+                                'notification_id' => $notification->id,
+                                'request_id' => $requestId,
+                                'request_type' => $requestType,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
+                    }
+                }
+            }
         }
     }
 }

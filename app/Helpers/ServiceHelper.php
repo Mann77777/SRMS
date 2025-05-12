@@ -28,7 +28,7 @@ class ServiceHelper
             // Faculty Specific (or potentially shared)
             'dtr' => 'Daily Time Record',
             'biometric_record' => 'Biometric Record',
-            'biometrics_enrollement' => 'Biometrics Enrollment',
+            'biometrics_enrollement' => 'Biometrics Enrollment', // Corrected typo from 'enrollement'
             'new_internet' => 'New Internet Connection',
             'new_telephone' => 'New Telephone Connection',
             'repair_and_maintenance' => 'Internet/Telephone Repair and Maintenance',
@@ -42,6 +42,58 @@ class ServiceHelper
             'others' => $description ?: 'Other Service',
         ];
 
+        // Correct typo if present in input category
+        if ($category === 'biometrics_enrollement') {
+            $category = 'biometrics_enrollment';
+        }
+
         return $mapping[$category] ?? ucfirst(str_replace('_', ' ', $category)); // Fallback
+    }
+
+    /**
+     * Get the validity period in days for a service category.
+     *
+     * @param string $category The service category code
+     * @return int The number of validity days
+     */
+    public static function getServiceValidityDays($category)
+    {
+        // Correct typo if present in input category
+        if ($category === 'biometrics_enrollement') {
+            $category = 'biometrics_enrollment';
+        }
+
+        $validityMapping = [
+            // Simple (3 days)
+            'create' => 3,
+            'reset_email_password' => 3,
+            'change_of_data_ms' => 3,
+            'reset_tup_web_password' => 3,
+            'reset_ers_password' => 3,
+            'reset_intranet_password' => 3,
+            'change_of_data_portal' => 3,
+
+            // Complex (7 days)
+            'request_led_screen' => 7,
+            'dtr' => 7,
+            'biometric_record' => 7,
+            'biometrics_enrollment' => 7, // Corrected typo
+            'repair_and_maintenance' => 7,
+            'computer_repair_maintenance' => 7,
+            'printer_repair_maintenance' => 7,
+            'install_application' => 7,
+            'post_publication' => 7,
+
+
+            // Highly Technical (20 days)
+            'new_internet' => 20,
+            'new_telephone' => 20,
+            'data_docs_reports' => 20,
+
+            // Others - Default to Simple
+            'others' => 3,
+        ];
+
+        return $validityMapping[$category] ?? 3; // Default to 3 days if not found
     }
 }

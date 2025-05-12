@@ -75,6 +75,20 @@
     background-color: #ebf8ff;
 }
 
+.notification-item.due-soon { /* Style for due soon notifications */
+    background-color: #fffbeb; /* Light yellow background */
+    border-left: 3px solid #f59e0b; /* Amber border */
+}
+
+.notification-item.due-soon:hover {
+    background-color: #fef3c7; /* Slightly darker yellow on hover */
+}
+
+.notification-item.unread.due-soon { /* Style for unread due soon notifications */
+    background-color: #fef9c3; /* A slightly more prominent yellow for unread due soon */
+}
+
+
 .notification-item:last-child {
     border-bottom: none;
 }

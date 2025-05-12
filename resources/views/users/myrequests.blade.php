@@ -24,6 +24,8 @@
 </head>
 <body class="{{ Auth::check() ? 'user-authenticated' : '' }}" data-user-role="{{ Auth::user()->role }}">
 
+    @inject('serviceHelper', 'App\Helpers\ServiceHelper') {{-- Inject ServiceHelper --}}
+
     <!-- Include Navbar -->
     @include('layouts.navbar')
 
@@ -58,6 +60,7 @@
                             <tr>
                                 <th>Request ID</th>
                                 <th>Service</th>
+                                <th>Validity Period</th> {{-- Added Validity Period Header --}}
                                 <th>Date & Time Submitted</th>
                                 <th>Date & Time Completed</th>
                                 <th>Status</th>
@@ -77,51 +80,23 @@
                                             {{ 'FSR-' . date('Ymd', strtotime($request->created_at)) . '-' . str_pad($request->id, 4, '0', STR_PAD_LEFT) }}
                                         @endif
                                     </span>
-                                </td>   
+                                </td>
                                 <td>
-                                    {{-- Using if/elseif as an alternative to switch --}}
-                                    @php $category = trim((string) $request->service_category); @endphp
-                                    @if ($category === 'create')
-                                        Create MS Office/TUP Email Account
-                                    @elseif ($category === 'reset_email_password')
-                                        Reset MS Office/TUP Email Password
-                                    @elseif ($category === 'change_of_data_ms')
-                                        Change of Data (MS Office)
-                                    @elseif ($category === 'reset_tup_web_password')
-                                        Reset TUP Web Password
-                                    @elseif ($category === 'reset_ers_password')
-                                        Reset ERS Password
-                                    @elseif ($category === 'change_of_data_portal')
-                                        Change of Data (Portal)
-                                    @elseif ($category === 'dtr')
-                                        Daily Time Record
-                                    @elseif ($category === 'biometric_record')
-                                        Biometric Record
-                                    @elseif ($category === 'biometrics_enrollement')
-                                        Biometrics Enrollment
-                                    @elseif ($category === 'new_internet')
-                                        New Internet Connection
-                                    @elseif ($category === 'new_telephone')
-                                        New Telephone Connection
-                                    @elseif ($category === 'repair_and_maintenance')
-                                        Internet/Telephone Repair and Maintenance
-                                    @elseif ($category === 'computer_repair_maintenance')
-                                        Computer Repair and Maintenance
-                                    @elseif ($category === 'printer_repair_maintenance')
-                                        Printer Repair and Maintenance
-                                    @elseif ($category === 'request_led_screen')
-                                        LED Screen Request
-                                    @elseif ($category === 'install_application')
-                                        Install Application/Information System/Software
-                                    @elseif ($category === 'post_publication')
-                                        Post Publication/Update of Information Website
-                                    @elseif ($category === 'data_docs_reports')
-                                        Data, Documents and Reports
-                                    @elseif ($category === 'others')
-                                        Other Service
-                                    @else
-                                        {{ $category ?: 'No service selected' }}
-                                    @endif
+                                    {{-- Use ServiceHelper to format the service name --}}
+                                    {{ $serviceHelper::formatServiceCategory($request->service_category, $request->description) }}
+                                </td>
+                                <td>
+                                    {{-- Use ServiceHelper to get validity days --}}
+                                    @php
+                                        $validityDays = $serviceHelper::getServiceValidityDays($request->service_category);
+                                        $validityText = match($validityDays) {
+                                            3 => 'Simple (3 days)',
+                                            7 => 'Complex (7 days)',
+                                            20 => 'Highly Technical (20 days)',
+                                            default => $validityDays . ' days',
+                                        };
+                                    @endphp
+                                    {{ $validityText }}
                                 </td>
                                 <td>
                                     <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>

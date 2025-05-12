@@ -171,6 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function createNotificationElement(notification, isUnread) {
     const notificationEl = document.createElement('div');
     notificationEl.className = `notification-item${isUnread ? ' unread' : ''}`;
+    if (notification.data && notification.data.is_due_soon) { // Check for due_soon flag
+        notificationEl.classList.add('due-soon');
+    }
     notificationEl.dataset.id = notification.id;
     
     const data = notification.data;

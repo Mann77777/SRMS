@@ -417,7 +417,7 @@
                 <th>In Progress</th>
                 <th>Cancelled</th>
                 <th>Completion Rate</th>
-                <th>Avg. Resolution (days)</th>
+                <!-- <th>Avg. Resolution (days)</th> -->
             </tr>
         </thead>
         <tbody>
@@ -431,7 +431,7 @@
                     <td>
                         {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100) : 0 }}%
                     </td>
-                    <td>
+                    <!-- <td>
                         @if(is_numeric($categoryAvgResolution[$category] ?? null))
                             {{ number_format($categoryAvgResolution[$category], 2) }} days
                         @else

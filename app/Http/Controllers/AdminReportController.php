@@ -465,6 +465,7 @@ class AdminReportController extends Controller
             $detailsSheet->setCellValue('G3', 'Created Date');
             $detailsSheet->setCellValue('H3', 'Updated Date');
             $detailsSheet->setCellValue('I3', 'Resolution Time (days)');
+            $detailsSheet->setCellValue('J3', 'Remaining Days');
             
             $detailRow = 4;
             foreach ($allRequests as $request) {
@@ -472,6 +473,49 @@ class AdminReportController extends Controller
                 $createdAt = Carbon::parse($request->created_at);
                 $updatedAt = Carbon::parse($request->updated_at);
                 $resolutionDays = $request->status === 'Completed' ? $createdAt->diffInDays($updatedAt) : 'N/A';
+                
+                // Calculate remaining days for in-progress requests
+                $remainingDays = '-';
+                if ($request->status == 'In Progress' && isset($request->transaction_type)) {
+                    $transactionLimits = [
+                        'Simple Transaction' => 3,
+                        'Complex Transaction' => 7,
+                        'Highly Technical Transaction' => 20,
+                    ];
+                    $assignedDate = Carbon::parse($request->updated_at)->startOfDay();
+                    $today = Carbon::today();
+
+                    // Find first business day after assignment
+                    $firstBusinessDay = $assignedDate->copy();
+                    while (true) {
+                        $dayOfWeek = $firstBusinessDay->dayOfWeek;
+                        $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                        $isHoliday = \App\Models\Holiday::isHoliday($firstBusinessDay);
+                        $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($firstBusinessDay, 'semestral_break');
+                        if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                            break;
+                        }
+                        $firstBusinessDay->addDay();
+                    }
+
+                    // Calculate business days elapsed
+                    $businessDaysElapsed = 0;
+                    $currentDate = $firstBusinessDay->copy();
+                    while ($currentDate->lte($today)) {
+                        $dayOfWeek = $currentDate->dayOfWeek;
+                        $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                        $isHoliday = \App\Models\Holiday::isHoliday($currentDate);
+                        $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($currentDate, 'semestral_break');
+                        if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                            $businessDaysElapsed++;
+                        }
+                        $currentDate->addDay();
+                    }
+
+                    $limit = $transactionLimits[$request->transaction_type] ?? 0;
+                    $remainingDays = $limit - $businessDaysElapsed;
+                    $remainingDays = $remainingDays > 0 ? 'Due in ' . $remainingDays . ' days' : 'Overdue by ' . abs($remainingDays) . ' days';
+                }
                 
                 // Get assigned staff name
                 $staffName = 'Not Assigned';
@@ -491,13 +535,14 @@ class AdminReportController extends Controller
                 $detailsSheet->setCellValue('G' . $detailRow, $createdAt->format('Y-m-d H:i:s'));
                 $detailsSheet->setCellValue('H' . $detailRow, $updatedAt->format('Y-m-d H:i:s'));
                 $detailsSheet->setCellValue('I' . $detailRow, $resolutionDays);
+                $detailsSheet->setCellValue('J' . $detailRow, $remainingDays);
                 
                 $detailRow++;
             }
             
             // Auto-size columns for all sheets
             foreach ($spreadsheet->getAllSheets() as $sheet) {
-                foreach (range('A', 'I') as $column) {
+                foreach (range('A', 'J') as $column) {
                     $sheet->getColumnDimension($column)->setAutoSize(true);
                 }
             }
@@ -638,6 +683,7 @@ class AdminReportController extends Controller
             'change_of_data_ms' => 24,
             'reset_tup_web_password' => 2,
             'reset_ers_password' => 2,
+            'reset_intranet_password' => 2,
             'change_of_data_portal' => 24,
             'dtr' => 48,
             'biometric_record' => 24,
@@ -723,6 +769,7 @@ class AdminReportController extends Controller
             'change_of_data_ms' => 24,
             'reset_tup_web_password' => 2,
             'reset_ers_password' => 2,
+            'reset_intranet_password' => 2,
             'change_of_data_portal' => 24,
             'dtr' => 48,
             'biometric_record' => 24,
@@ -882,6 +929,8 @@ class AdminReportController extends Controller
                 return 'Reset TUP Web Password';
             case 'reset_ers_password':
                 return 'Reset ERS Password';
+            case 'reset_intranet_password':
+                return 'Reset Intranet Password';
             case 'change_of_data_portal':
                 return 'Change of Data (Portal)';
             case 'dtr':

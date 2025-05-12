@@ -526,7 +526,7 @@
                                         <th>In Progress</th>
                                         <th>Overdue</th>
                                         <th>Completion Rate</th>
-                                        <th>Avg. Resolution Time</th>
+                                        <!-- <th>Avg. Resolution Time</th> -->
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -540,9 +540,9 @@
                                             <td>
                                                 {{ $data['total'] > 0 ? round(($data['completed'] / $data['total']) * 100) : 0 }}%
                                             </td>
-                                            <td>
+                                            <!-- <td>
                                                 {{ $categoryAvgResolution[$category] ?? 'N/A' }} days
-                                            </td>
+                                            </td> -->
                                         </tr>
                                     @empty
                                         <tr>
@@ -587,17 +587,19 @@
             var statusDistributionChart = new Chart(statusCtx, {
                 type: 'pie',
                 data: {
-                    labels: ['Completed', 'In Progress', 'Overdue'],
+                    labels: ['Completed', 'In Progress', 'Overdue', 'Unresolvable'],
                     datasets: [{
                         data: [
                             {{ $stats['completed_requests'] }}, 
                             {{ $stats['in_progress_requests'] }}, 
                             {{ $stats['overdue_requests'] ?? 0 }},
+                            {{ $stats['unresolvable_requests'] ?? 0 }}
                         ],
                         backgroundColor: [
                             '#28a745',  // Green for Completed
                             '#17a2b8',  // Blue for In Progress
                             '#ff9800',  // Orange for Overdue
+                            '#343a40' // Gray for Unresolvable
                         ]
                     }]
                 },

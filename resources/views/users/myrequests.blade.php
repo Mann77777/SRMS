@@ -10,12 +10,7 @@
     <link href="{{ asset('css/myrequest.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <style>
-        .remaining-days {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
+       
         .remaining-days.positive {
             background-color: #e8f5e9;
             color: #2e7d32;
@@ -229,7 +224,7 @@
                                         @endphp
                                         @if($remainingDays > 0)
                                             <span class="remaining-days positive">
-                                                {{ $remainingDays }} days left
+                                                Overdue in {{ $remainingDays }} days
                                                 <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
                                                     <i class="fas fa-info-circle"></i>
                                                 </span>
@@ -385,488 +380,492 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('js/navbar-sidebar.js') }}" defer></script>
 
-<script>
-// Service category formatter - moved to a global function
-function formatServiceCategory(category) {
-    const categoryMap = {
-        'create': 'Create MS Office/TUP Email Account',
-        'reset_email_password': 'Reset MS Office/TUP Email Password',
-        'change_of_data_ms': 'Change of Data (MS Office)',
-        'reset_tup_web_password': 'Reset TUP Web Password',
-        'reset_ers_password': 'Reset ERS Password',
-        'change_of_data_portal': 'Change of Data (Portal)',
-        'dtr': 'Daily Time Record',
-        'biometric_record': 'Biometric Record',
-        'biometrics_enrollement': 'Biometrics Enrollment',
-        'new_internet': 'New Internet Connection',
-        'new_telephone': 'New Telephone Connection',
-        'repair_and_maintenance': 'Internet/Telephone Repair and Maintenance',
-        'computer_repair_maintenance': 'Computer Repair and Maintenance',
-        'printer_repair_maintenance': 'Printer Repair and Maintenance',
-        'request_led_screen': 'LED Screen Request',
-        'install_application': 'Install Application/Information System/Software',
-        'post_publication': 'Post Publication/Update of Information Website',
-        'data_docs_reports': 'Data, Documents and Reports',
-        'others': 'Other Service'
-    };
-    
-    return categoryMap[category] || category;
-}
+    <script>
+        // Service category formatter - moved to a global function
+        function formatServiceCategory(category) {
+            const categoryMap = {
+                'create': 'Create MS Office/TUP Email Account',
+                'reset_email_password': 'Reset MS Office/TUP Email Password',
+                'change_of_data_ms': 'Change of Data (MS Office)',
+                'reset_tup_web_password': 'Reset TUP Web Password',
+                'reset_ers_password': 'Reset ERS Password',
+                'change_of_data_portal': 'Change of Data (Portal)',
+                'dtr': 'Daily Time Record',
+                'biometric_record': 'Biometric Record',
+                'biometrics_enrollement': 'Biometrics Enrollment',
+                'new_internet': 'New Internet Connection',
+                'new_telephone': 'New Telephone Connection',
+                'repair_and_maintenance': 'Internet/Telephone Repair and Maintenance',
+                'computer_repair_maintenance': 'Computer Repair and Maintenance',
+                'printer_repair_maintenance': 'Printer Repair and Maintenance',
+                'request_led_screen': 'LED Screen Request',
+                'install_application': 'Install Application/Information System/Software',
+                'post_publication': 'Post Publication/Update of Information Website',
+                'data_docs_reports': 'Data, Documents and Reports',
+                'others': 'Other Service'
+            };
+            
+            return categoryMap[category] || category;
+        }
 
-// Helper function to build detailed request information
-function buildDetailedRequestInfo(response, userRole) {
-    // Start with basic user information
-    let infoHtml = `
-        <p><strong>First Name:</strong> ${response.first_name}</p>
-        <p><strong>Last Name:</strong> ${response.last_name}</p>
-    `;
-    
-    // Add student-specific fields
-    if (userRole === 'Student') {
-        infoHtml += `<p><strong>Student ID:</strong> ${response.student_id || '-'}</p>`;
-    }
-    
-    // Add service-specific fields based on service category
-    switch(response.service_category) {
-        case 'reset_email_password':
-        case 'reset_tup_web_password':
-        case 'reset_ers_password':
-            if (response.account_email) {
-                infoHtml += `<p><strong>Account Email:</strong> ${response.account_email}</p>`;
-            }
-            break;
+        // Helper function to build detailed request information
+        function buildDetailedRequestInfo(response, userRole) {
+            // Start with basic user information
+            let infoHtml = `
+                <p><strong>First Name:</strong> ${response.first_name}</p>
+                <p><strong>Last Name:</strong> ${response.last_name}</p>
+            `;
             
-        case 'change_of_data_ms':
-        case 'change_of_data_portal':
-            if (response.data_type) {
-                infoHtml += `<p><strong>Data Type:</strong> ${response.data_type}</p>`;
+            // Add student-specific fields
+            if (userRole === 'Student') {
+                infoHtml += `<p><strong>Student ID:</strong> ${response.student_id || '-'}</p>`;
             }
-            if (response.new_data) {
-                infoHtml += `<p><strong>New Data:</strong> ${response.new_data}</p>`;
-            }
-            if (response.supporting_document) {
-                infoHtml += `<p><strong>Supporting Document:</strong> Submitted</p>`;
-            }
-            break;
             
-        case 'biometric_record': // Added this case
-        case 'dtr':
-            // Display fields for both DTR and Biometric Record
-            // Always display the label, show 'N/A' if the value is null, undefined, or empty
-            infoHtml += `<p><strong>Month(s) of Record:</strong> ${response.dtr_months || 'N/A'}</p>`; // Generic label
-            if (response.dtr_with_details !== undefined) {
-                infoHtml += `<p><strong>Include In/Out Details:</strong> ${response.dtr_with_details ? 'Yes' : 'No'}</p>`; // Display this for both cases
-            }
-            break;
-            
-        case 'biometrics_enrollement':
-            // Add specific biometrics enrollment fields
-            if (response.middle_name) {
-                infoHtml += `<p><strong>Middle Name:</strong> ${response.middle_name}</p>`;
-            }
-            if (response.college) {
-                infoHtml += `<p><strong>College:</strong> ${response.college}</p>`;
-            }
-            if (response.department) {
-                infoHtml += `<p><strong>Department:</strong> ${response.department}</p>`;
-            }
-            if (response.plantilla_position) {
-                infoHtml += `<p><strong>Plantilla Position:</strong> ${response.plantilla_position}</p>`;
-            }
-            if (response.date_of_birth) {
-                infoHtml += `<p><strong>Date of Birth:</strong> ${response.date_of_birth}</p>`;
-            }
-            if (response.phone_number) {
-                infoHtml += `<p><strong>Phone Number:</strong> ${response.phone_number}</p>`;
-            }
-            if (response.address) {
-                infoHtml += `<p><strong>Address:</strong> ${response.address}</p>`;
-            }
-            if (response.blood_type) {
-                infoHtml += `<p><strong>Blood Type:</strong> ${response.blood_type}</p>`;
-            }
-            if (response.emergency_contact_person) {
-                infoHtml += `<p><strong>Emergency Contact Person:</strong> ${response.emergency_contact_person}</p>`;
-            }
-            if (response.emergency_contact_number) {
-                infoHtml += `<p><strong>Emergency Contact Number:</strong> ${response.emergency_contact_number}</p>`;
-            }
-            break;
-            
-         case 'new_internet':
-         case 'new_telephone':
-         case 'new_internet':
-         case 'new_telephone':
-         case 'repair_and_maintenance':
-         case 'computer_repair_maintenance':
-         case 'printer_repair_maintenance':
-             // Show location for all these types
-             if (response.location) {
-                 infoHtml += `<p><strong>Location:</strong> ${response.location}</p>`;
-             }
-             // Show problems encountered for all these types (will show N/A if null)
-             infoHtml += `<p><strong>Problems Encountered:</strong> ${response.problem_encountered || 'N/A'}</p>`;
-            break;
-            
-        case 'request_led_screen':
-            if (response.preferred_date) {
-                infoHtml += `<p><strong>Preferred Date:</strong> ${response.preferred_date}</p>`;
-            }
-            if (response.preferred_time) {
-                infoHtml += `<p><strong>Preferred Time:</strong> ${response.preferred_time}</p>`;
-            }
-            if (response.led_screen_details) {
-                infoHtml += `<p><strong>Additional Details:</strong> ${response.led_screen_details}</p>`;
-            }
-            break;
-            
-        case 'install_application':
-            // Always display the label, show 'N/A' if the value is null, undefined, or empty
-            infoHtml += `<p><strong>Application Name:</strong> ${response.application_name || 'N/A'}</p>`;
-            infoHtml += `<p><strong>Purpose of Installation:</strong> ${response.installation_purpose || 'N/A'}</p>`;
-            infoHtml += `<p><strong>Additional Requirements:</strong> ${response.installation_notes || 'N/A'}</p>`;
-            break;
-            
-        case 'post_publication':
-            if (response.publication_author) {
-                infoHtml += `<p><strong>Author:</strong> ${response.publication_author}</p>`;
-            }
-            if (response.publication_editor) {
-                infoHtml += `<p><strong>Editor:</strong> ${response.publication_editor}</p>`;
-            }
-            if (response.publication_start_date) {
-                infoHtml += `<p><strong>Date of Publication:</strong> ${response.publication_start_date}</p>`;
-            }
-            if (response.publication_end_date) {
-                infoHtml += `<p><strong>End of Publication:</strong> ${response.publication_end_date}</p>`;
-            }
-            break;
-            
-        case 'data_docs_reports':
-            if (response.data_documents_details) {
-                infoHtml += `<p><strong>Details:</strong> ${response.data_documents_details}</p>`;
-            }
-            break;
-    }
-    
-    // Add description for all services if available
-    if (response.description) {
-        infoHtml += `<p><strong>Description:</strong> ${response.description}</p>`;
-    }
-    
-    // Add additional notes if available
-    if (response.additional_notes) {
-        infoHtml += `<p><strong>Additional Notes:</strong> ${response.additional_notes}</p>`;
-    }
-    
-    // Add survey information if available
-    if (response.status === 'Completed') {
-        if (response.survey_rating) {
-            infoHtml += `<p><strong>Survey Rating:</strong> ${response.survey_rating}/5</p>`;
-        }
-        
-        if (response.survey_comments) {
-            infoHtml += `<p><strong>Survey Comments:</strong> ${response.survey_comments}</p>`;
-        }
-        
-        // Convert boolean/numeric survey_issue_resolved to Yes/No
-        if (response.survey_issue_resolved !== undefined && response.survey_issue_resolved !== null) {
-            // Check if it's a string "yes"/"no" or a boolean/numeric 1/0
-            let issueResolved;
-            if (typeof response.survey_issue_resolved === 'string') {
-                issueResolved = response.survey_issue_resolved.toLowerCase() === 'yes' ? 'Yes' : 'No';
-            } else {
-                issueResolved = response.survey_issue_resolved ? 'Yes' : 'No';
-            }
-            infoHtml += `<p><strong>Issue Resolved:</strong> ${issueResolved}</p>`;
-        }
-    }
-    
-    // Add any other fields in the response that might be relevant
-    const commonFields = ['id', 'user_id', 'service_category', 'first_name', 'last_name', 'student_id', 
-                        'account_email', 'data_type', 'new_data', 'description', 'additional_notes', 
-                        'created_at', 'updated_at', 'status', 'assigned_uitc_staff_id', 'transaction_type', 
-                        'admin_notes', 'rejection_reason', 'supporting_document', 'assigned_uitc_staff',
-                        'middle_name', 'college', 'department', 'plantilla_position', 'date_of_birth',
-                        'phone_number', 'address', 'blood_type', 'emergency_contact_person',
-                        'emergency_contact_number', 'location', 'problem_encountered', 'preferred_date',
-                        'preferred_time', 'led_screen_details', 'application_name', 'installation_purpose',
-                        'installation_notes', 'publication_author', 'publication_editor', 
-                        'publication_start_date', 'publication_end_date', 'data_documents_details', 
-                        'dtr_months', 'dtr_with_details', 'survey_rating', 'survey_comments', 'survey_issue_resolved'];
-    
-    for (const key in response) {
-        // Skip if this is a common field we've already handled or if the value is null/undefined/object
-        if (commonFields.includes(key) || response[key] === null || response[key] === undefined || typeof response[key] === 'object') {
-            continue;
-        }
-        
-        // Format the field name for display (capitalize and add spaces)
-        const fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        
-        // For boolean values, convert to Yes/No
-        let fieldValue = response[key];
-        if (typeof fieldValue === 'boolean' || (typeof fieldValue === 'number' && (fieldValue === 0 || fieldValue === 1))) {
-            fieldValue = fieldValue ? 'Yes' : 'No';
-        }
-        
-        // Add the field to the HTML
-        infoHtml += `<p><strong>${fieldName}:</strong> ${fieldValue}</p>`;
-    }
-    
-    return infoHtml;
-}
-
-// Document Ready - Main initialization
-$(document).ready(function() {
-    // Initialize filters from URL
-    initializeFiltersFromURL();
-    
-    // ======= VIEW REQUEST DETAILS =======
-    $(document).on('click', '.clickable-request-id', function() {
-        const id = $(this).data('id');
-        const userRole = $('body').data('user-role') || '';
-        const token = $('meta[name="csrf-token"]').attr('content');
-        
-        // Set the correct endpoint based on role
-        const requestUrl = userRole === 'Student' ? `/student/request/${id}` : `/faculty/request/${id}`;
-        
-        // Fetch request details
-        $.ajax({
-            url: requestUrl,
-            method: 'GET',
-            headers: { 'X-CSRF-TOKEN': token },
-            success: function(response) {
-                // Removed debugging console.log
-
-                if (response.error) {
-                    alert('Error: ' + response.error);
-                    return;
-                }
-                
-                // Format request ID
-                const requestPrefix = userRole === 'Student' ? 'SSR-' : 'FSR-';
-                const dateString = new Date(response.created_at).toISOString().slice(0, 10).replace(/-/g, '');
-                const formattedId = String(response.id).padStart(4, '0');
-                const displayId = `${requestPrefix}${dateString}-${formattedId}`;
-                
-                // Update the modal with basic info
-                $('#detailsRequestId').text(displayId);
-                $('#detailsService').text(formatServiceCategory(response.service_category));
-                
-                // Update status with badge
-                const statusBadge = $('#detailsStatus');
-statusBadge.text(response.status);
-statusBadge.removeClass().addClass('custom-badge');
-
-if (response.status === 'Pending') {
-    statusBadge.addClass('custom-badge-warning');
-} else if (response.status === 'In Progress') {
-    statusBadge.addClass('custom-badge-info');
-} else if (response.status === 'Completed') {
-    statusBadge.addClass('custom-badge-success');
-} else if (response.status === 'Rejected') {
-    statusBadge.addClass('custom-badge-danger');
-} else {
-    statusBadge.addClass('custom-badge-secondary');
-}
-                
-                // Format dates
-                const submittedDate = new Date(response.created_at).toLocaleString();
-                const completedDate = response.status === 'Completed' && response.updated_at 
-                    ? new Date(response.updated_at).toLocaleString() 
-                    : '-';
-                
-                $('#detailsSubmitted').text(submittedDate);
-                $('#detailsCompleted').text(completedDate);
-                
-                // Build detailed request information
-                let infoHtml = buildDetailedRequestInfo(response, userRole);
-                $('#detailsInformation').html(infoHtml);
-                
-                // Show/hide assignment information as needed
-                if (response.status === 'In Progress' || response.status === 'Completed') {
-                    $('#assignmentSection').show();
-                    
-                    // Handle assigned staff name
-                    let staffName = '-';
-                    if (response.assigned_uitc_staff && response.assigned_uitc_staff.name) {
-                        staffName = response.assigned_uitc_staff.name;
-                    } else if (response.assigned_uitc_staff_id) {
-                        staffName = `Staff ID: ${response.assigned_uitc_staff_id}`;
+            // Add service-specific fields based on service category
+            switch(response.service_category) {
+                case 'reset_email_password':
+                case 'reset_tup_web_password':
+                case 'reset_ers_password':
+                    if (response.account_email) {
+                        infoHtml += `<p><strong>Account Email:</strong> ${response.account_email}</p>`;
                     }
+                    break;
                     
-                    $('#detailsAssignedTo').text(staffName);
-                    $('#detailsTransactionType').text(response.transaction_type || '-');
-                    $('#detailsAdminNotes').text(response.admin_notes || 'No notes');
-                } else {
-                    $('#assignmentSection').hide();
-                }
-                
-                // Show/hide rejection information as needed
-                if (response.status === 'Rejected') {
-                    $('#rejectionSection').show();
-                    $('#detailsRejectionReason').text(response.rejection_reason || '-');
-                    $('#detailsRejectionNotes').text(response.admin_notes || 'No notes');
-                    $('#detailsRejectedDate').text(response.updated_at ? new Date(response.updated_at).toLocaleString() : '-');
-                } else {
-                    $('#rejectionSection').hide();
-                }
-                
-                // Show the modal
-                $('#requestDetailsModal').modal('show');
-            },
-            error: function(xhr, status, error) {
-                let errorMessage = 'Could not load request details. ';
-                
-                if (xhr.status === 404) {
-                    errorMessage += 'Request not found.';
-                } else if (xhr.status === 403) {
-                    errorMessage += 'You do not have permission to view this request.';
-                } else if (xhr.status === 500) {
-                    errorMessage += 'Server error occurred.';
-                } else {
-                    errorMessage += 'Please try again later.';
-                }
-                
-                alert(errorMessage);
+                case 'change_of_data_ms':
+                case 'change_of_data_portal':
+                    if (response.data_type) {
+                        infoHtml += `<p><strong>Data Type:</strong> ${response.data_type}</p>`;
+                    }
+                    if (response.new_data) {
+                        infoHtml += `<p><strong>New Data:</strong> ${response.new_data}</p>`;
+                    }
+                    if (response.supporting_document) {
+                        infoHtml += `<p><strong>Supporting Document:</strong> Submitted</p>`;
+                    }
+                    break;
+                    
+                case 'biometric_record': // Added this case
+                case 'dtr':
+                    // Display fields for both DTR and Biometric Record
+                    // Always display the label, show 'N/A' if the value is null, undefined, or empty
+                    infoHtml += `<p><strong>Month(s) of Record:</strong> ${response.dtr_months || 'N/A'}</p>`; // Generic label
+                    if (response.dtr_with_details !== undefined) {
+                        infoHtml += `<p><strong>Include In/Out Details:</strong> ${response.dtr_with_details ? 'Yes' : 'No'}</p>`; // Display this for both cases
+                    }
+                    break;
+                    
+                case 'biometrics_enrollement':
+                    // Add specific biometrics enrollment fields
+                    if (response.middle_name) {
+                        infoHtml += `<p><strong>Middle Name:</strong> ${response.middle_name}</p>`;
+                    }
+                    if (response.college) {
+                        infoHtml += `<p><strong>College:</strong> ${response.college}</p>`;
+                    }
+                    if (response.department) {
+                        infoHtml += `<p><strong>Department:</strong> ${response.department}</p>`;
+                    }
+                    if (response.plantilla_position) {
+                        infoHtml += `<p><strong>Plantilla Position:</strong> ${response.plantilla_position}</p>`;
+                    }
+                    if (response.date_of_birth) {
+                        infoHtml += `<p><strong>Date of Birth:</strong> ${response.date_of_birth}</p>`;
+                    }
+                    if (response.phone_number) {
+                        infoHtml += `<p><strong>Phone Number:</strong> ${response.phone_number}</p>`;
+                    }
+                    if (response.address) {
+                        infoHtml += `<p><strong>Address:</strong> ${response.address}</p>`;
+                    }
+                    if (response.blood_type) {
+                        infoHtml += `<p><strong>Blood Type:</strong> ${response.blood_type}</p>`;
+                    }
+                    if (response.emergency_contact_person) {
+                        infoHtml += `<p><strong>Emergency Contact Person:</strong> ${response.emergency_contact_person}</p>`;
+                    }
+                    if (response.emergency_contact_number) {
+                        infoHtml += `<p><strong>Emergency Contact Number:</strong> ${response.emergency_contact_number}</p>`;
+                    }
+                    break;
+                    
+                case 'new_internet':
+                case 'new_telephone':
+                case 'new_internet':
+                case 'new_telephone':
+                case 'repair_and_maintenance':
+                case 'computer_repair_maintenance':
+                case 'printer_repair_maintenance':
+                    // Show location for all these types
+                    if (response.location) {
+                        infoHtml += `<p><strong>Location:</strong> ${response.location}</p>`;
+                    }
+                    // Show problems encountered for all these types (will show N/A if null)
+                    infoHtml += `<p><strong>Problems Encountered:</strong> ${response.problem_encountered || 'N/A'}</p>`;
+                    break;
+                    
+                case 'request_led_screen':
+                    if (response.preferred_date) {
+                        infoHtml += `<p><strong>Preferred Date:</strong> ${response.preferred_date}</p>`;
+                    }
+                    if (response.preferred_time) {
+                        infoHtml += `<p><strong>Preferred Time:</strong> ${response.preferred_time}</p>`;
+                    }
+                    if (response.led_screen_details) {
+                        infoHtml += `<p><strong>Additional Details:</strong> ${response.led_screen_details}</p>`;
+                    }
+                    break;
+                    
+                case 'install_application':
+                    // Always display the label, show 'N/A' if the value is null, undefined, or empty
+                    infoHtml += `<p><strong>Application Name:</strong> ${response.application_name || 'N/A'}</p>`;
+                    infoHtml += `<p><strong>Purpose of Installation:</strong> ${response.installation_purpose || 'N/A'}</p>`;
+                    infoHtml += `<p><strong>Additional Requirements:</strong> ${response.installation_notes || 'N/A'}</p>`;
+                    break;
+                    
+                case 'post_publication':
+                    if (response.publication_author) {
+                        infoHtml += `<p><strong>Author:</strong> ${response.publication_author}</p>`;
+                    }
+                    if (response.publication_editor) {
+                        infoHtml += `<p><strong>Editor:</strong> ${response.publication_editor}</p>`;
+                    }
+                    if (response.publication_start_date) {
+                        infoHtml += `<p><strong>Date of Publication:</strong> ${response.publication_start_date}</p>`;
+                    }
+                    if (response.publication_end_date) {
+                        infoHtml += `<p><strong>End of Publication:</strong> ${response.publication_end_date}</p>`;
+                    }
+                    break;
+                    
+                case 'data_docs_reports':
+                    if (response.data_documents_details) {
+                        infoHtml += `<p><strong>Details:</strong> ${response.data_documents_details}</p>`;
+                    }
+                    break;
             }
-        });
-    });
-
-    // ======= EDIT REQUEST =======
-    // Redirect to a dedicated edit page when the edit button is clicked
-    $('.request-table').on('click', '.btn-edit', function() {
-        const id = $(this).data('id');
-        // Determine the correct edit URL based on user role (optional, could be handled by a single route)
-        const userRole = $('body').data('user-role') || '';
-        // For simplicity, let's use a single route structure handled by RequestsController
-        window.location.href = `/requests/${id}/edit`; 
-    });
-
-    // Remove the old modal save logic as it's no longer needed
-    // $('#saveEditedServiceBtn').on('click', function() { ... }); // REMOVED
-
-    // ======= CANCEL REQUEST =======
-    $('.request-table').on('click', '.btn-cancel', function() {
-    const id = $(this).data('id');
-    const requestRow = $(this).closest('tr');
-    const serviceName = requestRow.find('td:nth-child(2)').text().trim();
-    
-    Swal.fire({
-        title: 'Cancel Request',
-        html: `
-            <p>Are you sure you want to cancel this request?</p>
-            <p class="text-muted">This action cannot be undone.</p>
-            <p><strong>Service:</strong> ${serviceName}</p>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Cancel Request',
-        cancelButtonText: 'No, Keep Request'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const token = $('meta[name="csrf-token"]').attr('content');
-            const userRole = $('body').data('user-role') || '';
-            const cancelUrl = userRole === 'Student' ? `/student/cancel-request/${id}` : `/faculty/cancel-request/${id}`;
             
-            // Send AJAX request to cancel
-            $.ajax({
-                url: cancelUrl,
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': token
-                },
-                success: function(response) {
-                    // Show success message
-                    Swal.fire({
-                        title: 'Request Cancelled',
-                        text: 'Your request has been cancelled successfully.',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Reload the page to reflect the changes
-                        window.location.reload();
-                    });
-                },
-                error: function(xhr, status, error) {
-                    // Show error message
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Error cancelling request: ' + (xhr.responseJSON?.message || 'Unknown error'),
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+            // Add description for all services if available
+            if (response.description) {
+                infoHtml += `<p><strong>Description:</strong> ${response.description}</p>`;
+            }
+            
+            // Add additional notes if available
+            if (response.additional_notes) {
+                infoHtml += `<p><strong>Additional Notes:</strong> ${response.additional_notes}</p>`;
+            }
+            
+            // Add survey information if available
+            if (response.status === 'Completed') {
+                if (response.survey_rating) {
+                    infoHtml += `<p><strong>Survey Rating:</strong> ${response.survey_rating}/5</p>`;
+                }
+                
+                if (response.survey_comments) {
+                    infoHtml += `<p><strong>Survey Comments:</strong> ${response.survey_comments}</p>`;
+                }
+                
+                // Convert boolean/numeric survey_issue_resolved to Yes/No
+                if (response.survey_issue_resolved !== undefined && response.survey_issue_resolved !== null) {
+                    // Check if it's a string "yes"/"no" or a boolean/numeric 1/0
+                    let issueResolved;
+                    if (typeof response.survey_issue_resolved === 'string') {
+                        issueResolved = response.survey_issue_resolved.toLowerCase() === 'yes' ? 'Yes' : 'No';
+                    } else {
+                        issueResolved = response.survey_issue_resolved ? 'Yes' : 'No';
+                    }
+                    infoHtml += `<p><strong>Issue Resolved:</strong> ${issueResolved}</p>`;
+                }
+            }
+            
+            // Add any other fields in the response that might be relevant
+            const commonFields = ['id', 'user_id', 'service_category', 'first_name', 'last_name', 'student_id', 
+                                'account_email', 'data_type', 'new_data', 'description', 'additional_notes', 
+                                'created_at', 'updated_at', 'status', 'assigned_uitc_staff_id', 'transaction_type', 
+                                'admin_notes', 'rejection_reason', 'supporting_document', 'assigned_uitc_staff',
+                                'middle_name', 'college', 'department', 'plantilla_position', 'date_of_birth',
+                                'phone_number', 'address', 'blood_type', 'emergency_contact_person',
+                                'emergency_contact_number', 'location', 'problem_encountered', 'preferred_date',
+                                'preferred_time', 'led_screen_details', 'application_name', 'installation_purpose',
+                                'installation_notes', 'publication_author', 'publication_editor', 
+                                'publication_start_date', 'publication_end_date', 'data_documents_details', 
+                                'dtr_months', 'dtr_with_details', 'survey_rating', 'survey_comments', 'survey_issue_resolved'];
+            
+            for (const key in response) {
+                // Skip if this is a common field we've already handled or if the value is null/undefined/object
+                if (commonFields.includes(key) || response[key] === null || response[key] === undefined || typeof response[key] === 'object') {
+                    continue;
+                }
+                
+                // Format the field name for display (capitalize and add spaces)
+                const fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                // For boolean values, convert to Yes/No
+                let fieldValue = response[key];
+                if (typeof fieldValue === 'boolean' || (typeof fieldValue === 'number' && (fieldValue === 0 || fieldValue === 1))) {
+                    fieldValue = fieldValue ? 'Yes' : 'No';
+                }
+                
+                // Add the field to the HTML
+                infoHtml += `<p><strong>${fieldName}:</strong> ${fieldValue}</p>`;
+            }
+            
+            return infoHtml;
+        }
+
+        // Document Ready - Main initialization
+        $(document).ready(function() {
+            // Initialize filters from URL
+            initializeFiltersFromURL();
+            
+            // ======= VIEW REQUEST DETAILS =======
+            $(document).on('click', '.clickable-request-id', function() {
+                const id = $(this).data('id');
+                const userRole = $('body').data('user-role') || '';
+                const token = $('meta[name="csrf-token"]').attr('content');
+                
+                // Set the correct endpoint based on role
+                const requestUrl = userRole === 'Student' ? `/student/request/${id}` : `/faculty/request/${id}`;
+                
+                // Fetch request details
+                $.ajax({
+                    url: requestUrl,
+                    method: 'GET',
+                    headers: { 'X-CSRF-TOKEN': token },
+                    success: function(response) {
+                        // Removed debugging console.log
+
+                        if (response.error) {
+                            alert('Error: ' + response.error);
+                            return;
+                        }
+                        
+                        // Format request ID
+                        const requestPrefix = userRole === 'Student' ? 'SSR-' : 'FSR-';
+                        const dateString = new Date(response.created_at).toISOString().slice(0, 10).replace(/-/g, '');
+                        const formattedId = String(response.id).padStart(4, '0');
+                        const displayId = `${requestPrefix}${dateString}-${formattedId}`;
+                        
+                        // Update the modal with basic info
+                        $('#detailsRequestId').text(displayId);
+                        $('#detailsService').text(formatServiceCategory(response.service_category));
+                        
+                        // Update status with badge
+                        const statusBadge = $('#detailsStatus');
+                        statusBadge.text(response.status);
+                        statusBadge.removeClass().addClass('custom-badge');
+
+                        if (response.status === 'Pending') {
+                            statusBadge.addClass('custom-badge-warning');
+                        } else if (response.status === 'In Progress') {
+                            statusBadge.addClass('custom-badge-info');
+                        } else if (response.status === 'Completed') {
+                            statusBadge.addClass('custom-badge-success');
+                        } else if (response.status === 'Rejected') {
+                            statusBadge.addClass('custom-badge-danger');
+                        } else {
+                            statusBadge.addClass('custom-badge-secondary');
+                        }
+                        
+                        // Format dates
+                        const submittedDate = new Date(response.created_at).toLocaleString();
+                        const completedDate = response.status === 'Completed' && response.updated_at 
+                            ? new Date(response.updated_at).toLocaleString() 
+                            : '-';
+                        
+                        $('#detailsSubmitted').text(submittedDate);
+                        $('#detailsCompleted').text(completedDate);
+                        
+                        // Build detailed request information
+                        let infoHtml = buildDetailedRequestInfo(response, userRole);
+                        $('#detailsInformation').html(infoHtml);
+                        
+                        // Show/hide assignment information as needed
+                        if (response.status === 'In Progress' || response.status === 'Completed') {
+                            $('#assignmentSection').show();
+                            
+                            // Handle assigned staff name
+                            let staffName = '-';
+                            if (response.assigned_uitc_staff && response.assigned_uitc_staff.name) {
+                                staffName = response.assigned_uitc_staff.name;
+                            } else if (response.assigned_uitc_staff_id) {
+                                staffName = `Staff ID: ${response.assigned_uitc_staff_id}`;
+                            }
+                            
+                            $('#detailsAssignedTo').text(staffName);
+                            $('#detailsTransactionType').text(response.transaction_type || '-');
+                            $('#detailsAdminNotes').text(response.admin_notes || 'No notes');
+                        } else {
+                            $('#assignmentSection').hide();
+                        }
+                        
+                        // Show/hide rejection information as needed
+                        if (response.status === 'Rejected') {
+                            $('#rejectionSection').show();
+                            $('#detailsRejectionReason').text(response.rejection_reason || '-');
+                            $('#detailsRejectionNotes').text(response.admin_notes || 'No notes');
+                            $('#detailsRejectedDate').text(response.updated_at ? new Date(response.updated_at).toLocaleString() : '-');
+                        } else {
+                            $('#rejectionSection').hide();
+                        }
+                        
+                        // Show the modal
+                        $('#requestDetailsModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        let errorMessage = 'Could not load request details. ';
+                        
+                        if (xhr.status === 404) {
+                            errorMessage += 'Request not found.';
+                        } else if (xhr.status === 403) {
+                            errorMessage += 'You do not have permission to view this request.';
+                        } else if (xhr.status === 500) {
+                            errorMessage += 'Server error occurred.';
+                        } else {
+                            errorMessage += 'Please try again later.';
+                        }
+                        
+                        alert(errorMessage);
+                    }
+                });
+            });
+
+            // ======= EDIT REQUEST =======
+            // Redirect to a dedicated edit page when the edit button is clicked
+            $('.request-table').on('click', '.btn-edit', function() {
+                const id = $(this).data('id');
+                // Determine the correct edit URL based on user role (optional, could be handled by a single route)
+                const userRole = $('body').data('user-role') || '';
+                // For simplicity, let's use a single route structure handled by RequestsController
+                window.location.href = `/requests/${id}/edit`; 
+            });
+
+            // Remove the old modal save logic as it's no longer needed
+            // $('#saveEditedServiceBtn').on('click', function() { ... }); // REMOVED
+
+            // ======= CANCEL REQUEST =======
+            $('.request-table').on('click', '.btn-cancel', function() {
+                const id = $(this).data('id');
+                const requestRow = $(this).closest('tr');
+                const serviceName = requestRow.find('td:nth-child(2)').text().trim();
+                
+                Swal.fire({
+                    title: 'Cancel Request',
+                    html: `
+                        <p>Are you sure you want to cancel this request?</p>
+                        <p class="text-muted">This action cannot be undone.</p>
+                        <p><strong>Service:</strong> ${serviceName}</p>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Cancel Request',
+                    cancelButtonText: 'No, Keep Request'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const token = $('meta[name="csrf-token"]').attr('content');
+                        const userRole = $('body').data('user-role') || '';
+                        const cancelUrl = userRole === 'Student' ? `/student/cancel-request/${id}` : `/faculty/cancel-request/${id}`;
+                        
+                        // Send AJAX request to cancel
+                        $.ajax({
+                            url: cancelUrl,
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': token
+                            },
+                            success: function(response) {
+                                // Show success message
+                                Swal.fire({
+                                    title: 'Request Cancelled',
+                                    text: 'Your request has been cancelled successfully.',
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    // Reload the page to reflect the changes
+                                    window.location.reload();
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                // Show error message
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Error cancelling request: ' + (xhr.responseJSON?.message || 'Unknown error'),
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+
+            // ======= FILTER AND SEARCH =======
+            // Filter by Status
+            $('#status').on('change', function() {
+                applyFilters();
+            });
+            
+            // Search button click
+            $('.search-btn').on('click', function() {
+                applyFilters();
+            });
+            
+            // Enter key in search input
+            $('#search-input').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    applyFilters();
                 }
             });
-        }
-    });
-});
+            
+            // Function to apply filters
+            function applyFilters() {
+                const selectedStatus = $('#status').val();
+                const searchTerm = $('#search-input').val().trim();
+                
+                // Create URL with query parameters
+                const url = new URL(window.location.href);
+                
+                // Clear existing parameters
+                url.search = '';
+                
+                // Add status parameter if not "all"
+                if (selectedStatus && selectedStatus !== 'all') {
+                    url.searchParams.set('status', selectedStatus);
+                }
+                
+                // Add search parameter if not empty
+                if (searchTerm) {
+                    url.searchParams.set('search', searchTerm);
+                }
+                
+                window.location.href = url.toString();
+            }
+            
+            // Function to initialize filters from URL
+            function initializeFiltersFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Set status dropdown
+                const statusParam = urlParams.get('status');
+                if (statusParam) {
+                    $('#status').val(statusParam);
+                }
+                
+                // Set search input
+                const searchParam = urlParams.get('search');
+                if (searchParam) {
+                    $('#search-input').val(searchParam);
+                }
+            }
+        });
 
-
-    // ======= FILTER AND SEARCH =======
-    // Filter by Status
-    $('#status').on('change', function() {
-        applyFilters();
-    });
-    
-    // Search button click
-    $('.search-btn').on('click', function() {
-        applyFilters();
-    });
-    
-    // Enter key in search input
-    $('#search-input').on('keypress', function(e) {
-        if (e.which === 13) {
-            e.preventDefault();
-            applyFilters();
-        }
-    });
-    
-    // Function to apply filters
-    function applyFilters() {
-        const selectedStatus = $('#status').val();
-        const searchTerm = $('#search-input').val().trim();
-        
-        // Create URL with query parameters
-        const url = new URL(window.location.href);
-        
-        // Clear existing parameters
-        url.search = '';
-        
-        // Add status parameter if not "all"
-        if (selectedStatus && selectedStatus !== 'all') {
-            url.searchParams.set('status', selectedStatus);
-        }
-        
-        // Add search parameter if not empty
-        if (searchTerm) {
-            url.searchParams.set('search', searchTerm);
-        }
-        
-        window.location.href = url.toString();
-    }
-    
-    // Function to initialize filters from URL
-    function initializeFiltersFromURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        // Set status dropdown
-        const statusParam = urlParams.get('status');
-        if (statusParam) {
-            $('#status').val(statusParam);
-        }
-        
-        // Set search input
-        const searchParam = urlParams.get('search');
-        if (searchParam) {
-            $('#search-input').val(searchParam);
-        }
-    }
-});
-</script>
+        $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
 </body>
 </html>
 </environment_details>

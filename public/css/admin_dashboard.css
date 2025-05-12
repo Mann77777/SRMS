@@ -432,28 +432,32 @@ body {
 }
 
 .custom-badge-warning {
+    background-color: #ffc107;
     color: #212529;
-    background-color: #f6c23e;
 }
-
 .custom-badge-info {
-    color: #fff;
-    background-color: #36b9cc;
+    background-color: #17a2b8;
+    color: white;
 }
-
+.custom-badge-overdue {
+    background-color: #ff9800; /* Orange color */
+    color: white;
+}
 .custom-badge-success {
-    color: #fff;
-    background-color: #1cc88a;
+    background-color: #28a745;
+    color: white;
 }
-
 .custom-badge-danger {
-    color: #fff;
-    background-color: #e74a3b;
+    background-color: #dc3545;
+    color: white;
 }
-
+.custom-badge-gray {
+    background-color: #343a40;
+    color: white;
+}
 .custom-badge-secondary {
-    color: #fff;
-    background-color: #858796;
+    background-color: #6c757d;
+    color: white;
 }
 
 /* Rating stars */

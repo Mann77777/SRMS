@@ -523,6 +523,7 @@ canvas {
     border-radius: 0.25rem;
     cursor: default;
 }
+
 .custom-badge-warning {
     background-color: #ffc107;
     color: #212529;
@@ -531,12 +532,20 @@ canvas {
     background-color: #17a2b8;
     color: white;
 }
+.custom-badge-overdue {
+    background-color: #ff9800; /* Orange color */
+    color: white;
+}
 .custom-badge-success {
     background-color: #28a745;
     color: white;
 }
 .custom-badge-danger {
     background-color: #dc3545;
+    color: white;
+}
+.custom-badge-gray {
+    background-color: #343a40;
     color: white;
 }
 .custom-badge-secondary {

@@ -11,6 +11,9 @@
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/admin_servicerequest.css') }}" rel="stylesheet">
     <link href="{{ asset('css/index.css') }}" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <title>Admin - Schedule Management</title>
 </head>
 <body>
@@ -96,10 +99,10 @@
                                 <a href="{{ route('admin.holidays.edit', $holiday['id']) }}" class="btn-edit">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <form action="{{ route('admin.holidays.destroy', $holiday['id']) }}" method="POST">
+                                <form action="{{ route('admin.holidays.destroy', $holiday['id']) }}" method="POST" id="delete-form-{{ $holiday['id'] }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to delete this holiday?')">
+                                    <button type="button" class="btn-cancel" onclick="confirmDelete('{{ $holiday['id'] }}')">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </form>
@@ -116,6 +119,35 @@
     </div>
     
     <script src="{{ asset('js/navbar-sidebar.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function confirmDelete(holidayId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + holidayId).submit();
+                }
+            })
+        }
+
+        @if(session('success'))
+            Swal.fire({
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        @endif
+    </script>
 
 </body>
 </html>

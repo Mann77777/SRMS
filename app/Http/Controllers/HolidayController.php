@@ -99,8 +99,18 @@ class HolidayController extends Controller
         try {
             $holiday = Holiday::create($validated);
             
+            // Define period type labels for user-friendly messages
+            $periodTypes = [
+                'holiday' => 'Holiday',
+                'semestral_break' => 'Semestral Break',
+                'exam_week' => 'Exam Week',
+                'enrollment_period' => 'Enrollment Period',
+                'special_event' => 'Special Event'
+            ];
+            $periodLabel = $periodTypes[$validated['type']] ?? ucfirst(str_replace('_', ' ', $validated['type']));
+            
             return redirect()->route('admin.holidays.index')
-                ->with('success', 'Academic period created successfully');
+                ->with('success', $periodLabel . ' created successfully');
                 
         } catch (\Exception $e) {
             Log::error('Error creating academic period: ' . $e->getMessage());
@@ -170,8 +180,18 @@ class HolidayController extends Controller
             // Update holiday
             $holiday->update($validated);
             
+            // Define period type labels for user-friendly messages
+            $periodTypes = [
+                'holiday' => 'Holiday',
+                'semestral_break' => 'Semestral Break',
+                'exam_week' => 'Exam Week',
+                'enrollment_period' => 'Enrollment Period',
+                'special_event' => 'Special Event'
+            ];
+            $periodLabel = $periodTypes[$validated['type']] ?? ucfirst(str_replace('_', ' ', $validated['type']));
+            
             return redirect()->route('admin.holidays.index')
-                ->with('success', 'Holiday updated successfully');
+                ->with('success', $periodLabel . ' updated successfully');
                 
         } catch (\Exception $e) {
             Log::error('Error updating holiday: ' . $e->getMessage());
@@ -190,10 +210,21 @@ class HolidayController extends Controller
     public function destroy(Holiday $holiday)
     {
         try {
+            $holidayType = $holiday->type; // Get type before deleting
             $holiday->delete();
+
+            // Define period type labels for user-friendly messages
+            $periodTypes = [
+                'holiday' => 'Holiday',
+                'semestral_break' => 'Semestral Break',
+                'exam_week' => 'Exam Week',
+                'enrollment_period' => 'Enrollment Period',
+                'special_event' => 'Special Event'
+            ];
+            $periodLabel = $periodTypes[$holidayType] ?? ucfirst(str_replace('_', ' ', $holidayType));
             
             return redirect()->route('admin.holidays.index')
-                ->with('success', 'Holiday deleted successfully');
+                ->with('success', $periodLabel . ' deleted successfully');
                 
         } catch (\Exception $e) {
             Log::error('Error deleting holiday: ' . $e->getMessage());

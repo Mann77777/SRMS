@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/admin_servicerequest.css') }}" rel="stylesheet">
     <title>Create Holiday</title>
 </head>
 <body>
@@ -126,9 +127,9 @@
             @enderror
         </div>
         
-        <div class="form-group d-flex">
-            <a href="{{ route('admin.holidays.index') }}" class="btn btn-secondary mr-2">Cancel</a>
-            <button type="submit" class="btn btn-primary">Save</button>
+        <div class="form-group gap-2">
+            <a href="{{ route('admin.holidays.index') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary w-auto">Save</button>
         </div>
     </form>
             </div>

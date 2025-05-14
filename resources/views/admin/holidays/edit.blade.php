@@ -129,9 +129,9 @@
                         @enderror
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group gap-2">
                         <a href="{{ route('admin.holidays.index') }}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Update</button>
+                        <button type="submit" class="btn btn-primary w-auto">Update</button>
                     </div>
                 </form>
             </div>

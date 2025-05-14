@@ -564,3 +564,7 @@ Route::get('/uitc-staff/reports', [UITCStaffController::class, 'getReports'])
 Route::get('/uitc-staff/export-reports', [UITCStaffController::class, 'exportReports'])
     ->name('uitc-staff.export-reports')
     ->middleware(['auth:admin']); // Rely only on AdminMiddleware for now
+
+Route::post('/uitc-staff/requests/return-to-admin', [UITCStaffController::class, 'returnRequestToAdmin'])
+    ->name('uitc.requests.return-to-admin')
+    ->middleware(['auth:admin']);

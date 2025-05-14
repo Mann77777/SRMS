@@ -293,6 +293,11 @@
                                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                                     </svg> Unresolvable
                                 </button>
+                                <button class="btn-return btn-warning" data-request-id="{{ $request->id }}" data-request-type="{{ $request->request_type }}" style="margin-left: 5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 0-.5-.5h-13a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L12.293 5H1.5v-3h13a.5.5 0 0 0 .5.5z"/>
+                                    </svg> Return to Admin
+                                </button>
                                 @endif
                             </td>
                         </tr>
@@ -406,6 +411,44 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-danger">Mark as Unresolvable</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Request Modal -->
+    <div class="modal fade" id="returnRequestModal" tabindex="-1" role="dialog" aria-labelledby="returnRequestModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="returnRequestModalLabel">Return Request to Admin</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="returnRequestForm">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" id="returnRequestId" name="request_id">
+                        <input type="hidden" id="returnRequestType" name="request_type" value="">
+                        
+                        <div class="form-group">
+                            <label for="returnReason">Reason for Returning <span class="text-danger">*</span></label>
+                            <textarea 
+                                class="form-control" 
+                                id="returnReason" 
+                                name="return_reason" 
+                                rows="5" 
+                                placeholder="Enter detailed reason why the request is being returned to admin" 
+                                required
+                            ></textarea>
+                            <small class="form-text text-muted">Please provide a comprehensive reason.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning">Return to Admin</button>
                     </div>
                 </form>
             </div>

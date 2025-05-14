@@ -677,4 +677,74 @@ $(document).ready(function () {
             }
         });
     });
+
+    // RETURN REQUEST FUNCTIONALITY
+
+    // Handle Return button click
+    $(document).on('click', '.btn-return', function () {
+        const requestId = $(this).data('request-id');
+        const requestType = $(this).data('request-type') || 'student';
+
+        $('#returnRequestId').val(requestId);
+        $('#returnRequestType').val(requestType);
+
+        // Reset form validation and clear fields
+        $('#returnRequestForm').removeClass('was-validated');
+        $('#returnReason').val('');
+
+        // Show modal
+        $('#returnRequestModal').modal('show');
+    });
+
+    // Handle form submission for returning requests to admin
+    $('#returnRequestForm').on('submit', function (e) {
+        e.preventDefault();
+
+        // Validate form
+        if (this.checkValidity() === false) {
+            e.stopPropagation();
+            $(this).addClass('was-validated');
+            return;
+        }
+
+        // Disable submit button
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+
+        // Get form data
+        const formData = $(this).serialize();
+
+        // AJAX call to return the request to admin
+        $.ajax({
+            url: '/uitc-staff/requests/return-to-admin',
+            method: 'POST',
+            data: formData,
+            success: function (response) {
+                // Close the modal
+                $('#returnRequestModal').modal('hide');
+
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message || 'Request returned to admin successfully.',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Refresh the page to show updated data
+                    window.location.reload();
+                });
+            },
+            error: function (xhr) {
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to return the request to admin.'
+                });
+
+                // Re-enable submit button
+                submitBtn.prop('disabled', false).text('Return to Admin');
+            }
+        });
+    });
 });

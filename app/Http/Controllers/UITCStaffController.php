@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\Notification;
 use App\Notifications\RequestCompletedNotification;
 use App\Notifications\AdminRequestCompletedNotification;
 use App\Notifications\RequestUnresolvableNotification;
+use App\Notifications\RequestReturnedToAdmin;
 
-use Carbon\Carbon; 
+use Carbon\Carbon;
 
 class UITCStaffController extends Controller
 {
@@ -1885,6 +1886,95 @@ class UITCStaffController extends Controller
 
             return response()->json([
                 'message' => 'Failed to mark request as unresolvable: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function returnRequestToAdmin(Request $request)
+    {
+        // Validate the request
+        $validatedData = $request->validate([
+            'request_id' => 'required',
+            'request_type' => 'required|in:student,faculty',
+            'return_reason' => 'required|string|max:2000',
+        ]);
+
+        try {
+            // Begin database transaction
+            DB::beginTransaction();
+
+            // Get the currently logged in UITC staff ID
+            $currentStaffId = Auth::guard('admin')->user()->id;
+            $staffName = Auth::guard('admin')->user()->name;
+
+            // Based on request type, find the appropriate request
+            if ($validatedData['request_type'] === 'student') {
+                $serviceRequest = StudentServiceRequest::findOrFail($validatedData['request_id']);
+            } else { // faculty
+                $serviceRequest = FacultyServiceRequest::findOrFail($validatedData['request_id']);
+            }
+
+            // Ensure the request is assigned to the current UITC staff
+            if ($serviceRequest->assigned_uitc_staff_id !== $currentStaffId) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Unauthorized to return this request.',
+                    'error' => 'Request not assigned to current staff'
+                ], 403);
+            }
+
+            // Update the request status and add return reason
+            $serviceRequest->status = 'Pending'; // Set status back to Pending
+            $serviceRequest->return_reason = $validatedData['return_reason'];
+            $serviceRequest->assigned_uitc_staff_id = null; // Remove assignment
+
+            $serviceRequest->save();
+
+            // Notify all admins
+            $admins = \App\Models\Admin::where('role', 'Admin')->get();
+            $requestingUserName = $serviceRequest->first_name . ' ' . $serviceRequest->last_name;
+            $serviceName = $this->getServiceName($serviceRequest->service_category); // Get formatted service name
+
+            foreach ($admins as $admin) {
+                // Optionally, skip notifying the staff member if they are also an admin
+                if ($admin->id === $currentStaffId) {
+                    continue;
+                }
+                $admin->notify(new RequestReturnedToAdmin($serviceRequest, $staffName, $requestingUserName, $serviceName, $validatedData['return_reason']));
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Request returned to admin successfully.',
+                'request' => $serviceRequest
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            Log::error('Error returning request to admin: Request not found.', [
+                'request_id' => $validatedData['request_id'],
+                'request_type' => $validatedData['request_type'],
+                'staff_id' => $currentStaffId ?? 'Unknown',
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Request not found.'], 404);
+        } catch (\Exception $e) {
+            // Rollback the transaction
+            DB::rollBack();
+
+            // Log the error
+            Log::error('Error returning request to admin: ' . $e->getMessage(), [
+                'request_id' => $validatedData['request_id'],
+                'request_type' => $validatedData['request_type'],
+                'staff_id' => $currentStaffId ?? 'Unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to return request to admin: ' . $e->getMessage()
             ], 500);
         }
     }

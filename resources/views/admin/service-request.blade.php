@@ -260,7 +260,20 @@
                                                 $currentDate->addDay();
                                             }
 
+                                            // 5. Calculate remaining days
                                             $remainingDays = $limit - $businessDaysElapsed;
+                                            $isOverdue = $today->gt($overdueDate);
+
+                                            // 6. Update status if overdue
+                                            if ($isOverdue && $request['status'] !== 'Completed') {
+                                                // Update the status to overdue in the database
+                                                if ($request['type'] === 'new_student_service') {
+                                                    \App\Models\StudentServiceRequest::where('id', $request['id'])->update(['status' => 'Overdue']);
+                                                } elseif ($request['type'] === 'faculty') {
+                                                    \App\Models\FacultyServiceRequest::where('id', $request['id'])->update(['status' => 'Overdue']);
+                                                }
+                                                $request['status'] = 'Overdue';
+                                            }
                                         @endphp
                                         @if($remainingDays > 0)
                                             <span class="remaining-days positive">

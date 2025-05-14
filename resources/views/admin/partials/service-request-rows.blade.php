@@ -1,3 +1,4 @@
+@inject('serviceHelper', 'App\\Helpers\\ServiceHelper')
 @forelse($requests as $request)
     <tr>
         <td><input type="checkbox" name="selected_requests[]" value="{{ $request['id'] }}"></td>
@@ -7,6 +8,18 @@
             </span>
         </td>
         <td>{!! $request['request_data'] !!}</td>
+        <td>
+            @php
+                $validityDays = $serviceHelper::getServiceValidityDays($request['service']);
+                $validityText = match($validityDays) {
+                    3 => 'Simple (3 days)',
+                    7 => 'Complex (7 days)',
+                    20 => 'Highly Technical (20 days)',
+                    default => $validityDays . ' days',
+                };
+            @endphp
+            {{ $validityText }}
+        </td>
         <td>{{ $request['role'] }}</td>
         <td>
             <span>{{ \Carbon\Carbon::parse($request['date'])->format('M d, Y') }}</span><br>
@@ -113,12 +126,18 @@
                 @if($remainingDays > 0)
                     <span class="remaining-days positive">
                         {{ $remainingDays }} days left
+                        <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
                         <br>
                         <small style="color:#888;">Overdue on: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
                     </span>
                 @else
                     <span class="remaining-days negative">
                         Overdue by {{ abs($remainingDays) }} days
+                        <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
                         <br>
                         <small style="color:#888;">Was due: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
                     </span>

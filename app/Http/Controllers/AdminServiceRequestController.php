@@ -1051,7 +1051,8 @@ public function viewSupportingDocument(Request $request, $requestId)
                       ->orWhere('service_category', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('description', 'LIKE', "%{$searchTerm}%")
                       ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
-                          $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                          $userQuery->where('first_name', 'LIKE', "%{$searchTerm}%")
+                                    ->orWhere('last_name', 'LIKE', "%{$searchTerm}%")
                                     ->orWhere('email', 'LIKE', "%{$searchTerm}%");
                       });
                 });
@@ -1091,7 +1092,8 @@ public function viewSupportingDocument(Request $request, $requestId)
                       ->orWhere('service_category', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('description', 'LIKE', "%{$searchTerm}%")
                       ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
-                          $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                          $userQuery->where('first_name', 'LIKE', "%{$searchTerm}%")
+                                    ->orWhere('last_name', 'LIKE', "%{$searchTerm}%")
                                     ->orWhere('email', 'LIKE', "%{$searchTerm}%");
                       });
                 });

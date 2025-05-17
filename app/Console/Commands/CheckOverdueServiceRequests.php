@@ -10,6 +10,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\ServiceRequestTimedOut;
+use App\Notifications\ServiceRequest24HourWarning; // Added
+use App\Models\Admin; // Added
 
 class CheckOverdueServiceRequests extends Command
 {
@@ -163,7 +165,7 @@ class CheckOverdueServiceRequests extends Command
     {
         // Get the transaction type
         $transactionType = $request->transaction_type;
-        
+
         // Skip if we don't have a limit for this transaction type
         if (!isset($transactionLimits[$transactionType])) {
             if ($this->option('details')) {
@@ -172,14 +174,16 @@ class CheckOverdueServiceRequests extends Command
             Log::info("No time limit defined for transaction type: {$transactionType}");
             return false;
         }
-        
+
         // Get the date when the request was assigned (when status changed to 'In Progress')
+        // Use created_at of the assignment, or updated_at of the request if it reflects assignment time.
+        // For simplicity, assuming updated_at is when it became 'In Progress'.
         $assignedDate = Carbon::parse($request->updated_at)->startOfDay();
         $businessDaysLimit = $transactionLimits[$transactionType];
-        
-        // Calculate business days elapsed with improved logging
+
+        // Calculate business days elapsed
         $businessDaysElapsed = $this->calculateBusinessDaysElapsed($assignedDate);
-        
+
         if ($this->option('details')) {
             $this->line("Checking {$requestType} Request ID {$request->id}:");
             $this->line("  - Transaction Type: {$transactionType}");
@@ -187,34 +191,38 @@ class CheckOverdueServiceRequests extends Command
             $this->line("  - Business Days Elapsed: {$businessDaysElapsed}");
             $this->line("  - Business Days Limit: {$businessDaysLimit}");
         }
-        
+
         Log::info("Request ID {$request->id}: {$businessDaysElapsed} business days elapsed, limit is {$businessDaysLimit}");
-        
-        // If exceeded limit, mark as overdue instead of cancelled
+
+        // If exceeded limit, mark as overdue
         if ($businessDaysElapsed > $businessDaysLimit) {
-            // Update the request - changed status from 'Cancelled' to 'Overdue'
             $request->update([
                 'status' => 'Overdue',
                 'admin_notes' => ($request->admin_notes ?? '') . "\n\nThis request has exceeded the time limit of {$businessDaysLimit} business days for {$transactionType} and has been marked as overdue.",
                 'updated_at' => now()
             ]);
-            
-            // Log the timeout
+
             $message = "Service request {$request->id} marked as overdue. Transaction type: {$transactionType}, Limit: {$businessDaysLimit} days, Elapsed: {$businessDaysElapsed} days";
             Log::info($message);
-            
+
             if ($this->option('details')) {
                 $this->error("  - OVERDUE: {$message}");
             } else {
                 $this->warn("OVERDUE: {$requestType} Request ID {$request->id} - {$businessDaysElapsed}/{$businessDaysLimit} days");
             }
-            
-            // Send notification to user if possible
+
             $this->sendTimeoutNotification($request, $businessDaysLimit, $transactionType);
-            
             return true;
+
         } else {
-            if ($this->option('details')) {
+            // Check for 24-hour warning (1 business day remaining)
+            $remainingBusinessDays = $businessDaysLimit - $businessDaysElapsed;
+            if ($remainingBusinessDays == 1 && $request->assigned_uitc_staff_id) {
+                $this->send24HourWarningNotification($request, $businessDaysLimit, $transactionType, $assignedDate);
+                if ($this->option('details')) {
+                    $this->info("  - 24-HOUR WARNING SENT: {$businessDaysElapsed}/{$businessDaysLimit} days");
+                }
+            } elseif ($this->option('details')) {
                 $this->info("  - WITHIN LIMIT: {$businessDaysElapsed}/{$businessDaysLimit} days");
             }
             return false;
@@ -352,6 +360,78 @@ class CheckOverdueServiceRequests extends Command
         }
     }
 
+    /**
+     * Calculate the due date in business days from a start date.
+     *
+     * @param Carbon $startDate
+     * @param int $businessDaysToAdd
+     * @return Carbon
+     */
+    private function calculateBusinessDueDate(Carbon $startDate, int $businessDaysToAdd)
+    {
+        $holidayDates = $this->getHolidayDates();
+        $currentDate = $startDate->copy();
+        $daysAdded = 0;
+
+        while ($daysAdded < $businessDaysToAdd) {
+            $currentDate->addDay(); // Move to the next day
+            $dayOfWeek = $currentDate->dayOfWeek;
+            $isWeekend = ($dayOfWeek === Carbon::SUNDAY || $dayOfWeek === Carbon::SATURDAY);
+            $isHoliday = in_array($currentDate->format('Y-m-d'), $holidayDates);
+
+            if (!$isWeekend && !$isHoliday) {
+                $daysAdded++;
+            }
+        }
+        return $currentDate;
+    }
+
+    /**
+     * Send a 24-hour warning notification to the assigned UITC staff.
+     *
+     * @param mixed $request
+     * @param int $businessDaysLimit
+     * @param string $transactionType
+     * @param Carbon $assignedDate
+     * @return void
+     */
+    private function send24HourWarningNotification($request, $businessDaysLimit, $transactionType, Carbon $assignedDate)
+    {
+        try {
+            $uitcStaff = Admin::find($request->assigned_uitc_staff_id);
+
+            if ($uitcStaff) {
+                $serviceCategory = $request->service_category ?? 'Service Request';
+                $requestorName = $request->user ? ($request->user->first_name . ' ' . $request->user->last_name) : ($request->first_name . ' ' . $request->last_name);
+                
+                // Calculate the actual due date
+                $dueDate = $this->calculateBusinessDueDate($assignedDate, $businessDaysLimit);
+
+                Notification::send($uitcStaff, new ServiceRequest24HourWarning(
+                    $request->id,
+                    $serviceCategory,
+                    $requestorName,
+                    $transactionType,
+                    $dueDate
+                ));
+
+                $message = "24-hour warning notification sent to UITC Staff ID: {$uitcStaff->id} for Request ID: {$request->id}. Due: " . $dueDate->format('Y-m-d');
+                Log::info($message);
+                if ($this->option('details')) {
+                    $this->line("  - {$message}");
+                }
+            } else {
+                Log::warning("UITC Staff not found for ID: {$request->assigned_uitc_staff_id} on Request ID: {$request->id} for 24-hour warning.");
+            }
+        } catch (\Exception $e) {
+            $message = "Error sending 24-hour warning notification for Request ID {$request->id}: " . $e->getMessage();
+            Log::error($message);
+            if ($this->option('details')) {
+                $this->error("  - {$message}");
+            }
+        }
+    }
+    
     /**
      * Send a notification about the timed out request
      * 

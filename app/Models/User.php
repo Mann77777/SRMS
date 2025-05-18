@@ -102,10 +102,20 @@ class User extends Authenticatable implements MustVerifyEmail
         $firstName = trim($this->first_name ?? '');
         $lastName = trim($this->last_name ?? '');
 
-        if (empty($firstName) && empty($lastName)) {
-            return 'N/A';
+        if (!empty($firstName) || !empty($lastName)) {
+            return trim("{$firstName} {$lastName}");
         }
 
-        return trim("{$firstName} {$lastName}");
+        $username = trim($this->username ?? '');
+        if (!empty($username)) {
+            return $username;
+        }
+
+        $email = trim($this->email ?? '');
+        if (!empty($email)) {
+            return $email;
+        }
+
+        return 'Unknown User'; // Fallback if all are empty
     }
 }

@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\ServiceRequestReceived;
 use App\Notifications\RequestCancelledNotification;
+use App\Notifications\AdminRequestCancelledNotification; // Added this line
 use Illuminate\Support\Facades\Notification;
 use App\Models\Admin;
 use App\Notifications\RequestSubmitted;
@@ -360,6 +361,18 @@ class StudentServiceRequestController extends Controller
                 null, // Pass cancellation reason if available
                 $request->created_at
             ));
+
+            // Notify all admins
+            $admins = Admin::where('role', 'Admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new AdminRequestCancelledNotification(
+                    $request->id,
+                    $request->service_category,
+                    $user->first_name . ' ' . $user->last_name,
+                    $user->role, // Should be 'Student'
+                    Carbon::now() // Timestamp of cancellation
+                ));
+            }
 
             return response()->json(['message' => 'Request cancelled successfully']);
         } catch (\Exception $e) {

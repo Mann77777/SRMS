@@ -45,11 +45,11 @@
                         </div>
                         <div class="staff-image">
                             <img src="{{ $staffMember->profile_image ? asset('storage/' . $staffMember->profile_image) : asset('images/default-avatar.png') }}" 
-                                alt="{{ $staffMember->name }}'s Profile Image" 
+                                alt="{{ $staffMember->full_name }}'s Profile Image" 
                                 class="img-fluid rounded-circle">
                         </div>
                         <div class="staff-details">
-                            <p><strong>Name:</strong> {{ $staffMember->name }}</p>
+                            <p><strong>Name:</strong> {{ $staffMember->full_name }}</p>
                             <p><strong>Username:</strong> {{ $staffMember->username }}</p>
                             
                             <div class="staff-actions">

@@ -40,12 +40,25 @@ body {
     text-align: center;
     color: var(--text-color);
     position: relative;
+    z-index: 1; /* Ensure profile container is below the fixed navbar */
 }
 .back-button-container {
     position: absolute;
-    left: -60px; /* Adjust based on your layout */
-    top: 0;
+    left: -60px; /* Default for larger screens */
+    top: 0;      /* Default for larger screens */
     margin-bottom: 20px;
+}
+
+@media screen and (max-width: 768px) {
+    .back-button-container {
+        position: absolute; /* Or static/relative depending on desired flow */
+        left: 10px; /* Position from the left edge of profile-container */
+        top: 10px;  /* Position from the top edge of profile-container */
+        z-index: 10; /* Ensure it's above other profile content if needed */
+    }
+    .profile-container {
+        padding-top: 60px; /* Add padding to profile container to make space for back button */
+    }
 }
 
 .back-btn {

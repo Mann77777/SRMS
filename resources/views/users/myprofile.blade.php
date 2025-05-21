@@ -9,6 +9,14 @@
     <link href="{{ asset('css/profile.css') }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-sidebar.css') }}" rel="stylesheet">
     <title>My Profile</title>
+    <style>
+        /* Hide hamburger menu specifically on this page for mobile */
+        @media screen and (max-width: 768px) {
+            #sidebarOpen {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
 

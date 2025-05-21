@@ -372,6 +372,10 @@ body{
     .navbar .logo_item img {
         display: none;
     }
+    .navbar .logo_item { /* Ensure the container of the hamburger is also lifted */
+        position: relative;
+        z-index: 1001;
+    }
     .navbar-title {
         display: none;
     }
@@ -392,10 +396,12 @@ body{
     }
     #sidebarOpen {
       font-size: 25px;
-      display: block;
+      display: block; /* Reverted: Hamburger menu should be visible by default */
       margin-right: 10px;
       cursor: pointer;
       color: #C8102E; /* Reverted hamburger icon to red */
+      position: relative; /* Ensure z-index is applied correctly */
+      z-index: 1001; /* Higher than navbar to ensure it's on top */
     }
     .sidebar.close {
       left: -100%;
@@ -427,6 +433,7 @@ body{
     padding: 90px 20px 20px 20px; /* Adjust padding: top(navbar)+space, right, bottom, left */
     transition: margin-left 0.5s ease, width 0.5s ease; /* Smooth transition */
     position: relative; /* Needed for stacking context if required */
+    z-index: 50; /* Ensure main content is below navbar and sidebar */
     width: calc(100% - 260px); /* Adjust width based on sidebar */
     min-height: calc(100vh - 70px); /* Ensure content area fills viewport height minus navbar */
     box-sizing: border-box; /* Include padding and border in the element's total width and height */

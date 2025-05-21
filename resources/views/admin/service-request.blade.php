@@ -189,13 +189,13 @@
                                             $assignedDate = \Carbon\Carbon::parse($request['updated_at'])->startOfDay();
                                             $today = \Carbon\Carbon::today();
 
-                                            // 1. Find the first business day after assignment
+                                            // 1. Find the first business day on or after assignment
                                             $firstBusinessDay = $assignedDate->copy();
                                             while (true) {
                                                 $dayOfWeek = $firstBusinessDay->dayOfWeek;
-                                                $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                                $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6); // Sunday or Saturday
                                                 $isHoliday = \App\Models\Holiday::isHoliday($firstBusinessDay);
-                                                $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($firstBusinessDay, 'semestral_break');
+                                                $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($firstBusinessDay, 'semestral_break'); // Assuming 'semestral_break' is a type
                                                 if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
                                                     break;
                                                 }
@@ -205,21 +205,41 @@
                                             // 2. Calculate last allowed business day
                                             $limit = $transactionLimits[$request['transaction_type']] ?? 0;
                                             $lastAllowedDay = $firstBusinessDay->copy();
-                                            $businessDaysCounted = 0;
-                                            while ($businessDaysCounted < $limit) {
-                                                $dayOfWeek = $lastAllowedDay->dayOfWeek;
-                                                $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-                                                $isHoliday = \App\Models\Holiday::isHoliday($lastAllowedDay);
-                                                $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($lastAllowedDay, 'semestral_break');
-                                                if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
-                                                    $businessDaysCounted++;
-                                                }
-                                                if ($businessDaysCounted < $limit) {
-                                                    $lastAllowedDay->addDay();
+                                            if ($limit > 0) {
+                                                $businessDaysCounted = 0;
+                                                while ($businessDaysCounted < $limit) {
+                                                    // Check if $lastAllowedDay itself is a business day before incrementing count for it
+                                                    $dayOfWeek = $lastAllowedDay->dayOfWeek;
+                                                    $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                                    $isHoliday = \App\Models\Holiday::isHoliday($lastAllowedDay);
+                                                    $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($lastAllowedDay, 'semestral_break');
+
+                                                    if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                                        $businessDaysCounted++;
+                                                    }
+                                                    // If we haven't reached the limit yet, move to the next day
+                                                    if ($businessDaysCounted < $limit) {
+                                                        $lastAllowedDay->addDay();
+                                                    } else if ($businessDaysCounted == $limit && ($isWeekend || $isHoliday || $isAcademicPeriod)) {
+                                                        // If the limit lands on a non-business day, keep skipping until a business day.
+                                                        // This ensures the $lastAllowedDay is a business day.
+                                                        // However, the loop condition $businessDaysCounted < $limit ensures we add days until limit is met on a business day.
+                                                        // This part might need refinement if limit means "N business days from start" vs "ends on Nth business day"
+                                                        // Current logic: finds the Nth business day.
+                                                        while(true){
+                                                            $dayOfWeekCheck = $lastAllowedDay->dayOfWeek;
+                                                            $isWeekendCheck = ($dayOfWeekCheck === 0 || $dayOfWeekCheck === 6);
+                                                            $isHolidayCheck = \App\Models\Holiday::isHoliday($lastAllowedDay);
+                                                            $isAcademicPeriodCheck = \App\Models\Holiday::isAcademicPeriod($lastAllowedDay, 'semestral_break');
+                                                            if (!$isWeekendCheck && !$isHolidayCheck && !$isAcademicPeriodCheck) break;
+                                                            $lastAllowedDay->addDay();
+                                                        }
+                                                    }
                                                 }
                                             }
 
-                                            // 3. Find the next business day after the last allowed day (for overdue)
+
+                                            // 3. Find the next business day after the last allowed day (this is the overdueDate)
                                             $overdueDate = $lastAllowedDay->copy()->addDay();
                                             while (true) {
                                                 $dayOfWeek = $overdueDate->dayOfWeek;
@@ -227,59 +247,97 @@
                                                 $isHoliday = \App\Models\Holiday::isHoliday($overdueDate);
                                                 $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($overdueDate, 'semestral_break');
                                                 if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
-                                                    break;
+                                                    break; // Found the first business day after lastAllowedDay
                                                 }
                                                 $overdueDate->addDay();
                                             }
 
-                                            // 4. Calculate business days elapsed (from first business day)
-                                            $businessDaysElapsed = 0;
-                                            $currentDate = $firstBusinessDay->copy();
-                                            while ($currentDate->lte($today)) {
-                                                $dayOfWeek = $currentDate->dayOfWeek;
-                                                $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-                                                $isHoliday = \App\Models\Holiday::isHoliday($currentDate);
-                                                $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($currentDate, 'semestral_break');
-                                                if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
-                                                    $businessDaysElapsed++;
-                                                }
-                                                $currentDate->addDay();
-                                            }
+                                            // 4. Determine if the request is actually overdue
+                                            $isActuallyOverdue = $today->gte($overdueDate);
 
-                                            // 5. Calculate remaining days
-                                            $remainingDays = $limit - $businessDaysElapsed;
-                                            $isOverdue = $today->gt($overdueDate);
-
-                                            // 6. Update status if overdue
-                                            if ($isOverdue && $request['status'] !== 'Completed') {
-                                                // Update the status to overdue in the database
+                                            // 5. Update status in DB if it's overdue and not already marked as Completed, Overdue, Cancelled, or Rejected
+                                            if ($isActuallyOverdue && !in_array($request['status'], ['Completed', 'Overdue', 'Cancelled', 'Rejected'])) {
                                                 if ($request['type'] === 'new_student_service') {
                                                     \App\Models\StudentServiceRequest::where('id', $request['id'])->update(['status' => 'Overdue']);
                                                 } elseif ($request['type'] === 'faculty') {
                                                     \App\Models\FacultyServiceRequest::where('id', $request['id'])->update(['status' => 'Overdue']);
                                                 }
-                                                $request['status'] = 'Overdue';
+                                                $request['status'] = 'Overdue'; // Reflect change for current view
                                             }
+
+                                            // 6. Display logic
+                                            if ($request['status'] == 'Overdue') {
+                                                $daysOverdueCount = 0;
+                                                $tempDate = $overdueDate->copy();
+                                                while($tempDate->lte($today)) {
+                                                    $dayOfWeek = $tempDate->dayOfWeek;
+                                                    $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                                    $isHoliday = \App\Models\Holiday::isHoliday($tempDate);
+                                                    $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($tempDate, 'semestral_break');
+                                                    if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                                        $daysOverdueCount++;
+                                                    }
+                                                    if ($tempDate->isSameDay($today)) break;
+                                                    $tempDate->addDay();
+                                                }
+                                                if ($daysOverdueCount == 0 && $isActuallyOverdue) $daysOverdueCount = 1; // Ensure at least 1 if overdue
                                         @endphp
-                                        @if($remainingDays > 0)
-                                            <span class="remaining-days positive">
-                                                {{ $remainingDays }} days left
-                                                <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
-                                                    <i class="fas fa-info-circle"></i>
-                                                </span>
-                                                <br>
-                                                <small style="color:#888;">Overdue on: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
+                                        <span class="remaining-days negative">
+                                            Overdue by {{ $daysOverdueCount }} day{{ $daysOverdueCount != 1 ? 's' : '' }}
+                                            <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
+                                                <i class="fas fa-info-circle"></i>
                                             </span>
-                                        @else
-                                            <span class="remaining-days negative">
-                                                Overdue by {{ abs($remainingDays) }} days
-                                                <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
-                                                    <i class="fas fa-info-circle"></i>
-                                                </span>
-                                                <br>
-                                                <small style="color:#888;">Was due: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
+                                            <br>
+                                            <small style="color:#888;">Was due: {{ $lastAllowedDay->format('M d, Y') }}</small>
+                                        </span>
+                                        @php
+                                            } else { // Not 'Overdue' status
+                                                // Calculate business days elapsed from firstBusinessDay up to today
+                                                $businessDaysElapsed = 0;
+                                                $currentProcessingDate = $firstBusinessDay->copy();
+                                                while ($currentProcessingDate->lte($today)) {
+                                                    $dayOfWeek = $currentProcessingDate->dayOfWeek;
+                                                    $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+                                                    $isHoliday = \App\Models\Holiday::isHoliday($currentProcessingDate);
+                                                    $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($currentProcessingDate, 'semestral_break');
+                                                    if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
+                                                        $businessDaysElapsed++;
+                                                    }
+                                                    if ($currentProcessingDate->isSameDay($today)) break;
+                                                    $currentProcessingDate->addDay();
+                                                }
+
+                                                $calculatedRemainingDays = $limit - $businessDaysElapsed;
+
+                                                if ($calculatedRemainingDays == 0 && $today->isSameDay($lastAllowedDay) && !$isActuallyOverdue) { // Due Today
+                                        @endphp
+                                        <span class="remaining-days positive"> {{-- Consider a neutral class like .remaining-days-due --}}
+                                            Due today
+                                            <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
+                                                <i class="fas fa-info-circle"></i>
                                             </span>
-                                        @endif
+                                            <br>
+                                            <small style="color:#888;">Overdue on: {{ $overdueDate->format('M d, Y') }}</small>
+                                        </span>
+                                        @php
+                                                } elseif ($calculatedRemainingDays > 0 && !$isActuallyOverdue) { // Days Left
+                                        @endphp
+                                        <span class="remaining-days positive">
+                                            {{ $calculatedRemainingDays }} day{{ $calculatedRemainingDays != 1 ? 's' : '' }} left
+                                            <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                            <br>
+                                            <small style="color:#888;">Overdue on: {{ $overdueDate->format('M d, Y') }}</small>
+                                        </span>
+                                        @php
+                                                } else { // Fallback for other cases (e.g., weekend/holiday before due date but after last allowed day)
+                                        @endphp
+                                        -
+                                        @php
+                                                }
+                                            } // End else for not 'Overdue' status
+                                        @endphp
                                     @else
                                         -
                                     @endif

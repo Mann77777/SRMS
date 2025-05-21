@@ -123,7 +123,6 @@
                             <th class="left"><input type="checkbox" id="select-all"></th>
                             <th>Request ID</th>
                             <th>Request Details</th>
-                            <th>Validity Period</th> {{-- Added Validity Period Header --}}
                             <th>Role</th>
                             <th>Date & Time Submitted</th>
                             <th>Date & Time Completed</th>
@@ -142,19 +141,6 @@
                                     </span>
                                 </td>
                                 <td>{!! $request['request_data'] !!}</td>
-                                <td>
-                                    {{-- Use ServiceHelper to get validity days --}}
-                                    @php
-                                        $validityDays = $serviceHelper::getServiceValidityDays($request['service']); // Use 'service' key which holds category
-                                        $validityText = match($validityDays) {
-                                            3 => 'Simple (3 days)',
-                                            7 => 'Complex (7 days)',
-                                            20 => 'Highly Technical (20 days)',
-                                            default => $validityDays . ' days',
-                                        };
-                                    @endphp
-                                    {{ $validityText }}
-                                </td>
                                 <td>{{ $request['role'] }}</td>
                                 <td>
                                     <span>{{ \Carbon\Carbon::parse($request['date'])->format('M d, Y') }}</span><br>
@@ -316,7 +302,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="empty-state">
+                                <td colspan="6" class="empty-state">
                                     <i class="fas fa-inbox fa-3x"></i>
                                     <p>No requests found</p>
                                 </td>

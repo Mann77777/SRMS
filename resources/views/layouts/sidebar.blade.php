@@ -1,7 +1,7 @@
 <!-- resources/views/layouts/sidebar.blade.php -->
 <aside class="sidebar">
     <div class="logo_item">
-        <a href="{{ url('/admin_dashboard') }}">
+        <a href="{{ url('/dashboard') }}">
             <img src="{{ asset('images/tuplogo.png') }}" alt="Logo" class="logo">
         </a>      
         <span class="sidebar-title">TUP SRMS</span>

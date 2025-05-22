@@ -60,7 +60,6 @@
                             <tr>
                                 <th>Request ID</th>
                                 <th>Service</th>
-                                <th>Validity Period</th> {{-- Added Validity Period Header --}}
                                 <th>Date & Time Submitted</th>
                                 <th>Date & Time Completed</th>
                                 <th>Status</th>
@@ -84,19 +83,6 @@
                                 <td>
                                     {{-- Use ServiceHelper to format the service name --}}
                                     {{ $serviceHelper::formatServiceCategory($request->service_category, $request->description) }}
-                                </td>
-                                <td>
-                                    {{-- Use ServiceHelper to get validity days --}}
-                                    @php
-                                        $validityDays = $serviceHelper::getServiceValidityDays($request->service_category);
-                                        $validityText = match($validityDays) {
-                                            3 => 'Simple (3 days)',
-                                            7 => 'Complex (7 days)',
-                                            20 => 'Highly Technical (20 days)',
-                                            default => $validityDays . ' days',
-                                        };
-                                    @endphp
-                                    {{ $validityText }}
                                 </td>
                                 <td>
                                     <span>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</span><br>

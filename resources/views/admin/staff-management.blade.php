@@ -49,7 +49,7 @@
                                 class="img-fluid rounded-circle">
                         </div>
                         <div class="staff-details">
-                            <p><strong>Name:</strong> {{ $staffMember->full_name }}</p>
+                            <p><strong>Name:</strong> {{ $staffMember->name }}</p>
                             <p><strong>Username:</strong> {{ $staffMember->username }}</p>
                             
                             <div class="staff-actions">

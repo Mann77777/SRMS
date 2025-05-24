@@ -120,7 +120,6 @@
                 <table class="request-table">
                     <thead>
                         <tr>
-                            <th class="left"><input type="checkbox" id="select-all"></th>
                             <th>Request ID</th>
                             <th>Request Details</th>
                             <th>Role</th>
@@ -134,7 +133,6 @@
                     <tbody>
                         @forelse($requests as $request)
                             <tr>
-                                <td><input type="checkbox" name="selected_requests[]" value="{{ $request['id'] }}"></td>
                                 <td>
                                     <span class="clickable-request-id" style="cursor: pointer; color: #007bff; text-decoration: underline;">
                                         {{ $request['id'] }}

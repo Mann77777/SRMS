@@ -517,10 +517,12 @@
                         infoHtml += `<p><strong>Editor:</strong> ${response.publication_editor}</p>`;
                     }
                     if (response.publication_start_date) {
-                        infoHtml += `<p><strong>Date of Publication:</strong> ${response.publication_start_date}</p>`;
+                        const pubStart = new Date(response.publication_start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        infoHtml += `<p><strong>Date of Publication:</strong> ${pubStart}</p>`;
                     }
                     if (response.publication_end_date) {
-                        infoHtml += `<p><strong>End of Publication:</strong> ${response.publication_end_date}</p>`;
+                        const pubEnd = new Date(response.publication_end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        infoHtml += `<p><strong>End of Publication:</strong> ${pubEnd}</p>`;
                     }
                     break;
                     

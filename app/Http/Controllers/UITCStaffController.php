@@ -503,48 +503,30 @@ class UITCStaffController extends Controller
 
     private function formatServiceCategory($category)
     {
-        switch ($category) {
-            case 'create':
-                return 'Create MS Office/TUP Email Account';
-            case 'reset_email_password':
-                return 'Reset MS Office/TUP Email Password';
-            case 'change_of_data_ms':
-                return 'Change of Data (MS Office)';
-            case 'reset_tup_web_password':
-                return 'Reset TUP Web Password';
-            case 'reset_ers_password':
-                return 'Reset ERS Password';
-            case 'change_of_data_portal':
-                return 'Change of Data (Portal)';
-            case 'dtr':
-                return 'Daily Time Record';
-            case 'biometric_record':
-                return 'Biometric Record';
-            case 'biometrics_enrollement':
-                return 'Biometrics Enrollment';
-            case 'new_internet':
-                return 'New Internet Connection';
-            case 'new_telephone':
-                return 'New Telephone Connection';
-            case 'repair_and_maintenance':
-                return 'Internet/Telephone Repair and Maintenance';
-            case 'computer_repair_maintenance':
-                return 'Computer Repair and Maintenance';
-            case 'printer_repair_maintenance':
-                return 'Printer Repair and Maintenance';
-            case 'request_led_screen':
-                return 'LED Screen Request';
-            case 'install_application':
-                return 'Install Application/Information System/Software';
-            case 'post_publication':
-                return 'Post Publication/Update of Information Website';
-            case 'data_docs_reports':
-                return 'Data, Documents and Reports';
-            case 'others':
-                return $category;
-            default:
-                return $category;
-        }
+        $services = [
+            'create' => 'Create MS Office/TUP Email Account',
+            'reset_email_password' => 'Reset MS Office/TUP Email Password',
+            'change_of_data_ms' => 'Change of Data (MS Office)',
+            'reset_tup_web_password' => 'Reset TUP Web Password',
+            'reset_ers_password' => 'Reset ERS Password',
+            'reset_intranet_password' => 'Reset Intranet Password',
+            'change_of_data_portal' => 'Change of Data (Portal)',
+            'dtr' => 'Daily Time Record',
+            'biometric_record' => 'Biometric Record',
+            'biometrics_enrollement' => 'Biometrics Enrollment',
+            'new_internet' => 'New Internet Connection',
+            'new_telephone' => 'New Telephone Connection',
+            'repair_and_maintenance' => 'Internet/Telephone Repair and Maintenance',
+            'computer_repair_maintenance' => 'Computer Repair and Maintenance',
+            'printer_repair_maintenance' => 'Printer Repair and Maintenance',
+            'request_led_screen' => 'LED Screen Request',
+            'install_application' => 'Install Application/Information System/Software',
+            'post_publication' => 'Post Publication/Update of Information Website',
+            'data_docs_reports' => 'Data, Documents and Reports',
+            'others' => 'Other Service',
+        ];
+        
+        return isset($services[$category]) ? $services[$category] : $category;
     }
 
 
@@ -827,7 +809,8 @@ class UITCStaffController extends Controller
                 'completed_requests' => $allRequests->where('status', 'Completed')->count(),
                 'in_progress_requests' => $allRequests->where('status', 'In Progress')->count(),
                 'cancelled_requests' => $allRequests->where('status', 'Cancelled')->count(),
-                'overdue_requests' => $allRequests->where('status', 'Overdue')->count(), // Add this line
+                'overdue_requests' => $allRequests->where('status', 'Overdue')->count(),
+                'unresolvable_requests' => $allRequests->where('status', 'Unresolvable')->count(),
             ];
             $overdueRequests = $this->getOverdueRequestsDetails($allRequests);
             
@@ -954,10 +937,9 @@ class UITCStaffController extends Controller
                     case 'Cancelled':
                         $categoryStats[$formattedCategory]['cancelled']++;
                         break;
-                    case 'Overdue':  // Add this case to correctly count overdue requests
+                    case 'Overdue':
                         $categoryStats[$formattedCategory]['overdue']++;
                         break;
-
                 }
             }
             

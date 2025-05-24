@@ -260,8 +260,12 @@ class AdminServiceRequestController extends Controller
                 break;
 
             case 'request_led_screen':
-                $data['Preferred Date'] = $request->preferred_date ? date('Y-m-d', strtotime($request->preferred_date)) : 'N/A';
-                $data['Preferred Time'] = $request->preferred_time ?? 'N/A';
+                $data['Preferred Date'] = $request->preferred_date
+                    ? \Carbon\Carbon::parse($request->preferred_date)->format('F d, Y')
+                    : 'N/A';
+                $data['Preferred Time'] = $request->preferred_time
+                    ? \Carbon\Carbon::parse($request->preferred_time)->format('h:i A')
+                    : 'N/A';
                 break;
 
             case 'others':
@@ -391,7 +395,9 @@ class AdminServiceRequestController extends Controller
                     $data['Preferred Date'] = $this->formatDate($request->preferred_date);
                 }
                 if (isset($request->preferred_time)) {
-                    $data['Preferred Time'] = $request->preferred_time;
+                    $data['Preferred Time'] = $request->preferred_time
+                        ? \Carbon\Carbon::parse($request->preferred_time)->format('h:i A')
+                        : 'N/A';
                 }
                 if (isset($request->led_screen_details)) {
                     $data['Additional Details'] = $request->led_screen_details;

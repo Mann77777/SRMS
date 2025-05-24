@@ -255,13 +255,13 @@
     </div>
 
 <!-- Request Details Modal -->
-<div class="modal fade" id="requestDetailsModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="requestDetailsModal" tabindex="-1" role="dialog" aria-labelledby="requestDetailsModalLabel">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Request Details</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
+                <h5 class="modal-title" id="requestDetailsModalLabel">Request Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -492,10 +492,26 @@
                     
                 case 'request_led_screen':
                     if (response.preferred_date) {
-                        infoHtml += `<p><strong>Preferred Date:</strong> ${response.preferred_date}</p>`;
+                        const formattedDate = new Date(response.preferred_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        infoHtml += `<p><strong>Preferred Date:</strong> ${formattedDate}</p>`;
                     }
                     if (response.preferred_time) {
-                        infoHtml += `<p><strong>Preferred Time:</strong> ${response.preferred_time}</p>`;
+                        // Parse the ISO datetime string
+                        const dateTime = new Date(response.preferred_time);
+                        
+                        // Format the time in 12-hour format
+                        const formattedTime = dateTime.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true,
+                            timeZone: 'Asia/Manila' // Set to Philippine timezone
+                        });
+                        
+                        infoHtml += `<p><strong>Preferred Time:</strong> ${formattedTime}</p>`;
                     }
                     if (response.led_screen_details) {
                         infoHtml += `<p><strong>Additional Details:</strong> ${response.led_screen_details}</p>`;
@@ -862,6 +878,17 @@
                     $('#search-input').val(searchParam);
                 }
             }
+
+            // Handle modal focus management
+            $('#requestDetailsModal').on('shown.bs.modal', function () {
+                // Focus the first focusable element in the modal
+                $(this).find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])').first().focus();
+            });
+
+            // When modal is hidden, return focus to the trigger element
+            $('#requestDetailsModal').on('hidden.bs.modal', function () {
+                $('.clickable-request-id:focus').focus();
+            });
         });
 
         $(function () {

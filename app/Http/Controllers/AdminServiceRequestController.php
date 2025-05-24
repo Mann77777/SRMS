@@ -275,8 +275,8 @@ class AdminServiceRequestController extends Controller
         // Add supporting document link if it exists
         if ($request->supporting_document) {
              $data['Supporting Document'] = sprintf(
-                '<a href="%s" target="_blank" class="document-link btn btn-sm btn-outline-primary">View Document</a>',
-                route('admin.view-supporting-document', ['requestId' => $request->id, 'type' => 'student']) // Add type hint for routing
+                '<a href="%s" target="_blank" class="btn btn-primary btn-sm">View Supporting Document</a>',
+                route('admin.view-supporting-document', ['requestId' => $request->id, 'type' => 'student'])
              );
         }
 
@@ -445,8 +445,8 @@ class AdminServiceRequestController extends Controller
         // Add supporting document link if it exists
         if ($request->supporting_document) {
             $data['Supporting Document'] = sprintf(
-               '<a href="%s" target="_blank" class="document-link btn btn-sm btn-outline-primary">View Document</a>',
-               route('admin.view-supporting-document', ['requestId' => $request->id, 'type' => 'faculty']) // Add type hint
+               '<a href="%s" target="_blank" class="btn btn-primary btn-sm">View Supporting Document</a>',
+               route('admin.view-supporting-document', ['requestId' => $request->id, 'type' => 'faculty'])
             );
         }
 
@@ -491,10 +491,10 @@ class AdminServiceRequestController extends Controller
  */
 public function viewSupportingDocument(Request $request, $requestId)
 {
-    // Get the type from query string or default to checking both types
-    $type = $request->query('type', null);
-    
     try {
+        // Get the type from query string or default to checking both types
+        $type = $request->query('type', null);
+        
         $documentPath = null;
         $fileName = null;
 
@@ -502,7 +502,8 @@ public function viewSupportingDocument(Request $request, $requestId)
         if ($type == 'student' || $type === null) {
             $studentRequest = StudentServiceRequest::find($requestId);
             if ($studentRequest && $studentRequest->supporting_document) {
-                $documentPath = storage_path('app/public/' . $studentRequest->supporting_document);
+                // Use Storage facade to get the correct path
+                $documentPath = Storage::disk('public')->path($studentRequest->supporting_document);
                 $fileName = basename($studentRequest->supporting_document);
             }
         }
@@ -510,12 +511,18 @@ public function viewSupportingDocument(Request $request, $requestId)
         if (($type == 'faculty' || $type === null) && $documentPath === null) {
             $facultyRequest = FacultyServiceRequest::find($requestId);
             if ($facultyRequest && $facultyRequest->supporting_document) {
-                $documentPath = storage_path('app/public/' . $facultyRequest->supporting_document);
+                // Use Storage facade to get the correct path
+                $documentPath = Storage::disk('public')->path($facultyRequest->supporting_document);
                 $fileName = basename($facultyRequest->supporting_document);
             }
         }
 
         if (!$documentPath || !file_exists($documentPath)) {
+            Log::error('Supporting document not found', [
+                'request_id' => $requestId,
+                'type' => $type,
+                'path' => $documentPath
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Supporting document not found'
@@ -534,7 +541,7 @@ public function viewSupportingDocument(Request $request, $requestId)
     } catch (\Exception $e) {
         Log::error('Error viewing supporting document: ' . $e->getMessage(), [
             'request_id' => $requestId,
-            'type' => $type,
+            'type' => $type ?? 'unknown',
             'error_trace' => $e->getTraceAsString()
         ]);
 

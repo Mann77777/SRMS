@@ -469,10 +469,14 @@ $(document).ready(function () {
         }
 
         if (request.supporting_document) {
-            // Assuming supporting_document is a URL or path that can be linked
-            // For security, ensure this URL is safe or handle downloads appropriately server-side
             const docName = request.supporting_document.split('/').pop();
-            html += `<strong>Supporting Document:</strong> <a href="/admin/view-supporting-document/${request.id}?type=${request.request_type}" target="_blank">${docName || 'View Document'}</a><br>`;
+            const isUITCStaff = window.location.pathname.includes('/assign-request');
+            // Ensure we have a valid request type, defaulting to 'student' if undefined
+            const requestType = request.type || request.request_type || 'student';
+            const viewUrl = isUITCStaff
+                ? `/uitc-staff/view-supporting-document/${request.id}?type=${requestType}`
+                : `/admin/view-supporting-document/${request.id}?type=${requestType}`;
+            html += `<strong>Supporting Document:</strong> <a href="${viewUrl}" target="_blank" class="document-link">${docName || 'View Document'}</a><br>`;
         }
 
         // Service-specific fields based on service_category

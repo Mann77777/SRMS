@@ -95,7 +95,7 @@ class StudentServiceRequestController extends Controller
                 if ($request->hasFile('supporting_document')) {
                     $file = $request->file('supporting_document');
                     $filename = time() . '_' . $file->getClientOriginalName();
-                    $path = $file->storeAs('supporting_documents', $filename, 'public');
+                    $path = $file->storeAs('documents', $filename, 'public');
                     $studentRequest->supporting_document = $path;
                 }
                 break;
@@ -464,7 +464,7 @@ class StudentServiceRequestController extends Controller
                 }
                 $file = $requestData->file('supporting_document');
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('supporting_documents', $filename, 'public');
+                $path = $file->storeAs('documents', $filename, 'public');
                 $serviceRequest->supporting_document = $path;
             }
 

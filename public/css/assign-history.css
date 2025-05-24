@@ -28,76 +28,6 @@ body{
     text-transform: uppercase;
 }
 
-/* Dropdown and Search Styles */
-.dropdown-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-select {
-    width: 180px;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-.search-container {
-    position: relative;
-    width: 100%;
-    max-width: 300px;
-}
-
-.search-input-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.search-container input {
-    width: 100%;
-    padding: 10px 15px 10px 40px; /* Added left padding for icon */
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.search-container .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #666;
-    font-size: 14px;
-    pointer-events: none; /* Makes the icon not interfere with the input */
-}
-
-/* Date Filter Styling */
-.date-filter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.date-filter label {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 0;
-}
-
-.date-filter input[type="date"] {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-
-
 .assignhistory-table-container{
     background-color: white;
     padding: 20px;
@@ -116,15 +46,16 @@ select {
     border-bottom: 1px solid #ddd;
     text-align: left;
 }
-.assignhistory-table thead th{
+.assignhistory-table tr:hover{
+    background-color: #f1f1f1;
+}
+.assignhistory-table th{
     background-color: #C4203C;
     color: white;
     font-weight: 600;
     padding: 12px;
 }
-.assignhistory-table tbody tr:hover{
-    background-color: #f8f9fa;
-}
+
 
 /* Action Buttons */
 button {
@@ -286,6 +217,7 @@ button {
 @media (max-width: 992px) {
     .content {
         margin-left: 22%; /* Adjust margin if sidebar width changes */
+        padding: 20px 15px; /* Adjust padding */
     }
 }
 

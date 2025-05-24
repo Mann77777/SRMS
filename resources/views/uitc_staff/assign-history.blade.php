@@ -22,8 +22,8 @@
     <div class="content">
         <h1>Assigned History</h1>
 
-        <div class="dropdown-container mb-3">
-            <!-- Status Filter -->
+        <!-- <div class="dropdown-container">
+             Status Filter 
             <select name="status" id="status-history-filter" class="form-control" style="width: auto; display: inline-block;">
                 <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
                 <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
@@ -31,15 +31,15 @@
                 <option value="Unresolvable" {{ request('status') == 'Unresolvable' ? 'selected' : '' }}>Unresolvable</option>
             </select>
 
-            <!-- Search Bar -->
+             Search Bar
             <div class="search-container" style="display: inline-block; margin-left: 10px;">
                 <input type="text" name="search" id="search-input-history" class="form-control" placeholder="Search..." value="{{ request('search') }}" style="width: 250px; display: inline-block;">
                 <button class="btn btn-primary search-btn-history" type="button" style="display: inline-block;">Search</button>
             </div>
-        </div>
+        </div> -->
 
         <div class="assignhistory-table-container">
-            <h4>Assigned Request History</h4>
+            <!-- <h4>Assigned Request History</h4> -->
             <div class="assignhistory-table-wrapper">
                 <table class="assignhistory-table">
                     <thead>

@@ -241,6 +241,7 @@ class UITCStaffController extends Controller
             'change_of_data_ms' => 'Change of Data (MS Office)',
             'reset_tup_web_password' => 'Reset TUP Web Password',
             'reset_ers_password' => 'Reset ERS Password',
+            'reset_intranet_password' => 'Reset Intranet Password',
             'change_of_data_portal' => 'Change of Data (Portal)',
             'dtr' => 'Daily Time Record',
             'biometric_record' => 'Biometric Record',

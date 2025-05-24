@@ -83,9 +83,12 @@
                         @forelse($assignedRequests as $request)
                         <tr>
                             <td>
-                                <span class="clickable-request-id" style="cursor: pointer; color: #007bff; text-decoration: underline;">
+                                <a href="#" class="clickable-request-id"
+                                   style="color: #007bff; text-decoration: underline; cursor: pointer;"
+                                   data-request-id="{{ $request->id }}"
+                                   data-request-type="{{ $request->request_type }}">
                                     {{ $request->id }}
-                                </span>
+                                </a>
                             </td>
                             <td>
                                 @if(isset($request->request_data))

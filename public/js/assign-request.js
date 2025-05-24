@@ -242,9 +242,17 @@ $(document).ready(function () {
     // Click handler for request IDs
     $(document).on('click', '.clickable-request-id', function () {
         console.log("Request ID clicked");
-        const row = $(this).closest('tr');
-        const requestId = $(this).text().trim();
-        const requestType = row.find('.btn-complete').data('request-type') || 'student';
+        const requestId = $(this).data('request-id');
+        const requestType = $(this).data('request-type');
+
+        // Show loading state
+        Swal.fire({
+            title: 'Loading...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         // Fetch request details from server
         $.ajax({
@@ -252,14 +260,34 @@ $(document).ready(function () {
             method: 'GET',
             data: { type: requestType },
             success: function (data) {
-                updateRequestDetailsModal(data);
-                $('#requestDetailsModal').modal('show');
+                Swal.close();
+                if (data && data.id) {
+                    updateRequestDetailsModal(data);
+                    $('#requestDetailsModal').modal('show');
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Invalid request data received'
+                    });
+                }
             },
             error: function (xhr) {
+                Swal.close();
+                let errorMessage = 'Failed to fetch request details';
+
+                if (xhr.status === 404) {
+                    errorMessage = 'Request not found';
+                } else if (xhr.status === 403) {
+                    errorMessage = 'This request is not assigned to you';
+                } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: xhr.responseJSON?.error || 'Failed to fetch request details'
+                    text: errorMessage
                 });
             }
         });
@@ -269,84 +297,98 @@ $(document).ready(function () {
     function updateRequestDetailsModal(requestData) {
         console.log("Updating modal with data:", requestData);
 
-        // Set basic request information
-        $('#detailsRequestId').text(requestData.id);
-        $('#detailsRequestRole').text(requestData.role || requestData.request_type || 'N/A');
-        $('#detailsRequestDate').text(formatDateTime(requestData.created_at));
-
-        // Format the data in request_data field
-        $('#detailsRequestData').html(requestData.request_data || formatRequestData(requestData));
-
-        // Set status with appropriate color
-        const $statusBadge = $('#detailsRequestStatus');
-        const statusText = requestData.status.trim();
-        $statusBadge.text(statusText);
-        $statusBadge.removeClass().addClass('custom-badge');
-
-        // Match the status badge styling with the table
-        if (statusText === 'Pending') {
-            $statusBadge.addClass('custom-badge-warning');
-        } else if (statusText === 'In Progress') {
-            $statusBadge.addClass('custom-badge-info');
-        } else if (statusText === 'Completed') {
-            $statusBadge.addClass('custom-badge-success');
-        } else if (statusText === 'Rejected' || statusText === 'Cancelled') {
-            $statusBadge.addClass('custom-badge-danger');
-        } else {
-            $statusBadge.addClass('custom-badge-secondary');
+        if (!requestData || !requestData.id) {
+            console.error('Invalid request data received');
+            return;
         }
 
-        // Handle completed date
-        if (requestData.status === 'Completed') {
-            if (requestData.completed_at) {
-                $('#detailsRequestCompleted').text(formatDateTime(requestData.completed_at));
-            } else if (requestData.updated_at) {
-                $('#detailsRequestCompleted').text(formatDateTime(requestData.updated_at));
+        try {
+            // Set basic request information
+            $('#detailsRequestId').text(requestData.id);
+            $('#detailsRequestRole').text(requestData.role || requestData.request_type || 'N/A');
+            $('#detailsRequestDate').text(formatDateTime(requestData.created_at));
+
+            // Format the data in request_data field
+            $('#detailsRequestData').html(requestData.request_data || formatRequestData(requestData));
+
+            // Set status with appropriate color
+            const $statusBadge = $('#detailsRequestStatus');
+            const statusText = (requestData.status || '').trim();
+            $statusBadge.text(statusText || 'Unknown');
+            $statusBadge.removeClass().addClass('custom-badge');
+
+            // Match the status badge styling with the table
+            if (statusText === 'Pending') {
+                $statusBadge.addClass('custom-badge-warning');
+            } else if (statusText === 'In Progress') {
+                $statusBadge.addClass('custom-badge-info');
+            } else if (statusText === 'Completed') {
+                $statusBadge.addClass('custom-badge-success');
+            } else if (statusText === 'Rejected' || statusText === 'Cancelled') {
+                $statusBadge.addClass('custom-badge-danger');
+            } else {
+                $statusBadge.addClass('custom-badge-secondary');
+            }
+
+            // Handle completed date
+            if (requestData.status === 'Completed') {
+                if (requestData.completed_at) {
+                    $('#detailsRequestCompleted').text(formatDateTime(requestData.completed_at));
+                } else if (requestData.updated_at) {
+                    $('#detailsRequestCompleted').text(formatDateTime(requestData.updated_at));
+                } else {
+                    $('#detailsRequestCompleted').text('-');
+                }
             } else {
                 $('#detailsRequestCompleted').text('-');
             }
-        } else {
-            $('#detailsRequestCompleted').text('-');
-        }
 
-        // Hide sections that we don't need for UITC Staff view
-        if ($('#pendingActionsContainer').length) {
-            $('#pendingActionsContainer').hide();
-        }
-
-        // Show assignment info if present
-        if ($('#assignmentInfoSection').length) {
-            if (requestData.assigned_uitc_staff_id) {
-                $('#assignmentInfoSection').show();
-                $('#detailsAssignedTo').text(requestData.assignedUITCStaff?.name || 'You');
-                $('#detailsTransactionType').text(formatTransactionType(requestData.transaction_type));
-                $('#detailsAdminNotes').text(requestData.admin_notes || 'No notes');
-            } else {
-                $('#assignmentInfoSection').hide();
+            // Hide sections that we don't need for UITC Staff view
+            if ($('#pendingActionsContainer').length) {
+                $('#pendingActionsContainer').hide();
             }
-        }
 
-        // Show rejection info if the request was rejected
-        if ($('#rejectionInfoSection').length) {
-            if (requestData.status === 'Rejected') {
-                $('#rejectionInfoSection').show();
-                $('#detailsRejectionReason').text(requestData.rejection_reason || '-');
-                $('#detailsRejectionNotes').text(requestData.rejection_notes || 'No notes');
-                $('#detailsRejectedDate').text(formatDateTime(requestData.updated_at));
-            } else {
-                $('#rejectionInfoSection').hide();
+            // Show assignment info if present
+            if ($('#assignmentInfoSection').length) {
+                if (requestData.assigned_uitc_staff_id) {
+                    $('#assignmentInfoSection').show();
+                    $('#detailsAssignedTo').text(requestData.assignedUITCStaff?.name || 'You');
+                    $('#detailsTransactionType').text(formatTransactionType(requestData.transaction_type));
+                    $('#detailsAdminNotes').text(requestData.admin_notes || 'No notes');
+                } else {
+                    $('#assignmentInfoSection').hide();
+                }
             }
-        }
 
-        // Show completion info if the request was completed
-        if ($('#completionInfoSection').length) {
-            if (requestData.status === 'Completed') {
-                $('#completionInfoSection').show();
-                $('#detailsCompletionReport').text(requestData.completion_report || '-');
-                $('#detailsActionsTaken').text(requestData.actions_taken || '-');
-            } else {
-                $('#completionInfoSection').hide();
+            // Show rejection info if the request was rejected
+            if ($('#rejectionInfoSection').length) {
+                if (requestData.status === 'Rejected') {
+                    $('#rejectionInfoSection').show();
+                    $('#detailsRejectionReason').text(requestData.rejection_reason || '-');
+                    $('#detailsRejectionNotes').text(requestData.rejection_notes || 'No notes');
+                    $('#detailsRejectedDate').text(formatDateTime(requestData.updated_at));
+                } else {
+                    $('#rejectionInfoSection').hide();
+                }
             }
+
+            // Show completion info if the request was completed
+            if ($('#completionInfoSection').length) {
+                if (requestData.status === 'Completed') {
+                    $('#completionInfoSection').show();
+                    $('#detailsCompletionReport').text(requestData.completion_report || '-');
+                    $('#detailsActionsTaken').text(requestData.actions_taken || '-');
+                } else {
+                    $('#completionInfoSection').hide();
+                }
+            }
+        } catch (error) {
+            console.error('Error updating modal:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to display request details'
+            });
         }
     }
 
@@ -408,7 +450,6 @@ $(document).ready(function () {
             html += createFieldHtml('Requester Email', request.email);
         }
 
-
         if (request.request_type === 'student' && request.student_id) {
             html += createFieldHtml('Student ID', request.student_id);
         } else if (request.request_type === 'faculty' && (request.faculty_id || request.user?.faculty_id)) {
@@ -420,8 +461,12 @@ $(document).ready(function () {
         // Common fields
         html += createFieldHtml('Description', request.description);
         html += createFieldHtml('Additional Notes', request.additional_notes);
-        html += createFieldHtml('Preferred Date', request.preferred_date ? formatDateTime(request.preferred_date, false) : 'N/A');
-        html += createFieldHtml('Preferred Time', request.preferred_time ? formatDateTime('1970-01-01T' + request.preferred_time, true, true) : 'N/A'); // Assuming time is just HH:MM:SS
+
+        // Only show preferred date and time for LED screen requests
+        if (request.service_category === 'request_led_screen') {
+            html += createFieldHtml('Preferred Date', request.preferred_date ? formatDateTime(request.preferred_date, false) : 'N/A');
+            html += createFieldHtml('Preferred Time', request.preferred_time ? formatDateTime('1970-01-01T' + request.preferred_time, true, true) : 'N/A');
+        }
 
         if (request.supporting_document) {
             // Assuming supporting_document is a URL or path that can be linked
@@ -438,16 +483,21 @@ $(document).ready(function () {
             case 'reset_tup_web_password':
             case 'reset_ers_password':
             case 'change_of_data_portal':
-                html += createFieldHtml('Account Email', request.account_email);
-                if (request.service_category === 'change_of_data_ms' || request.service_category === 'change_of_data_portal') {
-                    html += createFieldHtml('Data Type to Change', request.data_type);
-                    html += createFieldHtml('New Data', request.new_data);
-                }
                 break;
             case 'dtr':
             case 'biometric_record':
                 html += createFieldHtml('DTR/Biometric Months', Array.isArray(request.dtr_months) ? request.dtr_months.join(', ') : request.dtr_months);
-                html += createFieldHtml('DTR with Details', request.dtr_with_details);
+                // Show 'Yes' or 'No' for DTR with Details
+                if (typeof request.dtr_with_details !== 'undefined' && request.dtr_with_details !== null) {
+                    const dtrWithDetails = (
+                        request.dtr_with_details === true ||
+                        request.dtr_with_details === '1' ||
+                        request.dtr_with_details === 1 ||
+                        request.dtr_with_details === 'Yes' ||
+                        request.dtr_with_details === 'yes'
+                    ) ? 'Yes' : 'No';
+                    html += createFieldHtml('DTR with Details', dtrWithDetails);
+                }
                 html += createFieldHtml('Specific Months', Array.isArray(request.months) ? request.months.join(', ') : request.months);
                 html += createFieldHtml('Year', request.year);
                 break;

@@ -68,12 +68,12 @@
                         <optgroup label="MS Office 365, MS Teams, TUP Email">
                             <option value="create">Create MS Office/TUP Email Account</option>
                             <option value="reset_email_password">Reset MS Office/TUP Email Password</option>
-                            <option value="change_of_data_ms">Change of Data</option>
+                            <option value="change_of_data_ms">Change of Data (MS Office)</option>
                         </optgroup>
                         <optgroup label="TUP Web ERS, ERS, and TUP Portal">
                             <option value="reset_tup_web_password">Reset TUP Web Password</option>
                             <option value="reset_ers_password">Reset ERS Password</option>
-                            <option value="change_of_data_portal">Change of Data</option>
+                            <option value="change_of_data_portal">Change of Data (TUP Web Portal)</option>
                         </optgroup>
                         <optgroup label="ICT Equipment Management">
                             <option value="request_led_screen">Request to use LED Screen</option>

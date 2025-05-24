@@ -500,17 +500,25 @@
                         infoHtml += `<p><strong>Preferred Date:</strong> ${formattedDate}</p>`;
                     }
                     if (response.preferred_time) {
-                        // Parse the ISO datetime string
-                        const dateTime = new Date(response.preferred_time);
-                        
-                        // Format the time in 12-hour format
-                        const formattedTime = dateTime.toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                            timeZone: 'Asia/Manila' // Set to Philippine timezone
-                        });
-                        
+                        let formattedTime;
+                        // Check if preferred_time is a full ISO datetime string
+                        if (response.preferred_time.includes('T')) {
+                            const dateTime = new Date(response.preferred_time);
+                            formattedTime = dateTime.toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true,
+                                timeZone: 'Asia/Manila'
+                            });
+                        } else {
+                            // Assume it's a simple time string (HH:mm:ss)
+                            const timeParts = response.preferred_time.split(':');
+                            const hours = parseInt(timeParts[0], 10);
+                            const minutes = timeParts[1];
+                            const ampm = hours >= 12 ? 'PM' : 'AM';
+                            const displayHours = hours % 12 || 12;
+                            formattedTime = `${displayHours}:${minutes} ${ampm}`;
+                        }
                         infoHtml += `<p><strong>Preferred Time:</strong> ${formattedTime}</p>`;
                     }
                     if (response.led_screen_details) {

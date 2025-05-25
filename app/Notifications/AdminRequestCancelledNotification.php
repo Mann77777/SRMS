@@ -20,7 +20,7 @@ class AdminRequestCancelledNotification extends Notification
     public function __construct($requestId, $serviceCategory, $userName, $userRole, $createdAt)
     {
         // Format the request ID
-        $prefix = 'SR';
+        $prefix = 'SSR';
         if (stripos($serviceCategory, 'student') !== false || in_array($serviceCategory, ['change_of_data_portal', 'reset_tup_web_password']) || $userRole === 'student') {
             $prefix = 'SSR';
         } elseif (in_array($serviceCategory, ['dtr', 'biometric_record']) || stripos($serviceCategory, 'faculty') !== false || $userRole === 'faculty') {

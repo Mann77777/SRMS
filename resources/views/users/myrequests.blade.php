@@ -19,6 +19,32 @@
             background-color: #ffebee;
             color: #c62828;
         }
+        /* Add loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
     <title>My Requests</title>
 </head>
@@ -229,13 +255,13 @@
     </div>
 
 <!-- Request Details Modal -->
-<div class="modal fade" id="requestDetailsModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="requestDetailsModal" tabindex="-1" role="dialog" aria-labelledby="requestDetailsModalLabel">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Request Details</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
+                <h5 class="modal-title" id="requestDetailsModalLabel">Request Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -466,10 +492,34 @@
                     
                 case 'request_led_screen':
                     if (response.preferred_date) {
-                        infoHtml += `<p><strong>Preferred Date:</strong> ${response.preferred_date}</p>`;
+                        const formattedDate = new Date(response.preferred_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        infoHtml += `<p><strong>Preferred Date:</strong> ${formattedDate}</p>`;
                     }
                     if (response.preferred_time) {
-                        infoHtml += `<p><strong>Preferred Time:</strong> ${response.preferred_time}</p>`;
+                        let formattedTime;
+                        // Check if preferred_time is a full ISO datetime string
+                        if (response.preferred_time.includes('T')) {
+                            const dateTime = new Date(response.preferred_time);
+                            formattedTime = dateTime.toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true,
+                                timeZone: 'Asia/Manila'
+                            });
+                        } else {
+                            // Assume it's a simple time string (HH:mm:ss)
+                            const timeParts = response.preferred_time.split(':');
+                            const hours = parseInt(timeParts[0], 10);
+                            const minutes = timeParts[1];
+                            const ampm = hours >= 12 ? 'PM' : 'AM';
+                            const displayHours = hours % 12 || 12;
+                            formattedTime = `${displayHours}:${minutes} ${ampm}`;
+                        }
+                        infoHtml += `<p><strong>Preferred Time:</strong> ${formattedTime}</p>`;
                     }
                     if (response.led_screen_details) {
                         infoHtml += `<p><strong>Additional Details:</strong> ${response.led_screen_details}</p>`;
@@ -491,10 +541,12 @@
                         infoHtml += `<p><strong>Editor:</strong> ${response.publication_editor}</p>`;
                     }
                     if (response.publication_start_date) {
-                        infoHtml += `<p><strong>Date of Publication:</strong> ${response.publication_start_date}</p>`;
+                        const pubStart = new Date(response.publication_start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        infoHtml += `<p><strong>Date of Publication:</strong> ${pubStart}</p>`;
                     }
                     if (response.publication_end_date) {
-                        infoHtml += `<p><strong>End of Publication:</strong> ${response.publication_end_date}</p>`;
+                        const pubEnd = new Date(response.publication_end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        infoHtml += `<p><strong>End of Publication:</strong> ${pubEnd}</p>`;
                     }
                     break;
                     
@@ -584,6 +636,15 @@
                 const userRole = $('body').data('user-role') || '';
                 const token = $('meta[name="csrf-token"]').attr('content');
                 
+                // Show loading state using SweetAlert2
+                Swal.fire({
+                    title: 'Loading...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
                 // Set the correct endpoint based on role
                 const requestUrl = userRole === 'Student' ? `/student/request/${id}` : `/faculty/request/${id}`;
                 
@@ -593,7 +654,8 @@
                     method: 'GET',
                     headers: { 'X-CSRF-TOKEN': token },
                     success: function(response) {
-                        // Removed debugging console.log
+                        // Close loading state
+                        Swal.close();
 
                         if (response.error) {
                             alert('Error: ' + response.error);
@@ -673,6 +735,9 @@
                         $('#requestDetailsModal').modal('show');
                     },
                     error: function(xhr, status, error) {
+                        // Close loading state
+                        Swal.close();
+                        
                         let errorMessage = 'Could not load request details. ';
                         
                         if (xhr.status === 404) {
@@ -821,6 +886,17 @@
                     $('#search-input').val(searchParam);
                 }
             }
+
+            // Handle modal focus management
+            $('#requestDetailsModal').on('shown.bs.modal', function () {
+                // Focus the first focusable element in the modal
+                $(this).find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])').first().focus();
+            });
+
+            // When modal is hidden, return focus to the trigger element
+            $('#requestDetailsModal').on('hidden.bs.modal', function () {
+                $('.clickable-request-id:focus').focus();
+            });
         });
 
         $(function () {

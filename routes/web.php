@@ -416,9 +416,16 @@ Route::middleware(['auth:admin'])->group(function () {
     })->name('admin.logout');
 });
 
+// Route for Admin to view supporting documents
 Route::get('/admin/view-supporting-document/{requestId}', 
     [AdminServiceRequestController::class, 'viewSupportingDocument'])
     ->name('admin.view-supporting-document')
+    ->middleware(['auth:admin']);
+
+// Route for UITC Staff to view supporting documents
+Route::get('/uitc-staff/view-supporting-document/{requestId}', 
+    [AdminServiceRequestController::class, 'viewSupportingDocument'])
+    ->name('uitc.view-supporting-document')
     ->middleware(['auth:admin']);
 
 // Route for UITC Staff

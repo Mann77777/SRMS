@@ -2,26 +2,14 @@
 @inject('dateChecker', 'App\\Utilities\\DateChecker') {{-- Added DateChecker utility --}}
 @forelse($requests as $request)
     <tr>
-        <td><input type="checkbox" name="selected_requests[]" value="{{ $request['id'] }}"></td>
         <td>
             <span class="clickable-request-id" style="cursor: pointer; color: #007bff; text-decoration: underline;">
                 {{ $request['id'] }}
             </span>
         </td>
         <td>{!! $request['request_data'] !!}</td>
-        <td>
-            @php
-                $validityDays = $serviceHelper::getServiceValidityDays($request['service']);
-                $validityText = match($validityDays) {
-                    3 => 'Simple (3 days)',
-                    7 => 'Complex (7 days)',
-                    20 => 'Highly Technical (20 days)',
-                    default => $validityDays . ' days',
-                };
-            @endphp
-            {{ $validityText }}
-        </td>
         <td>{{ $request['role'] }}</td>
+
         <td>
             <span>{{ \Carbon\Carbon::parse($request['date'])->format('M d, Y') }}</span><br>
             <span>{{ \Carbon\Carbon::parse($request['date'])->format('h:i A') }}</span>
@@ -48,8 +36,12 @@
                 <span class="custom-badge custom-badge-info">{{ $request['status'] }}</span>
             @elseif($request['status'] == 'Completed')
                 <span class="custom-badge custom-badge-success">{{ $request['status'] }}</span>
-            @elseif($request['status'] == 'Cancelled')
+            @elseif($request['status'] == 'Overdue')
+                <span class="custom-badge custom-badge-overdue">{{ $request['status'] }}</span>
+            @elseif($request['status'] == 'Rejected')
                 <span class="custom-badge custom-badge-danger">{{ $request['status'] }}</span>
+            @elseif($request['status'] == 'Unresolvable')
+                <span class="custom-badge custom-badge-gray">{{ $request['status'] }}</span>
             @else
                 <span class="custom-badge custom-badge-secondary">{{ $request['status'] }}</span>
             @endif
@@ -124,8 +116,8 @@
     </tr>
 @empty
     <tr>
-        {{-- Adjusted colspan to 8 to match the number of columns in the header --}}
-        <td colspan="8" class="empty-state"> 
+        {{-- Adjusted colspan to 7 to match the number of columns in the header --}}
+        <td colspan="7" class="empty-state"> 
             <i class="fas fa-inbox fa-3x"></i>
             <p>No requests found matching the selected status.</p>
         </td>

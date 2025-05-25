@@ -343,55 +343,17 @@ private function getActiveRequests($staffId)
                 $services[] = 'Create MS Office/TUP Email Account';
             } elseif ($request->service_category === 'reset_email_password') {
                $services[] = 'Reset MS Office/TUP Email Password';
-            } else if ($request->service_category === 'dtr') {
-                $services[] = "Daily Time Record";
-            }
-             else if ($request->service_category === 'biometric_record') {
-               $services[] = "Biometric Record";
-            }
-             else if ($request->service_category === 'biometrics_enrollement') {
-               $services[] = "Biometrics Enrollment and Employee ID";
-            }
-              else if ($request->service_category === 'reset_tup_web_password') {
+            } elseif ($request->service_category === 'change_of_data_ms') {
+                $services[] = 'Change of Data (MS Office)';
+            } else if ($request->service_category === 'reset_tup_web_password') {
                $services[] = "Reset TUP Web Password";
-            }
-            else if ($request->service_category === 'reset_ers_password') {
+            }  else if ($request->service_category === 'reset_ers_password') {
                $services[] = "Reset ERS Password";
-           }
-             else if ($request->service_category === 'new_internet') {
-               $services[] = "New Internet Connection";
-            }
-            else if ($request->service_category === 'new_telephone') {
-                $services[] = "New Telephone Connection";
-           }
-            else if ($request->service_category === 'repair_and_maintenance') {
-               $services[] = "Internet/Telephone Repair and Maintenance";
-           }
-             else if ($request->service_category === 'computer_repair_maintenance') {
-               $services[] = "Computer Repair and Maintenance";
-             }
-               else if ($request->service_category === 'printer_repair_maintenance') {
-                   $services[] = "Printer Repair and Maintenance";
-               }
-             else if ($request->service_category === 'request_led_screen') {
-                    $services[] = "Request to use LED Screen";
-               }
-             else if ($request->service_category === 'install') {
-                    $services[] = "Install Application/Information System/Software";
-               }
-              else if ($request->service_category === 'post_publication') {
-                   $services[] = "Post Publication/Update of Information in Website";
-              }
-              else if ($request->service_category === 'data_handling') {
-                    $services[] = "Data Handling";
-              }
-               else if ($request->service_category === 'document_handling') {
-                    $services[] = "Document Handling";
-                }
-               else if ($request->service_category === 'reports_handling') {
-                 $services[] = "Reports Handling";
-              }
-              else if ($request->service_category === 'others') {
+            } elseif ($request->service_category === 'change_of_data_ms') {
+                $services[] = 'Change of Data (TUP Web Portal)';
+            } else if ($request->service_category === 'request_led_screen') {
+                $services[] = "Request to use LED Screen";
+            } else if ($request->service_category === 'others') {
                  $services[] = $request->description ?: 'Other Service';
               } else {
                  $services[] = $request->service_category;
@@ -416,7 +378,7 @@ private function getActiveRequests($staffId)
             } elseif ($request->service_category === 'reset_ers_password') {
                 $services[] = 'Reset ERS Password';
             } elseif ($request->service_category === 'change_of_data_portal') {
-                $services[] = 'Change of Data (Portal)';
+                $services[] = 'Change of Data (TUP Web Portal)';
             } elseif ($request->service_category === 'new_internet') {
                 $services[] = 'New Internet Connection';
             } elseif ($request->service_category === 'new_telephone') {

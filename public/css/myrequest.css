@@ -244,21 +244,34 @@ button {
 /* Small screens (tablets in portrait, large phones) */
 @media (max-width: 768px) {
     .content {
-        margin-top: 10%; /* Adjust top margin */
-        padding: 15px; /* Adjust padding */
+        margin-left: 0; /* Remove margin when sidebar is likely hidden/collapsed */
+        margin-top: 80px; /* Add margin-top to account for fixed navbar */
+        padding: 15px;
     }
+
     .content h1 {
-        font-size: 1.7rem;
+        font-size: 1.8rem; /* Slightly smaller heading */
     }
-    select,
-    .search-container input,
-    .search-btn {
-        width: 100%; /* Make controls full width */
-        margin-right: 0;
-        margin-left: 0;
+
+    .dropdown-container {
+        flex-direction: column; /* Stack filters vertically */
+        align-items: stretch; /* Make items take full width */
     }
+
+    .dropdown-container select,
+    .dropdown-container .search-container input {
+        width: 100%; /* Make selects and search input full width */
+        margin-right: 0; /* Remove right margin */
+        margin-bottom: 10px; /* Add space between stacked items */
+    }
+     .search-container{
+        flex-direction: column;
+        align-items: stretch;
+     }
     .search-btn {
-        margin-top: 10px; /* Add space above search button */
+        width: 100%; /* Make search button full width */
+        margin-left: 0; /* Reset margin */
+        margin-top: 5px;
     }
 
     .request-table th,

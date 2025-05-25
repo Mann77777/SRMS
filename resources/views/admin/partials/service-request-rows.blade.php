@@ -1,4 +1,5 @@
 @inject('serviceHelper', 'App\\Helpers\\ServiceHelper')
+@inject('dateChecker', 'App\\Utilities\\DateChecker') {{-- Added DateChecker utility --}}
 @forelse($requests as $request)
     <tr>
         <td><input type="checkbox" name="selected_requests[]" value="{{ $request['id'] }}"></td>
@@ -54,92 +55,56 @@
             @endif
         </td>
         <td>
-            @if($request['status'] == 'In Progress' && isset($request['transaction_type']))
+            @if($request['status'] == 'In Progress' && isset($request['transaction_type']) && isset($request['updated_at']))
                 @php
                     $transactionLimits = [
                         'Simple Transaction' => 3,
                         'Complex Transaction' => 7,
                         'Highly Technical Transaction' => 20,
                     ];
+                    // Assuming 'updated_at' is when the request became 'In Progress' or was assigned.
+                    // If 'created_at' or another field is more appropriate for the start of the SLA, adjust here.
                     $assignedDate = \Carbon\Carbon::parse($request['updated_at'])->startOfDay();
-                    $today = \Carbon\Carbon::today();
+                    $businessDaysLimit = $transactionLimits[$request['transaction_type']] ?? 0;
+                    
+                    $deadlineDate = $dateChecker::calculateDeadline($assignedDate, $businessDaysLimit);
+                    
+                    // Calculate remaining working days from today until the deadline.
+                    // countWorkingDaysBetween counts days from start up to, but not including, end.
+                    // So, if today is the deadline, it will show 0 days left.
+                    // If deadline is tomorrow, it will show 1 day left.
+                    $remainingDays = $dateChecker::countWorkingDaysBetween(\Carbon\Carbon::today(), $deadlineDate);
 
-                    // 1. Find the first business day after assignment
-                    $firstBusinessDay = $assignedDate->copy();
-                    while (true) {
-                        $dayOfWeek = $firstBusinessDay->dayOfWeek;
-                        $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-                        $isHoliday = \App\Models\Holiday::isHoliday($firstBusinessDay);
-                        $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($firstBusinessDay, 'semestral_break');
-                        if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
-                            break;
-                        }
-                        $firstBusinessDay->addDay();
+                    // For display, "Overdue on" is the day *after* the deadline.
+                    // We need to ensure this "overdue on" date is also a business day.
+                    $displayOverdueDate = $deadlineDate->copy();
+                     // If deadline itself is a non-working day (should not happen with calculateDeadline), or to be safe:
+                    // Loop to find the next business day if deadlineDate was the last allowed day.
+                    // For "Overdue on", we typically mean the start of the next business day *after* the deadline.
+                    // So, we add one day and then find the next business day.
+                    $displayOverdueDate->addDay(); // Move to the day after the deadline
+                    while($dateChecker::isNonWorkingDay($displayOverdueDate)['isNonWorkingDay']) {
+                        $displayOverdueDate->addDay();
                     }
 
-                    // 2. Calculate last allowed business day
-                    $limit = $transactionLimits[$request['transaction_type']] ?? 0;
-                    $lastAllowedDay = $firstBusinessDay->copy();
-                    $businessDaysCounted = 0;
-                    while ($businessDaysCounted < $limit) {
-                        $dayOfWeek = $lastAllowedDay->dayOfWeek;
-                        $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-                        $isHoliday = \App\Models\Holiday::isHoliday($lastAllowedDay);
-                        $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($lastAllowedDay, 'semestral_break');
-                        if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
-                            $businessDaysCounted++;
-                        }
-                        if ($businessDaysCounted < $limit) {
-                            $lastAllowedDay->addDay();
-                        }
-                    }
-
-                    // 3. Find the next business day after the last allowed day (for overdue)
-                    $overdueDate = $lastAllowedDay->copy()->addDay();
-                    while (true) {
-                        $dayOfWeek = $overdueDate->dayOfWeek;
-                        $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-                        $isHoliday = \App\Models\Holiday::isHoliday($overdueDate);
-                        $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($overdueDate, 'semestral_break');
-                        if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
-                            break;
-                        }
-                        $overdueDate->addDay();
-                    }
-
-                    // 4. Calculate business days elapsed (from first business day)
-                    $businessDaysElapsed = 0;
-                    $currentDate = $firstBusinessDay->copy();
-                    while ($currentDate->lte($today)) {
-                        $dayOfWeek = $currentDate->dayOfWeek;
-                        $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-                        $isHoliday = \App\Models\Holiday::isHoliday($currentDate);
-                        $isAcademicPeriod = \App\Models\Holiday::isAcademicPeriod($currentDate, 'semestral_break');
-                        if (!$isWeekend && !$isHoliday && !$isAcademicPeriod) {
-                            $businessDaysElapsed++;
-                        }
-                        $currentDate->addDay();
-                    }
-
-                    $remainingDays = $limit - $businessDaysElapsed;
                 @endphp
-                @if($remainingDays > 0)
-                    <span class="remaining-days positive">
-                        {{ $remainingDays }} days left
-                        <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
+                @if($remainingDays >= 0) {{-- Changed to >= 0 to correctly show "0 days left" on the due date --}}
+                    <span class="remaining-days {{ $remainingDays <= 1 ? 'negative' : 'positive' }}"> {{-- Style as negative if 1 or 0 days left --}}
+                        {{ $remainingDays }} day{{ $remainingDays != 1 ? 's' : '' }} left
+                        <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays. Due by end of day: {{ $deadlineDate->format('M d, Y') }}" style="cursor: pointer; color: #888; margin-left: 4px;">
                             <i class="fas fa-info-circle"></i>
                         </span>
                         <br>
-                        <small style="color:#888;">Overdue on: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
+                        <small style="color:#888;">Due: {{ $deadlineDate->format('M d, Y') }}</small>
                     </span>
                 @else
                     <span class="remaining-days negative">
-                        Overdue by {{ abs($remainingDays) }} days
-                        <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays" style="cursor: pointer; color: #888; margin-left: 4px;">
+                        Overdue by {{ abs($remainingDays) }} day{{ abs($remainingDays) != 1 ? 's' : '' }}
+                        <span class="info-tooltip" data-toggle="tooltip" title="Excludes weekends and holidays. Was due: {{ $deadlineDate->format('M d, Y') }}" style="cursor: pointer; color: #888; margin-left: 4px;">
                             <i class="fas fa-info-circle"></i>
                         </span>
                         <br>
-                        <small style="color:#888;">Was due: {{ $overdueDate->format('M d, Y') }} 8:00 AM</small>
+                        <small style="color:#888;">Was due: {{ $deadlineDate->format('M d, Y') }}</small>
                     </span>
                 @endif
             @else

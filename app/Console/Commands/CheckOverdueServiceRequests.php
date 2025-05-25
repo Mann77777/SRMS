@@ -5,10 +5,11 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\StudentServiceRequest;
 use App\Models\FacultyServiceRequest;
-use App\Models\Holiday;
+// Holiday model is no longer directly used here after refactor
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use App\Utilities\DateChecker; // Added for centralized date logic
 use App\Notifications\ServiceRequestTimedOut;
 use App\Notifications\ServiceRequest24HourWarning; // Added
 use App\Models\Admin; // Added
@@ -181,8 +182,8 @@ class CheckOverdueServiceRequests extends Command
         $assignedDate = Carbon::parse($request->updated_at)->startOfDay();
         $businessDaysLimit = $transactionLimits[$transactionType];
 
-        // Calculate business days elapsed
-        $businessDaysElapsed = $this->calculateBusinessDaysElapsed($assignedDate);
+        // Calculate business days elapsed using DateChecker
+        $businessDaysElapsed = DateChecker::countWorkingDaysBetween($assignedDate, Carbon::today()->copy()->addDay()); // Counts working days up to and including today
 
         if ($this->option('details')) {
             $this->line("Checking {$requestType} Request ID {$request->id}:");
@@ -235,156 +236,8 @@ class CheckOverdueServiceRequests extends Command
      * @param Carbon $startDate The starting date
      * @return int Number of business days elapsed
      */
-    private function calculateBusinessDaysElapsed(Carbon $startDate)
-    {
-        $today = Carbon::today();
-        $holidayDates = $this->getHolidayDates();
-        
-        $businessDays = 0;
-        $currentDate = $startDate->copy();
-        
-        // Change lt to lte to include today
-        while ($currentDate->lte($today)) {
-            $dayOfWeek = $currentDate->dayOfWeek;
-            $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-            
-            $dateStr = $currentDate->format('Y-m-d');
-            $isHoliday = in_array($dateStr, $holidayDates);
-            
-            if (!$isWeekend && !$isHoliday) {
-                $businessDays++;
-            }
-            
-            $currentDate->addDay();
-        }
-        
-        return $businessDays;
-    }
-
-    /**
-     * Get all holiday dates from the database
-     * 
-     * @return array Array of holiday dates in Y-m-d format
-     */
-    private function getHolidayDates()
-    {   
-        try {
-            // Get all holidays (single day)
-            $singleDayHolidays = Holiday::where(function($query) {
-                $query->where('is_recurring', false)
-                    ->whereNotNull('date');
-            })
-            ->pluck('date')
-            ->map(function ($date) {
-                return Carbon::parse($date)->format('Y-m-d');
-            })
-            ->toArray();
-            
-            // Get all recurring holidays for the current year
-            $currentYear = Carbon::now()->year;
-            $recurringHolidays = Holiday::where('is_recurring', true)
-                ->whereNotNull('recurring_month')
-                ->whereNotNull('recurring_day')
-                ->get()
-                ->map(function ($holiday) use ($currentYear) {
-                    return Carbon::createFromDate($currentYear, $holiday->recurring_month, $holiday->recurring_day)->format('Y-m-d');
-                })
-                ->toArray();
-            
-            // Get all dates within periods
-            $periodDates = $this->getPeriodHolidayDates();
-            
-            // Merge all holiday types
-            $allHolidays = array_unique(array_merge($singleDayHolidays, $recurringHolidays, $periodDates));
-            sort($allHolidays); // Sort for easier debugging
-            
-            if ($this->option('details')) {
-                $this->line("Found " . count($allHolidays) . " holiday dates in the system:");
-                $holidayLimit = 10; // Limit the holidays shown to avoid overwhelming output
-                foreach (array_slice($allHolidays, 0, $holidayLimit) as $date) {
-                    $this->line("  - $date");
-                }
-                if (count($allHolidays) > $holidayLimit) {
-                    $this->line("  - ... and " . (count($allHolidays) - $holidayLimit) . " more");
-                }
-            }
-            
-            return $allHolidays;
-        } catch (\Exception $e) {
-            Log::error('Error fetching holidays: ' . $e->getMessage());
-            if ($this->option('details')) {
-                $this->error('Error fetching holidays: ' . $e->getMessage());
-            }
-            return [];
-        }
-    }
-
-    /**
-     * Get all dates for holiday periods (like semestral breaks)
-     * 
-     * @return array Array of dates in Y-m-d format
-     */
-    private function getPeriodHolidayDates()
-    {
-        $periodDates = [];
-        
-        try {
-            // Get all holiday periods (with start_date and end_date)
-            $holidayPeriods = Holiday::whereNotNull('start_date')
-                ->whereNotNull('end_date')
-                ->get();
-            
-            if ($this->option('details') && $holidayPeriods->count() > 0) {
-                $this->line("Found " . $holidayPeriods->count() . " holiday periods:");
-                foreach ($holidayPeriods as $period) {
-                    $this->line("  - {$period->name}: {$period->start_date} to {$period->end_date}");
-                }
-            }
-            
-            foreach ($holidayPeriods as $period) {
-                $startDate = Carbon::parse($period->start_date);
-                $endDate = Carbon::parse($period->end_date);
-                $currentDate = $startDate->copy();
-                
-                // Add all dates in the period range
-                while ($currentDate->lte($endDate)) {
-                    $periodDates[] = $currentDate->format('Y-m-d');
-                    $currentDate->addDay();
-                }
-            }
-            
-            return $periodDates;
-        } catch (\Exception $e) {
-            Log::error('Error fetching holiday periods: ' . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Calculate the due date in business days from a start date.
-     *
-     * @param Carbon $startDate
-     * @param int $businessDaysToAdd
-     * @return Carbon
-     */
-    private function calculateBusinessDueDate(Carbon $startDate, int $businessDaysToAdd)
-    {
-        $holidayDates = $this->getHolidayDates();
-        $currentDate = $startDate->copy();
-        $daysAdded = 0;
-
-        while ($daysAdded < $businessDaysToAdd) {
-            $currentDate->addDay(); // Move to the next day
-            $dayOfWeek = $currentDate->dayOfWeek;
-            $isWeekend = ($dayOfWeek === Carbon::SUNDAY || $dayOfWeek === Carbon::SATURDAY);
-            $isHoliday = in_array($currentDate->format('Y-m-d'), $holidayDates);
-
-            if (!$isWeekend && !$isHoliday) {
-                $daysAdded++;
-            }
-        }
-        return $currentDate;
-    }
+    // Removed calculateBusinessDaysElapsed, getHolidayDates, getPeriodHolidayDates, 
+    // and calculateBusinessDueDate as their logic is now handled by DateChecker.
 
     /**
      * Send a 24-hour warning notification to the assigned UITC staff.
@@ -404,8 +257,8 @@ class CheckOverdueServiceRequests extends Command
                 $serviceCategory = $request->service_category ?? 'Service Request';
                 $requestorName = $request->user ? ($request->user->first_name . ' ' . $request->user->last_name) : ($request->first_name . ' ' . $request->last_name);
                 
-                // Calculate the actual due date
-                $dueDate = $this->calculateBusinessDueDate($assignedDate, $businessDaysLimit);
+                // Calculate the actual due date using DateChecker
+                $dueDate = DateChecker::calculateDeadline($assignedDate, $businessDaysLimit);
 
                 Notification::send($uitcStaff, new ServiceRequest24HourWarning(
                     $request->id,

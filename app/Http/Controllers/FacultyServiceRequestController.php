@@ -206,7 +206,7 @@ class FacultyServiceRequestController extends Controller
             $displayId = 'FSR-' . date('Ymd') . '-' . str_pad($serviceRequest->id, 4, '0', STR_PAD_LEFT);
     
             // Check if today is a non-working day (weekend or holiday)
-            $nonWorkingDayInfo = DateChecker::isNonWorkingDay();
+            $nonWorkingDayInfo = DateChecker::isNonWorkingDay(Carbon::today());
     
             if (Auth::check() && $request->user()->email) {
                 Notification::route('mail', $request->user()->email)
@@ -683,25 +683,38 @@ class FacultyServiceRequestController extends Controller
 
     public function create()
     {
-        $today = Carbon::now();
-        $isWeekend = $today->isWeekend();
-        $isHoliday = Holiday::isHoliday($today);
-        $isSemestralBreak = Holiday::isAcademicPeriod($today, 'semestral_break');
-        $isExamWeek = Holiday::isAcademicPeriod($today, 'exam_week');
+        $today = Carbon::today(); // Use today() for date-only comparisons if time isn't relevant
+        $nonWorkingDayInfo = DateChecker::isNonWorkingDay($today);
+        $holidayDetails = null;
+
+        if ($nonWorkingDayInfo['isNonWorkingDay'] && $nonWorkingDayInfo['type'] === 'holiday') {
+            $holidayDetails = DateChecker::getHolidayDetailsForDate($today);
+        }
+
+        $isWeekend = $nonWorkingDayInfo['isNonWorkingDay'] && $nonWorkingDayInfo['type'] === 'weekend';
+        $isHoliday = $nonWorkingDayInfo['isNonWorkingDay'] && $nonWorkingDayInfo['type'] === 'holiday';
+        
+        // For academic periods, we'd need to check the holiday name if it's stored that way
+        // This assumes 'Semestral Break' or 'Exam Week' would be the name of a holiday entry.
+        $isSemestralBreak = $isHoliday && $holidayDetails && stripos($holidayDetails->name, 'semestral break') !== false;
+        $isExamWeek = $isHoliday && $holidayDetails && stripos($holidayDetails->name, 'exam week') !== false;
         
         // Construct appropriate message
         $statusMessage = null;
-        if ($isWeekend) {
-            $statusMessage = "Note: Today is a weekend. Your request will be processed on the next business day.";
-        } elseif ($isHoliday) {
-            $statusMessage = "Note: Today is a holiday. Your request will be processed on the next business day.";
-        } elseif ($isSemestralBreak) {
+        if ($isSemestralBreak) { // Check specific academic periods first
             $statusMessage = "Note: We are currently on semestral break. Response times may be longer than usual.";
         } elseif ($isExamWeek) {
             $statusMessage = "Note: It's exam week. Priority will be given to academic system issues.";
+        } elseif ($isWeekend) {
+            $statusMessage = "Note: Today is a weekend. Your request will be processed on the next business day.";
+        } elseif ($isHoliday) { // General holiday if not an academic period
+            $statusMessage = "Note: Today is a holiday ({$holidayDetails->name}). Your request will be processed on the next business day.";
         }
         
-        return view('user.service_requests.create', compact('statusMessage'));
+        // The view path 'users.faculty-service' is used elsewhere for faculty forms.
+        // The original code had 'user.service_requests.create'.
+        // Assuming 'users.faculty-service' is the correct form view for faculty.
+        return view('users.faculty-service', compact('statusMessage'));
     }
 
     // Removed private formatServiceCategory method - Use App\Helpers\ServiceHelper::formatServiceCategory instead

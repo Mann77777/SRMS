@@ -559,6 +559,28 @@ $(document).ready(function () {
                 // For 'others', the main description is the service detail.
                 // html += createFieldHtml('Service Details', request.description); // Already covered by common 'Description'
                 break;
+            case 'change_of_data': // Assuming 'change_of_data' is the service_category key
+                if (request.request_type === 'faculty') {
+                    if (request.current_document_path) {
+                        html += `<strong>Current Document:</strong> <a href="/storage/${request.current_document_path}" target="_blank" rel="noopener noreferrer">View Current Document</a><br>`;
+                    }
+                    if (request.requested_document_path) {
+                        html += `<strong>Requested Document:</strong> <a href="/storage/${request.requested_document_path}" target="_blank" rel="noopener noreferrer">View Requested Document</a><br>`;
+                    }
+                    if (request.reason_for_change) {
+                        html += createFieldHtml('Reason for Change', request.reason_for_change);
+                    }
+                } else if (request.request_type === 'student') {
+                    // Assuming 'supporting_documents' is the field for student change_of_data, as per Blade template
+                    if (request.supporting_documents) { 
+                        html += `<strong>Supporting Documents:</strong> <a href="/storage/${request.supporting_documents}" target="_blank" rel="noopener noreferrer">View Document</a><br>`;
+                    }
+                    // If students also have a 'reason_for_change' field for this service, add it here:
+                    // if (request.student_reason_for_change) {
+                    //     html += createFieldHtml('Reason for Change', request.student_reason_for_change);
+                    // }
+                }
+                break;
         }
 
         // Fallback for any other fields not explicitly handled (optional)

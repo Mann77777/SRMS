@@ -111,12 +111,37 @@
                                         $descriptionField = (isset($request->description) && $request->service_category != 'others') 
                                             ? '<br><strong>Description:</strong> ' . $request->description 
                                             : '';
+
+                                        $supportingDocumentsField = '';
+                                        // Assuming 'change_of_data' is the correct service_category key.
+                                        // You might need to adjust this key based on your actual application values.
+                                        if (isset($request->service_category) && $request->service_category == 'change_of_data') {
+                                            if ($request->request_type == 'faculty') {
+                                                if (isset($request->current_document_path) && $request->current_document_path) {
+                                                    $supportingDocumentsField .= '<br><strong>Current Document:</strong> <a href="' . asset('storage/' . $request->current_document_path) . '" target="_blank" rel="noopener noreferrer">View Current Document</a>';
+                                                }
+                                                if (isset($request->requested_document_path) && $request->requested_document_path) {
+                                                    $supportingDocumentsField .= '<br><strong>Requested Document:</strong> <a href="' . asset('storage/' . $request->requested_document_path) . '" target="_blank" rel="noopener noreferrer">View Requested Document</a>';
+                                                }
+                                                if (isset($request->reason_for_change) && $request->reason_for_change) {
+                                                    $supportingDocumentsField .= '<br><strong>Reason for Change:</strong> ' . e($request->reason_for_change);
+                                                }
+                                            } elseif ($request->request_type == 'student') {
+                                                if (isset($request->supporting_documents) && $request->supporting_documents) {
+                                                    // This assumes student's supporting_documents is a single file path.
+                                                    // If it's JSON representing multiple files or structured differently, this part might need adjustment.
+                                                    $supportingDocumentsField .= '<br><strong>Supporting Documents:</strong> <a href="' . asset('storage/' . $request->supporting_documents) . '" target="_blank" rel="noopener noreferrer">View Document</a>';
+                                                }
+                                                // Add other student-specific fields for 'change_of_data' if they exist (e.g., a reason field if applicable).
+                                            }
+                                        }
                                     @endphp
                                     {!! 
                                         '<strong>Name:</strong> ' . $requesterName . '<br>' .
                                         $idField .
                                         '<strong>Service:</strong> ' . $serviceName .
-                                        $descriptionField
+                                        $descriptionField .
+                                        $supportingDocumentsField
                                     !!}
                                 @endif
                             </td>
